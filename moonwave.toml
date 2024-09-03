@@ -1,1 +1,14 @@
 title = "Ignition"
+gitRepoUrl = "https://github.com/lnconc/Ignition"
+
+gitSourceBranch = "master"
+changelog = true
+
+[docusaurus]
+onBrokenLinks = "throw"
+onBrokenMarkdownLinks = "warn"
+
+[[classOrder]]
+section = "Buffer"
+collapsed = true
+classes = ["BufferWriter", "BufferReader", "BufferUtility", "TypeDefinitions"]

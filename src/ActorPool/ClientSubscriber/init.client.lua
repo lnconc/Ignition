@@ -1,1 +1,2 @@
-require(script.Parent)(script:GetActor())
+local actor = script:GetActor()
+require(actor.Parent)(actor, script)

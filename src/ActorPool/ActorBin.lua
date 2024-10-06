@@ -30,11 +30,13 @@ local ReflectedValue = {} do
     end
 
     function ReflectedValue.new<T>(initialValue: T, key: string, ref: string): ReflectedValue
-        local self = {}
-        self._key = key
-        self._refId = ref
-        self._value = initialValue
-        return setmetatable(self, {__index = ReflectedValueAPI})
+        local Value = {}
+        Value._key = key
+        Value._refId = ref
+        Value._value = initialValue
+        return setmetatable(Value, {__index = ReflectedValueAPI, __tostring = function(self)
+            return if type(self._value) == "table" then self._value else tostring(self._value)
+        end})
     end
     type ReflectedValue = typeof(ReflectedValue.new('test'))
 end
@@ -74,14 +76,14 @@ local ReflectedClass = {} do
             end})
 
             local values = nil
-            if type(self.__prototype_init__) == "function" then
-                self:__prototype_init__(...)
+            if type(fromClass.__prototype_init__) == "function" then
+                fromClass.__prototype_init__(self, ...)
                 for key, value in pairs(self) do
                     if type(value) == "table" and type(value.get) == "function" then
                         if not values then
                             values = {}
                         end
-                        values[key] = value
+                        values[key] = value._value
                     end
                 end
             end
@@ -108,9 +110,10 @@ return function(actor: Actor, subscriber: Instance)
     dependency = ReflectedClass.new(dependency)
 
     local function publishReply(replyContent: {any} | {[string]: any}, replyId: string?, refId: string?, reflectingValues: boolean?)
+        task.synchronize()
         taskCompleted:Fire({
             ref = refId,
-            replyId = replyId,
+            reply = replyId,
             content = replyContent,
             reflectingValues = reflectingValues,
         })
@@ -133,31 +136,36 @@ return function(actor: Actor, subscriber: Instance)
         end
     end)
     
-    actor:BindToMessage('initPrototype', function(content: MessageContent)
-        print(content)
+    actor:BindToMessageParallel('initPrototype', function(content: MessageContent)
         local ref = HttpService:GenerateGUID(false)
-        local obj = dependency.new(table.unpack(content.args))
+        local obj = dependency.new(ref, table.unpack(content.args))
         CurrentReflectedClasses[ref] = obj.class
-        publishReply(content.reply, {
+        publishReply({
             [1] = ref,
             [2] = obj.values,
-        })
+        }, content.reply)
     end)
     
     actor:BindToMessageParallel('updateValuesFor', function(content: MessageContent)
+        print(content)
         local reflected = CurrentReflectedClasses[content.ref]
         if not reflected then
             error(`class "{content.ref}" does not exist`)
         end
         
+        local incidents = {}
         for key, value in pairs(content.args) do
             local valueObj = reflected[key]
             if not valueObj then
                 warn(`reflected value "{key}" does not exist`)
+                incidents[#incidents+1] = key
                 continue
             end
             valueObj:set(value) -- dont force, we prioritize values from the actor vm and not from the main vm
         end
+        publishReply({
+            [1] = incidents
+        }, content.reply)
     end)
     
     actor:BindToMessageParallel('runTask', function(content: MessageContent)

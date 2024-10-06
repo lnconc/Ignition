@@ -11,7 +11,8 @@ local IS_SERVER = RunService:IsServer()
 
 local PROTOTYPE_INIT_SYMBOL = Symbol('__prototype_init__')
 local RUN_FUNCTION_SYMBOL = Symbol('__run_function__')
-local VALID_MODES = Set('runTask', 'updateValue', 'initPrototype')
+local MESSAGE_PARALLEL_SYMBOL = Symbol('__message_parallel__')
+local VALID_MODES = Set('runTask', 'updateValuesFor', 'initPrototype')
 
 local Bin = script:FindFirstChild("ActorBin")
 if not Bin then
@@ -57,16 +58,15 @@ local function pollUpdate(mode: 'ToUpdate' | 'ForUpdate', refId: string, key: st
             local polled = container[refId]
             if polled then
                 container[refId] = {}
-                local reflector = CurrentClassReflectors.reflectorPublishers[refId]
+                local reflector = CurrentClassReflectors.reflectors[refId]
                 if not reflector then
                     error(`no reflection publishers for reference "{refId}"`)
                 end
                 if mode == 'ForUpdate' then
-                    reflector.publish({
-                        target = 'updateValuesFor',
-                        refId = refId,
-                        args = polled,
-                    })
+                    local incidents = table.unpack(reflector.updateReferencedValues(polled))
+                    if incidents ~= nil and #incidents > 0 then
+                        warn(`referenced values [{table.concat(incidents, ', ')}] does not exist for referenced class "{refId}"`)
+                    end
                 else
                     for polledKey, polledValue in pairs(polled) do
                         local valueObj =  reflector.class[polledKey]
@@ -124,7 +124,9 @@ function ClassReflector.new(superClass: {Actor: Actor, [string]: () -> ()}, refI
             function Value:isfree()
                 return self._touched == false
             end
-            return table.freeze(Value)
+            return setmetatable(Value, {__tostring = function(self)
+                return if type(self._value) == "table" then self._value else tostring(self._value)
+            end})
         end
 
         for key, exposedValue in pairs(exposedValues) do
@@ -132,8 +134,13 @@ function ClassReflector.new(superClass: {Actor: Actor, [string]: () -> ()}, refI
         end
     end
     reflecedClass = table.freeze(reflecedClass)
-    CurrentClassReflectors.reflectorPublishers[refId] = {
-        publish = superClass[RUN_FUNCTION_SYMBOL],
+    CurrentClassReflectors.reflectors[refId] = {
+        updateReferencedValues = function(polled: {[string]: any})
+            return superClass[MESSAGE_PARALLEL_SYMBOL]({
+                mode = 'updateValuesFor',
+                refId = refId,
+            }, polled)
+        end,
         class = reflecedClass,
     }
     return reflecedClass
@@ -162,12 +169,12 @@ function Actor.new(body: {
     local hasInitialization = false 
     local function parallelFunctionWrapper(wrapperBody: {
         mode: 'runTask' | 'updateValuesFor' | 'initPrototype' | 'getValue',
-        target: string,
-        refId: string,
+        target: string?,
+        refId: string?,
     }, args: {any})
-        assert(VALID_MODES:contains(wrapperBody.mode), `mode {wrapperBody.mode} is not part of modes {VALID_MODES:list()}`)
+        print(args)
+        assert(VALID_MODES:contains(wrapperBody.mode), `mode "{wrapperBody.mode}" is not part of modes {VALID_MODES:list()}`)
         local replyId = HttpService:GenerateGUID(false)
-        print(wrapperBody, args, replyId)
         body.dependencyActor:SendMessage(wrapperBody.mode, {
             ref = wrapperBody.refId,
             reply = replyId,
@@ -182,8 +189,10 @@ function Actor.new(body: {
                 conn = nil
             end
         end)
-        return coroutine.yield()
+        local out = coroutine.yield()
+        return out
     end
+    self[MESSAGE_PARALLEL_SYMBOL] = parallelFunctionWrapper
 
     -- wrapper for all functions
     self[RUN_FUNCTION_SYMBOL] = function(wrapperBody: {
@@ -266,7 +275,7 @@ end
 
 local ActorPoolAPI = {}
 
-function ActorPoolAPI:Take<U...>(...: U...): RunningActorComponent
+function ActorPoolAPI:Take<U...>(...: U...): any
     local currentActor, queueIndex = tryGetFreeActorFrom(self._actors, self._actorCount, self._queued)
     if not currentActor.RunningComponent[PROTOTYPE_INIT_SYMBOL] then
         -- free the actor
@@ -280,7 +289,7 @@ function ActorPoolAPI:Take<U...>(...: U...): RunningActorComponent
     return prototype
 end
 
-function ActorPoolAPI:TakeAsync<U...>(...: U...): RunningActorComponent
+function ActorPoolAPI:TakeAsync<U...>(...: U...): any
     local actor = createActor(self._dependency)
     actor.Working = nil -- temporary actor, no need to have the working key
     actor.RunningComponent.TaskCompleted:Once(function()
@@ -310,9 +319,13 @@ function ActorPool.new(dependency: ModuleScript, capacity: number?)
     self._actorCount = math.max(capacity or 10, 1)
     for _ = 1, self._actorCount do
         local actor = createActor(dependency)
-        actor.RunningComponent.TaskCompleted:Connect(function()
+        actor.RunningComponent.TaskCompleted:Connect(function(response: TaskResponse)
             if #self._queued > 0 then
                 local thread = table.remove(self._queued, 1)
+                if not thread then
+                    warn(`missed queued thread, must have been closed before a previous operation was completed (replyId: {response.reply}`)
+                    return
+                end
                 task.spawn(thread, actor)
             end
         end)

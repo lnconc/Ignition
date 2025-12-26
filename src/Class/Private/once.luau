@@ -1,0 +1,15 @@
+--!strict
+-- Class/Private/once.lua
+
+local getCaller = require(script.Parent.Parent.Parent.Internal.getCaller)
+
+local function once(): boolean
+    local _, _, env = getCaller(2)
+    if env.pragma_once then
+        return true
+    end
+    env.pragma_once = true
+    return false
+end
+
+return once

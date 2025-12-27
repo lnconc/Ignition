@@ -1,3 +1,4 @@
+--!native
 --!nocheck
 -- Class/Utility/StackSpider.lua
 

@@ -22,7 +22,8 @@ type ValueMetatable<T> = {
 export type ValueFull<T> = typeof(setmetatable({} :: {
     _DANGEROUS_value: T,
     _CONSTANT_locked: boolean,
-    _CONSTANT_error_msg: string?
+    _CONSTANT_error_msg: string?,
+    _destructor: (obj: T) -> (),
 }, {} :: ValueMetatable<T>)) & GraphObjectInternal<T>
 
 export type Value<T> = Omit<ValueFull<T>, {
@@ -30,6 +31,7 @@ export type Value<T> = Omit<ValueFull<T>, {
     _CONSTANT_locked: unknown,
     _CONSTANT_error_msg: unknown,
     _dependencies: unknown,
+    _destructor: unknown,
 }>
 
 export type PropertyEffect<T> = (use: (GraphObject<T>) -> T, ...any) -> ()

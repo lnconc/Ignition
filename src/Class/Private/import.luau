@@ -6,7 +6,7 @@ local Types = require(script.Parent.Parent.Types)
 local Configuration = require(script.Parent.Parent.Utility.Configuration)
 local Registry = require(script.Parent.Parent.Utility.Registry)
 
-local PROPERTY_FLAGS = Configuration.PROPERTY_FLAGS
+local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
 
 type ReflectedClass<P> = Types.ReflectedClass<P>
 type Function = Types.Function
@@ -31,7 +31,7 @@ local function import<P>(): ReflectedClass<P>
             local isVirtual = interface.virtuals[key]
             if isVirtual == nil then
                 local flags = if type(found) == "table" then found.flags else nil
-                isVirtual = if type(flags) == "table" then table.find(flags, PROPERTY_FLAGS.Virtual) ~= nil else false
+                isVirtual = if type(flags) == "table" then table.find(flags, VIRTUAL_FLAG) ~= nil else flags[VIRTUAL_FLAG]
                 interface.virtuals[key] = isVirtual
             end
 

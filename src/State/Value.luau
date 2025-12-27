@@ -26,7 +26,10 @@ function ValueMetatable.evaluate<T>(_self: ValueFull<T>): boolean
     return true
 end
 
-function ValueMetatable.clean<T>(self: ValueFull<T>)
+function ValueMetatable.Destroy<T>(self: ValueFull<T>)
+    if self._destructor then
+        self._destructor(self._DANGEROUS_value)
+    end
     self._DANGEROUS_value = nil
     for dependent in pairs(self._dependents) do
         dependent._dependencies[self] = nil
@@ -36,8 +39,9 @@ function ValueMetatable.clean<T>(self: ValueFull<T>)
 end
 
 local Value = {}
-function Value.new<T>(defaultValue: T): Value<T>
+function Value.new<T>(defaultValue: T, destructor: (obj: T) -> ()?): Value<T>
     local self = {}
+    self._destructor = destructor
     self._DANGEROUS_value = defaultValue
     self._CONSTANT_locked = false
     self._CONSTANT_error_msg = nil

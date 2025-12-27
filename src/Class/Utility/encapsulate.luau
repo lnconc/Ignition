@@ -9,6 +9,7 @@ local Types = require(script.Parent.Parent.Types)
 local StackSpider = require(script.Parent.StackSpider)
 local initialize = require(script.Parent.initialize)
 local ValueTypes = require(script.Parent.Parent.Parent.State.Types)
+local free = require(script.Parent.Parent.Private.free)
 local is_property = require(script.Parent.is_property)
 
 type Properties = Types.Properties
@@ -61,7 +62,7 @@ local function upsert<K, V>(ring: any, key: K, value: V, flags: any, enforcedTyp
     
     if flags.allowReactivity then
         if not cur then
-            cur = Value.new(value) :: ValueTypes.ValueFull<any>
+            cur = Value.new(value, free) :: ValueTypes.ValueFull<any>
             if flags[PROPERTY_FLAGS.Constant] or (type(key) == "string" and match(key, "^[A-Z]+$") ~= nil) then
                 cur._CONSTANT_locked = true
                 cur._CONSTANT_error_msg = `cannot set constant property '{key}'`
@@ -106,20 +107,20 @@ local function encapsulate(object: any, metatable: any, environment: Environment
             local super = environment.SuperClass
             if super.object then return super.object[key] end
             error(`attempt to index missing property '{key}' (current context: {interface.name})`, 2)
-        elseif info.specifier == "public" and not info.static and not allowReactivity then
-            return data.public[key]
         end
-
-        if info.specifier ~= "public" then
+        local static, specifier = info.static, info.specifier
+        if specifier == "public" and not static and not allowReactivity then
+            return data.public[key]
+        elseif specifier ~= "public" then
             local included, protects = WithinScope(environment)
-            if info.specifier == "private" and not included then
+            if specifier == "private" and not included then
                 error(`attempt to access private property '{key}' (current context: {interface.name})`, 2)
-            elseif info.specifier == "protected" and not (included or protects) then
+            elseif specifier == "protected" and not (included or protects) then
                 error(`attempt to access protected property '{key}' (current context: {interface.name})`, 2)
             end
         end
 
-        local ring = if info.static then globals[info.specifier] else data[info.specifier]
+        local ring = if static then globals[specifier] else data[specifier]
         local out = ring[key]
         if allowReactivity and out then out:evaluate() end
         return if out == NULL_PLACEHOLDER then nil else out
@@ -132,28 +133,24 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         end
 
         local info = specifierMap[key]
-        if info and info.specifier == "public" and not info.static and not allowReactivity then
-            data.public[key] = if value == nil then NULL_PLACEHOLDER else value
-            return
-        end
-
         if not info then
             local super = environment.SuperClass
             if super.object then super.object[key] = value; return end
             error(`attempt to write missing property '{key}' (current context: {interface.name})`, 2)
-        elseif info.specifier == "public" and not info.static and not allowReactivity then
-            data.public[key] = if value == nil then NULL_PLACEHOLDER else value
-        else
-            if info.specifier ~= "public" then
-                local included, protects = WithinScope(environment)
-                if (info.specifier == "private" and not included) or (info.specifier == "protected" and not (included or protects)) then
-                    error(`attempt to write {info.specifier} property '{key}' (current context: {interface.name}{if environment.Master then ` from {environment.Master.Interface.name}` else nil})`, 2)
-                end
-            end
-
-            local ring = if info.static then globals[info.specifier] else data[info.specifier]
-            upsert(ring, key, value, environment.PropertyFlags[key], environment.PropertyTypes[key], environment.Context.Constructor, environment)
         end
+        local static, specifier = info.static, info.specifier
+        if specifier == "public" and not static and not allowReactivity then
+            data.public[key] = if value == nil then NULL_PLACEHOLDER else value
+            return
+        elseif specifier ~= "public" then
+            local included, protects = WithinScope(environment)
+            if (specifier == "private" and not included) or (specifier == "protected" and not (included or protects)) then
+                error(`attempt to write {specifier} property '{key}' (current context: {interface.name}{if environment.Master then ` from {environment.Master.Interface.name}` else nil})`, 2)
+            end
+        end
+
+        local ring = if static then globals[specifier] else data[specifier]
+        upsert(ring, key, value, environment.PropertyFlags[key], environment.PropertyTypes[key], environment.Context.Constructor, environment)
     end
 
     for _, op in ipairs(OPERATORS) do
@@ -165,9 +162,10 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         else
             metatable[op] = function(a, b)
                 local info = specifierMap[op]
-                if info and info.specifier ~= "public" then
+                local specifier = info.specifier
+                if info and specifier ~= "public" then
                     local inc, prot = WithinScope(environment)
-                    if not (inc or (info.specifier == "protected" and prot)) then
+                    if not (inc or (specifier == "protected" and prot)) then
                         error(`Operator {op} access violation`, 2)
                     end
                 end

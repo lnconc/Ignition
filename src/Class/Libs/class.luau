@@ -1,5 +1,5 @@
 --!strict
--- Class/Private/class.luau
+-- Class/Libs/class.luau
 
 local env = require("../../Internal/env")
 local getCaller = require("../../Internal/getCaller")

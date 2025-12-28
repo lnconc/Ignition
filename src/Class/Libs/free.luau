@@ -1,5 +1,5 @@
 --!nonstrict
--- Class/Private/free.lua
+-- Class/Libs/free.lua
 
 local function free(item: any)
     if not item then return end

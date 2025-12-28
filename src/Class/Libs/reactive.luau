@@ -1,5 +1,5 @@
 --!strict
--- Class/Private/reactive.lua
+-- Class/Libs/reactive.lua
 
 local fetchInterface = require("../Utility/fetchInterface")
 

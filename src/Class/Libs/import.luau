@@ -1,5 +1,5 @@
 --!strict
--- Class/Private/import.lua
+-- Class/Libs/import.lua
 
 local getCaller = require("../../Internal/getCaller")
 local Types = require("../Types")

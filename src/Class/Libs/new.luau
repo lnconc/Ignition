@@ -1,5 +1,5 @@
 --!strict
--- Class/Private/new.lua
+-- Class/Libs/new.lua
 
 local Types = require("../Types")
 local Registry = require("../Utility/Registry")

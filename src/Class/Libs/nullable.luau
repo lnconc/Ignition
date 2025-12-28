@@ -1,5 +1,5 @@
 --!strict
--- CLass/Private/nullable.lua
+-- CLass/Libs/nullable.lua
 
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")

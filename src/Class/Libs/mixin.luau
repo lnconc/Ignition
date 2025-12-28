@@ -1,5 +1,5 @@
 --!strict
--- Class/Private/mixin.lua
+-- Class/Libs/mixin.lua
 
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")

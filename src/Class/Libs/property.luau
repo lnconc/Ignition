@@ -1,5 +1,5 @@
 --!strict
--- CLass/Private/property.lua
+-- CLass/Libs/property.lua
 
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")

@@ -1,5 +1,5 @@
 --!strict
--- Class/Private/ref.lua
+-- Class/Libs/ref.lua
 
 local getCaller = require("../../Internal/getCaller")
 local Configuration = require("../Utility/Configuration")

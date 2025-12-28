@@ -1,5 +1,5 @@
 --!strict
--- Class/Private/once.lua
+-- Class/Libs/once.lua
 
 local getCaller = require("../../Internal/getCaller")
 

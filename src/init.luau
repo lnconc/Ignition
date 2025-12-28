@@ -13,7 +13,9 @@ local Observe = require("@self/State/Observe")
 local Property = require("@self/State/Property")
 local Value = require("@self/State/Value")
 
-local Ignition = setmetatable({
+local loaded = false
+
+local Ignition = {
     VERSION = Configuration.VERSION,
     Class = Class,
     Promise = Promise,
@@ -25,8 +27,19 @@ local Ignition = setmetatable({
     Symbol = Symbol,
     Observe = Observe,
     Unyieldable = Unyieldable,
-}, {
-    __call = function(self)
+}
+
+type IgnitionType = typeof(Ignition)
+type IgnitionLinker = (self: any) -> IgnitionType
+type ExposedIgnition = IgnitionType & IgnitionLinker
+
+local ExposedIgnition = setmetatable({}, {
+    __index = Ignition,
+    __call = function()
+        if loaded then
+            error("Ignition has already loaded", 2)
+        end
+        loaded = true
         local function loadSolutions(root: Instance, fromSolutions: boolean?)
             for _, item in root:GetChildren() do
                 if Configuration.EXCLUDES[item.Name:lower():gsub("%s+", "")] then continue end
@@ -55,8 +68,8 @@ local Ignition = setmetatable({
 
         loadSolutions(Configuration.ROOT, false)
         loadSolutions(Configuration.SHARED_ROOT, false)
-        return self
-    end,
+        return Ignition
+    end
 })
 
-return Ignition
+return (ExposedIgnition :: any) :: ExposedIgnition

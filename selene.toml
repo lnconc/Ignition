@@ -1,4 +1,4 @@
-std = 'roblox'
+std = "roblox"
 [rules]
 shadowing = "allow"
 undefined_variable = "allow"

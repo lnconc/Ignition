@@ -1,8 +1,10 @@
 [package]
-name = "lnconc/ignition"
+name = "lnconcinnity/ignition"
 version = "1.0.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 description = "A True OOP & Reactive State DI Framework for Roblox"
 license = "MIT"
+repository = "https://github.com/lnconc/Ignition"
 authors = ["lnconcinnity"]
+[dependencies]

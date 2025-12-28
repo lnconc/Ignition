@@ -40,6 +40,13 @@ end
 
 local Value = {}
 function Value.new<T>(defaultValue: T, destructor: (obj: T) -> ()?): Value<T>
+    if (typeof(defaultValue) == "Instance" or
+            (type(defaultValue) == "table" and getmetatable(defaultValue) ~= nil) and
+            type((defaultValue :: any).Destroy) ~= "function"
+        ) and destructor == nil
+    then
+        warn("Creating a Value wrapping an Instance without a destructor may lead to memory leaks. Consider providing a destructor to clean up the Instance when the Value is destroyed.")
+    end
     local self = {}
     self._destructor = destructor
     self._DANGEROUS_value = defaultValue

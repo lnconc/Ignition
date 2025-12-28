@@ -36,6 +36,7 @@ local Class = {
     free = free,
     FLAGS = table.freeze(Configuration.PROPERTY_FLAGS),
     PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED,
+    METADATA = Configuration.METADATA,
 }
 
 type classType = typeof(Class)

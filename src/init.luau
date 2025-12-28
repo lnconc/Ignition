@@ -41,6 +41,7 @@ loadSolutions(Configuration.ROOT, false)
 loadSolutions(Configuration.SHARED_ROOT, false)
 
 return {
+    VERSION = Configuration.VERSION,
     Class = Class,
     Promise = Promise,
     Profiler = Profiler,

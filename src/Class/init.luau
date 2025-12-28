@@ -39,30 +39,8 @@ local Class = {
     METADATA = Configuration.METADATA,
 }
 
-type classType = typeof(Class)
-type function from(args: type): type
-    local resultComponents = {}
-    
-    for _, component in args:components() do
-        if component:is("singleton") then
-            local keyVal = component:value()
-            local propType = classType:readproperty(types.singleton(keyVal))
-            
-            if propType then
-                table.insert(resultComponents, propType)
-            else
-                table.insert(resultComponents, types.never)
-            end
-        else
-            table.insert(resultComponents, types.any)
-        end
-    end
-
-    return types.intersectionof(unpack(resultComponents))
-end
-
-function Class.from<T>(...: T): from<T>
-    local retrieved = table.pack(... :: any)
+function Class.from(...): ...any
+    local retrieved = table.pack(...)
     for i = 1, retrieved.n do
         local k = retrieved[i]
         local r = Class[k]
@@ -71,7 +49,7 @@ function Class.from<T>(...: T): from<T>
         end
         retrieved[i] = r
     end
-    return unpack(retrieved)
+    return table.unpack(retrieved)
 end
 
 return Class

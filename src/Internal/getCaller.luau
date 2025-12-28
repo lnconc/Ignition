@@ -22,6 +22,7 @@ local function getCaller(level: number | boolean): (Scriptable, Closure?, Enviro
             local _, _fn, line = pcall(debug.info, l, "fl")
             if not _fn or line == -1 then break end
             fn = _fn
+            l += 1
         end
     else
         local _, _fn = pcall(debug.info, level + 2, "f")

@@ -1,0 +1,12 @@
+{
+    "name": "Ignition",
+    "tree": {
+        "$className": "DataModel",
+        "ReplicatedStorage" : {
+            "$className": "ReplicatedStorage",
+            "Ignition": {
+                "$path": "src"
+            }
+        }
+    }
+}

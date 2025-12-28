@@ -2,8 +2,9 @@
 --!nocheck
 -- Class/Utility/StackSpider.lua
 
-local Configuration = require("../../Configuration")
+local Configuration = require("./Configuration")
 local Types = require("../Types")
+
 
 type Environment = Types.Environment
 

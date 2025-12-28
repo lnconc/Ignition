@@ -18,5 +18,5 @@ return {
     else game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"),
     SHARED_ROOT = game:GetService("ReplicatedStorage"),
     EXCLUDES = set("assets", "templates", "prefabs", "temp"),
-    SOLUTIONS_KEY = "Solutions",
+    SOLUTIONS_KEY = "Solution",
 }

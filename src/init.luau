@@ -13,34 +13,7 @@ local Observe = require("@self/State/Observe")
 local Property = require("@self/State/Property")
 local Value = require("@self/State/Value")
 
-local function loadSolutions(root: Instance, fromSolutions: boolean?)
-    for _, item in root:GetChildren() do
-        if Configuration.EXCLUDES[item.Name:lower():gsub("%s+", "")] then continue end
-        if item:IsA("Folder") then
-            if not fromSolutions then
-                fromSolutions = item.Name:find(Configuration.SOLUTIONS_KEY) ~= nil
-            end
-            if fromSolutions then
-                for _, module in item:GetChildren() do
-                    if module:IsA("ModuleScript") then
-                        task.spawn(function()
-                            local success, err = pcall(require, module)
-                            if not success then
-                                warn(`Failed to load {module:GetFullName()}\n\n[Linker Error]:\n{err}`)
-                            end
-                        end)
-                    end
-                end
-            end
-            loadSolutions(item, fromSolutions)
-        end
-    end
-end
-
-loadSolutions(Configuration.ROOT, false)
-loadSolutions(Configuration.SHARED_ROOT, false)
-
-return {
+local Ignition = setmetatable({
     VERSION = Configuration.VERSION,
     Class = Class,
     Promise = Promise,
@@ -52,4 +25,38 @@ return {
     Symbol = Symbol,
     Observe = Observe,
     Unyieldable = Unyieldable,
-}
+}, {
+    __call = function(self)
+        local function loadSolutions(root: Instance, fromSolutions: boolean?)
+            for _, item in root:GetChildren() do
+                if Configuration.EXCLUDES[item.Name:lower():gsub("%s+", "")] then continue end
+                if item:IsA("Folder") then
+                    if not fromSolutions then
+                        fromSolutions = item.Name:find(`{Configuration.SOLUTIONS_KEY}$`) ~= nil
+                    end
+                    if fromSolutions then
+                        for _, module in item:GetChildren() do
+                            if module:IsA("ModuleScript") then
+                                task.spawn(function()
+                                    local success, err = pcall(require, module)
+                                    if not success then
+                                        warn(`Failed to load {module:GetFullName()}\n\n[Linker Error]:\n{err}`)
+                                        return
+                                    end
+                                    print(`Loaded and linked {module:GetFullName()}`)
+                                end)
+                            end
+                        end
+                    end
+                    loadSolutions(item, fromSolutions)
+                end
+            end
+        end
+
+        loadSolutions(Configuration.ROOT, false)
+        loadSolutions(Configuration.SHARED_ROOT, false)
+        return self
+    end,
+})
+
+return Ignition

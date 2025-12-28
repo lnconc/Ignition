@@ -29,11 +29,11 @@ local Ignition = {
     Unyieldable = Unyieldable,
 }
 
-type IgnitionType = typeof(Ignition)
-type IgnitionLinker = (self: any) -> IgnitionType
-type ExposedIgnition = IgnitionType & IgnitionLinker
+type IgnitionLinker = (_self: any) -> IgnitionFramework
+export type IgnitionFramework = typeof(Ignition)
+export type ExposedIgnitionFramework = typeof(setmetatable({}, {} :: { __index: IgnitionFramework, __call: IgnitionLinker }))
 
-local ExposedIgnition = setmetatable({}, {
+local ExposedIgnition: ExposedIgnitionFramework = setmetatable({}, {
     __index = Ignition,
     __call = function()
         if loaded then
@@ -72,4 +72,4 @@ local ExposedIgnition = setmetatable({}, {
     end
 })
 
-return (ExposedIgnition :: any) :: ExposedIgnition
+return ExposedIgnition

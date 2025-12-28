@@ -88,7 +88,7 @@ local function encapsulate(object: any, metatable: any, environment: Environment
 
     local specifierMap = {}
     if not PRODUCTION_MODE_ENABLED then
-        for specifier, field in properties do
+        for specifier, field in pairs(properties) do
             for key, property in pairs(field) do
                 local isStatic = if is_property(property) then property.flags and property.flags[PROPERTY_FLAGS.Static] else false
                 specifierMap[key] = { specifier = specifier, static = isStatic }
@@ -123,7 +123,7 @@ local function encapsulate(object: any, metatable: any, environment: Environment
 
         local ring = if static then globals[specifier] else data[specifier]
         local out = ring[key]
-        if allowReactivity and out then out:evaluate() end
+        if (allowReactivity or properties[specifier][key].flags[PROPERTY_FLAGS.Reactive]) and out then out:evaluate() end
         return if out == NULL_PLACEHOLDER then nil else out
     end
 

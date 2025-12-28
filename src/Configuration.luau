@@ -12,7 +12,7 @@ local function set<T>(...: T): { [T]: boolean }
 end
 
 return {
-    VERSION = "v1.0.0",
+    VERSION = "v1.0.4",
     ROOT = if game:GetService("RunService"):IsServer() 
     then game:GetService("ServerScriptService") 
     else game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"),

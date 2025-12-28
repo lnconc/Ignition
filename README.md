@@ -118,9 +118,8 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
         end))
     end)
     ```
-
-    > [!IMPORTANT]
-    > `ref()` can only be called inside the methods or constructors of a class. Calling it outside will throw an error.
+> [!IMPORTANT]
+> `ref()` can only be called inside the methods or constructors of a class. Calling it outside will throw an error.
 
 
 4. **Overriding with `FLAGS.Virtual`**: Ignition enforces strict inheritance. You cannot override a property or method in a child class unless it was marked as a virtual in the parent. This prevents *"Accidental Shadowing"* where a subclass unknowingly breaks a parent's core logic.

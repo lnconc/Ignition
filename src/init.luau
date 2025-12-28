@@ -12,11 +12,14 @@ local Unyieldable = require("@self/Modules/Unyieldable")
 local Property = require("@self/State/Property")
 local Value = require("@self/State/Value")
 
-local function loadSolutions(root: Instance)
+local function loadSolutions(root: Instance, fromSolutions: boolean?)
     for _, item in root:GetChildren() do
         if Configuration.EXCLUDES[item.Name:lower():gsub("%s+", "")] then continue end
         if item:IsA("Folder") then
-            if item.Name:find(Configuration.SOLUTIONS_KEY) then
+            if not fromSolutions then
+                fromSolutions = item.Name:find(Configuration.SOLUTIONS_KEY) ~= nil
+            end
+            if fromSolutions then
                 for _, module in item:GetChildren() do
                     if module:IsA("ModuleScript") then
                         task.spawn(function()
@@ -28,13 +31,13 @@ local function loadSolutions(root: Instance)
                     end
                 end
             end
-            loadSolutions(item)
+            loadSolutions(item, fromSolutions)
         end
     end
 end
 
-loadSolutions(Configuration.ROOT)
-loadSolutions(Configuration.SHARED_ROOT)
+loadSolutions(Configuration.ROOT, false)
+loadSolutions(Configuration.SHARED_ROOT, false)
 
 return {
     Class = Class,

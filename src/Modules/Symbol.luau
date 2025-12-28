@@ -11,6 +11,7 @@ function Symbol.new<T>(id: T): Symbol<T>
         return `Symbol<{id}>`
     end
     mt.__metatable = id
+    mt.__call = function() end -- identity function
     return symbol
 end
 

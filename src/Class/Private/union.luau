@@ -6,8 +6,14 @@ local Configuration = require("../Utility/Configuration")
 
 type Union<T> = Types.Union<T>
 
-local function nullable<T>(types: T): Union<T>
-    return setmetatable({ types = types }, { __metatable = Configuration.UNION_SIGNATURE })
+local function union<T>(...: T): Union<T>
+    local t = table.pack(...)
+    for i = 1, t.n do
+        local u = t[i]
+        t[i] = nil
+        t[u] = true
+    end
+    return setmetatable({ types = t }, { __metatable = Configuration.UNION_SIGNATURE })
 end
 
-return nullable
+return union

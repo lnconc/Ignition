@@ -58,14 +58,16 @@ local function initialize(
     local interface = environment.Interface
     local closures = interface.closures
     local propertyFlags, propertyTypes = environment.PropertyFlags, environment.PropertyTypes
-    local reactiveStatesBatch: { [any]: any }? = if allowReactivity then {} else nil
+    local reactiveStatesBatch: { [any]: any } = {}
 
     local iterationSource = if PRODUCTION_MODE_ENABLED then properties else lookup
     for specifier, fieldOrRing in iterationSource do
         local propertyRing: FieldOptions = if PRODUCTION_MODE_ENABLED then fieldOrRing else properties[specifier]
         local destinationField = if PRODUCTION_MODE_ENABLED then lookup else fieldOrRing
         if not propertyRing then continue end
+        if fieldOrRing == Configuration.METADATA then continue end
         for key, templateOrValue in pairs(propertyRing) do
+            if templateOrValue == Configuration.METADATA then continue end
             local field_flags, raw = normalize_flags_once(propertyRing, key)
             local flags = shadow_map_from_array({ allowReactivity = allowReactivity }, field_flags)
             propertyFlags[key] = flags
@@ -116,10 +118,8 @@ local function initialize(
         end
     end
 
-    if reactiveStatesBatch then
-        for def, target in pairs(reactiveStatesBatch) do
-            target.field[target.key] = Property(def.effect, def.dependencies)
-        end
+    for def, target in pairs(reactiveStatesBatch) do
+        target.field[target.key] = Property(def.effect, def.dependencies)
     end
 end
 

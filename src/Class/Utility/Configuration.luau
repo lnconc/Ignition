@@ -15,11 +15,13 @@ return {
     PROPERTY_SIGNATURE = "$property",
     NULLABLE_SIGNATURE = "$nullable",
     UNION_SIGNATURE = "$union",
+    METADATA = symbol("metadata"),
     PROPERTY_FLAGS = {
         Optional = symbol("optional"),
         Static = symbol("static"),
         Constant = symbol("constant"),
         Virtual = symbol("virtual"),
         Readonly = symbol("readonly"),
+        Reactive = symbol("reactive"),
     }
 }

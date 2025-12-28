@@ -60,8 +60,8 @@ local function upsert<K, V>(ring: any, key: K, value: V, flags: any, enforcedTyp
             error(`cannot set readonly property '{key}'`, 2)
         end
     end
-    
-    if flags.allowReactivity then
+
+    if flags.allowReactivity or flags[PROPERTY_FLAGS.Reactive] then
         if not cur then
             cur = Value.new(value, free) :: ValueTypes.ValueFull<any>
             if flags[PROPERTY_FLAGS.Constant] or (type(key) == "string" and match(key, "^[A-Z]+$") ~= nil) then
@@ -163,7 +163,7 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         else
             metatable[op] = function(a, b)
                 local info = specifierMap[op]
-                local specifier = info.specifier
+                local specifier = info.specifier or "public"
                 if info and specifier ~= "public" then
                     local inc, prot = WithinScope(environment)
                     if not (inc or (specifier == "protected" and prot)) then

@@ -43,47 +43,47 @@ local function import<P>(): ReflectedClass<P>
     end
 
     local imported = setmetatable({}, {
-        __call = function(_, targetOrSignature: Function | Expects, _signature: Expects?)
+        __call = function(_, targetOrSignature: Function | Expects)
             if type(targetOrSignature) == "function" then
-                if type(_signature) == "table" and #_signature > 0 then
-                    local current = interface.constructor.callback
-                    if current then
-                        interface.constructor.callback = {
-                            isOverloaded = true,
-                            overloads = {},
-                            fallback = if type(current) == "function" then current else nil,
-                        }
-                        current = interface.constructor.callback
-                    end
-                    table.insert((current :: OverloadRecord).overloads, {
-                        callback = targetOrSignature,
-                        expects = _signature,
-                    })
-                else
-                    if interface.constructor.defined then
-                        error(`Constructor for '{interface.name}' already defined.`, 2)
-                    end
-                    interface.constructor.callback = targetOrSignature
+                if interface.constructor.defined then
+                    error(`Constructor for '{interface.name}' already defined.`, 2)
                 end
-                interface.constructor.defined = true
+                interface.constructor.callback = targetOrSignature
                 return nil :: any
             elseif type(targetOrSignature) == "table" and #targetOrSignature > 0 then
-                return function(memberName: string)
-                    verifyImplementation(memberName, true)
-                    return function(implementation: Function)
-                        local current = interface.closures[memberName]
-                        if not current or type(current) == "function" then
-                            interface.closures[memberName] = {
-                                overloads = {},
+                return function(memberNameOrConstructor: string | Function)
+                    if type(memberNameOrConstructor) == "function" then
+                        local current = interface.constructor.callback
+                        if current then
+                            interface.constructor.callback = {
                                 isOverloaded = true,
+                                overloads = {},
                                 fallback = if type(current) == "function" then current else nil,
                             }
-                            current = interface.closures[memberName]
+                            current = interface.constructor.callback
                         end
                         table.insert((current :: OverloadRecord).overloads, {
-                            callback = implementation,
-                            expects = targetOrSignature :: Expects
+                            callback = memberNameOrConstructor,
+                            expects = targetOrSignature,
                         })
+                        return nil :: any
+                    else
+                        verifyImplementation(memberNameOrConstructor, true)
+                        return function(implementation: Function)
+                            local current = interface.closures[memberNameOrConstructor]
+                            if not current or type(current) == "function" then
+                                interface.closures[memberNameOrConstructor] = {
+                                    overloads = {},
+                                    isOverloaded = true,
+                                    fallback = if type(current) == "function" then current else nil,
+                                }
+                                current = interface.closures[memberNameOrConstructor]
+                            end
+                            table.insert((current :: OverloadRecord).overloads, {
+                                callback = implementation,
+                                expects = targetOrSignature :: Expects
+                            })
+                        end
                     end
                 end
             end

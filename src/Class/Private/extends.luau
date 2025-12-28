@@ -1,9 +1,9 @@
 --!strict
 -- Class/Private/extends.lua
 
-local getCaller = require(script.Parent.Parent.Parent.Internal.getCaller)
-local Types = require(script.Parent.Parent.Types)
-local Registry = require(script.Parent.Parent.Utility.Registry)
+local getCaller = require("../../Internal/getCaller")
+local Types = require("../Types")
+local Registry = require("../Utility/Registry")
 
 type Interface = Types.Interface
 

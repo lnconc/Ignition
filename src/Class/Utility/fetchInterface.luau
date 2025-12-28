@@ -1,8 +1,8 @@
 --!strict
 -- Class/Utility/fetchInterface.lua
 
-local Types = require(script.Parent.Parent.Types)
-local Registry = require(script.Parent.Registry)
+local Types = require("../Types")
+local Registry = require("./Registry")
 
 type Interface = Types.Interface
 

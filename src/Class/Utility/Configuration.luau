@@ -1,7 +1,7 @@
 --!nocheck
 -- Class/Utility/Configuration.lua
 
-local Symbol = require(script.Parent.Parent.Parent.Modules.Symbol)
+local Symbol = require("../../Modules/Symbol")
 local function symbol<T>(id: T): Symbol.Symbol<T>
     return Symbol(`class_symbol<{id}>`)
 end

@@ -1,10 +1,10 @@
 --!nocheck
 -- State/Environment.lua
 
-local Value = require(script.Parent.Value)
-local Types = require(script.Parent.Types)
-local is = require(script.Parent.is)
-local env = require(script.Parent.Parent.Internal.env)
+local Value = require("./Value")
+local Types = require("./Types")
+local is = require("./is")
+local env = require("../Internal/env")
 
 type PropertyDependencies<E> = Types.PropertyDependencies<E>
 type PropertyEffect<T, E> = Types.PropertyEffect<T, E>

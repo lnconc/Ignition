@@ -1,7 +1,7 @@
 --!strict
 -- Class/Private/reactive.lua
 
-local fetchInterface = require(script.Parent.Parent.Utility.fetchInterface)
+local fetchInterface = require("../Utility/fetchInterface")
 
 local function reactive(_)
     fetchInterface().flags.AllowReactivity = true

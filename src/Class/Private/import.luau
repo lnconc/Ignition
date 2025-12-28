@@ -1,10 +1,10 @@
 --!strict
 -- Class/Private/import.lua
 
-local getCaller = require(script.Parent.Parent.Parent.Internal.getCaller)
-local Types = require(script.Parent.Parent.Types)
-local Configuration = require(script.Parent.Parent.Utility.Configuration)
-local Registry = require(script.Parent.Parent.Utility.Registry)
+local getCaller = require("../../Internal/getCaller")
+local Types = require("../Types")
+local Configuration = require("../Utility/Configuration")
+local Registry = require("../Utility/Registry")
 
 local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
 

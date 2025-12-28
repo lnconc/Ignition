@@ -1,9 +1,9 @@
 --!strict
 -- Class/Private/super.lua
 
-local getCaller = require(script.Parent.Parent.Parent.Internal.getCaller)
-local Configuration = require(script.Parent.Parent.Utility.Configuration)
-local bloodline = require(script.Parent.Parent.Utility.bloodline)
+local getCaller = require("../../Internal/getCaller")
+local Configuration = require("../Utility/Configuration")
+local bloodline = require("../Utility/bloodline")
 
 local DEVELOPMENT_MODE_ENABLED = not Configuration.PRODUCTION_MODE_ENABLED
 

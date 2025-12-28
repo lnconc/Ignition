@@ -1,7 +1,7 @@
 --!strict
 -- State/Value.lua
 
-local Types = require(script.Parent.Types)
+local Types = require("./Types")
 type Value<T> = Types.Value<T>
 type ValueFull<T> = Types.ValueFull<T>
 

@@ -1,3 +1,4 @@
+--!native
 --!strict
 -- Class/Utility/encapsulate.lua
 

@@ -8,8 +8,6 @@
 ## 🚀 Quick Start
 Ignition utilizes a **Functional DSL** to define class interfaces and a **Decoupled Linker** for implementations. This structure eliminates circular dependencies and enforces strict memory safety.
 
-
-
 ### 1. The Header (`MyClass.definition.luau`)
 ```lua
 local Class = require(game.ReplicatedStorage.Ignition).Class

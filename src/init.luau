@@ -1,16 +1,16 @@
 --!strict
 -- Ignition.lua
 
-local Class = require(script.Class)
-local Configuration = require(script.Configuration)
-local Profiler = require(script.Modules.Profiler)
-local Promise = require(script.Modules.Promise)
-local Ser = require(script.Modules.Ser)
-local Signal = require(script.Modules.Signal)
-local Symbol = require(script.Modules.Symbol)
-local Unyieldable = require(script.Modules.Unyieldable)
-local Property = require(script.State.Property)
-local Value = require(script.State.Value)
+local Class = require("@self/Class")
+local Configuration = require("@self/Configuration")
+local Profiler = require("@self/Modules/Profiler")
+local Promise = require("@self/Modules/Promise")
+local Ser = require("@self/Modules/Ser")
+local Signal = require("@self/Modules/Signal")
+local Symbol = require("@self/Modules/Symbol")
+local Unyieldable = require("@self/Modules/Unyieldable")
+local Property = require("@self/State/Property")
+local Value = require("@self/State/Value")
 
 local function loadSolutions(root: Instance)
     for _, item in root:GetChildren() do

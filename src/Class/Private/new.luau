@@ -1,8 +1,8 @@
 --!strict
 -- Class/Private/new.lua
 
-local Types = require(script.Parent.Parent.Types)
-local Registry = require(script.Parent.Parent.Utility.Registry)
+local Types = require("../Types")
+local Registry = require("../Utility/Registry")
 
 type Interface = Types.Interface
 type BaseObject<P> = Types.BaseObject<P>

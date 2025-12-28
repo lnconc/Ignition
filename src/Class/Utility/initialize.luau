@@ -1,12 +1,12 @@
 --!strict
 -- Class/Utility/initialize.lua
 
-local Configuration = require(script.Parent.Configuration)
-local env = require(script.Parent.Parent.Parent.Internal.env)
-local Property = require(script.Parent.Parent.Parent.State.Property)
-local Types = require(script.Parent.Parent.Types)
-local getOverloadedFunction = require(script.Parent.getOverloadedFunction)
-local is_property = require(script.Parent.is_property)
+local Configuration = require("./Configuration")
+local env = require("../../Internal/env")
+local Property = require("../../State/Property")
+local Types = require("../Types")
+local getOverloadedFunction = require("./getOverloadedFunction")
+local is_property = require("./is_property")
 
 type FieldsOption = Types.FieldsOption
 type FieldOptions = Types.FieldOptions

@@ -1,7 +1,7 @@
 --!strict
 -- Class/Private/once.lua
 
-local getCaller = require(script.Parent.Parent.Parent.Internal.getCaller)
+local getCaller = require("../../Internal/getCaller")
 
 local function once(): boolean
     local _, _, env = getCaller(2)

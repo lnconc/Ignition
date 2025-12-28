@@ -1,15 +1,15 @@
 --!strict
 -- Class/Private/class.luau
 
-local env = require(script.Parent.Parent.Parent.Internal.env)
-local getCaller = require(script.Parent.Parent.Parent.Internal.getCaller)
-local Symbol = require(script.Parent.Parent.Parent.Modules.Symbol)
-local Types = require(script.Parent.Parent.Types)
-local Configuration = require(script.Parent.Parent.Utility.Configuration)
-local Registry = require(script.Parent.Parent.Utility.Registry)
-local encapsulate = require(script.Parent.Parent.Utility.encapsulate)
-local getOverloadedFunction = require(script.Parent.Parent.Utility.getOverloadedFunction)
-local is_property = require(script.Parent.Parent.Utility.is_property)
+local env = require("../../Internal/env")
+local getCaller = require("../../Internal/getCaller")
+local Symbol = require("../../Modules/Symbol")
+local Types = require("../Types")
+local Configuration = require("../Utility/Configuration")
+local Registry = require("../Utility/Registry")
+local encapsulate = require("../Utility/encapsulate")
+local getOverloadedFunction = require("../Utility/getOverloadedFunction")
+local is_property = require("../Utility/is_property")
 
 type Curry<T> = Types.Curry<T>
 type Flags = Types.Flags

@@ -1,8 +1,8 @@
 --!strict
 -- State/use.lua
 
-local Types = require(script.Parent.Types)
-local is = require(script.Parent.is)
+local Types = require("./Types")
+local is = require("./is")
 
 type ValueFull<T> = Types.ValueFull<T>
 type GraphDependencies = Types.GraphDependencies

@@ -1,7 +1,7 @@
 --!strict
 -- States/is.lua
 
-local Value = require(script.Parent.Value)
+local Value = require("./Value")
 
 local ValueMetatable = getmetatable(Value.new(nil))
 

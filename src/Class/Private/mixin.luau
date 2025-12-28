@@ -1,14 +1,14 @@
 --!strict
 -- Class/Private/mixin.lua
 
-local Types = require(script.Parent.Parent.Types)
-local Configuration = require(script.Parent.Parent.Utility.Configuration)
-local Registry = require(script.Parent.Parent.Utility.Registry)
-local is_property = require(script.Parent.Parent.Utility.is_property)
-local class = require(script.Parent.class)
+local Types = require("../Types")
+local Configuration = require("../Utility/Configuration")
+local Registry = require("../Utility/Registry")
+local is_property = require("../Utility/is_property")
+local class = require("./class")
 
-type FieldsOption = Types.FieldsOption
 type FieldOptions = Types.FieldOptions
+type Properties = Types.Properties
 type Interface = Types.Interface
 
 local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
@@ -25,7 +25,7 @@ local function mixin(name: string)
             end
             table.insert(components, component)
         end
-        return function(mixin_fields: FieldsOption)
+        return function(mixin_fields: Properties)
             local final_fields = { public = {}, private = {}, protected = {} }
             local closures, virtuals = {}, {}
             local function explicit_copy(dst: any, k, v, fromName: string)
@@ -64,7 +64,7 @@ local function mixin(name: string)
                 copy_fields_to(component.properties_fields, component.name)
             end
             copy_fields_to(mixin_fields, name)
-            mixin_interface(final_fields)
+            mixin_interface(final_fields :: Properties)
             local interface = Registry.GetInterface(name)
             interface.closures = closures
         end

@@ -1,9 +1,9 @@
 --!strict
 -- Class/Types.lua
 
-local Generics = require(script.Parent.Parent.Generics)
-local Symbol = require(script.Parent.Parent.Modules.Symbol)
-local ValueTypes = require(script.Parent.Parent.State.Types)
+local Generics = require("../Generics")
+local Symbol = require("../Modules/Symbol")
+local ValueTypes = require("../State/Types")
 
 type Symbol<T> = Symbol.Symbol<T>
 type ValueFull<T> = ValueTypes.ValueFull<T>

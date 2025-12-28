@@ -1,11 +1,11 @@
 --!nocheck
 -- State/Property.lua
 
-local Types = require(script.Parent.Types)
-local Value = require(script.Parent.Value)
-local createUse = require(script.Parent.use)
-local evaluate = require(script.Parent.evaluate)
-local Environment = require(script.Parent.Environment)
+local Types = require("./Types")
+local Value = require("./Value")
+local createUse = require("./use")
+local evaluate = require("./evaluate")
+local Environment = require("./Environment")
 
 type Property<T> = Types.Property<T>
 type GraphObject<T> = Types.GraphObject<T>

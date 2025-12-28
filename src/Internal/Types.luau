@@ -1,7 +1,7 @@
 --!strict
 -- State/Internal.luau
 
-local Generics = require(script.Parent.Parent.Generics)
+local Generics = require("../Generics")
 
 type Map<K, V> = Generics.Map<K, V>
 type Array<V> = Generics.Array<V>

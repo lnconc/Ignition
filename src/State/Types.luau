@@ -1,6 +1,6 @@
 --!strict
 -- State/Types.lua
-local Generics = require(script.Parent.Parent.Generics)
+local Generics = require("../Generics")
 
 type Set<T> = Generics.Set<T>
 type Omit<T, K> = Generics.Omit<T, K>
@@ -9,9 +9,11 @@ export type GraphObjectPublic<T> = {
     evaluate: (self: GraphObjectPublic<T>) -> boolean,
 }
 
+export type GraphDependencies = Set<any>
+
 export type GraphObjectInternal<T> = {
-    _dependencies: Set<any>,
-    _dependents: Set<any>,
+    _dependencies: GraphDependencies,
+    _dependents: GraphDependencies,
 } & GraphObjectPublic<T>
 export type GraphObject<T> = GraphObjectPublic<T>
 

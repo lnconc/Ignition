@@ -1,7 +1,7 @@
 --!strict
 -- States/evaluate.lua
 
-local Types = require(script.Parent.Types)
+local Types = require("./Types")
 type GraphDependencies = Types.GraphDependencies
 type GraphObjectInternal<T> = Types.GraphObjectInternal<T>
 

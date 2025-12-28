@@ -1,8 +1,8 @@
 --!strict
 -- Class/Private/ref.lua
 
-local getCaller = require(script.Parent.Parent.Parent.Internal.getCaller)
-local Configuration = require(script.Parent.Parent.Utility.Configuration)
+local getCaller = require("../../Internal/getCaller")
+local Configuration = require("../Utility/Configuration")
 
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 

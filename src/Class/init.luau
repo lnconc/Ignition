@@ -1,22 +1,22 @@
 --!strict
 -- Class.lua
 
-local abstract = require(script.Private.abstract)
-local class = require(script.Private.class)
-local extends = require(script.Private.extends)
-local final = require(script.Private.final)
-local free = require(script.Private.free)
-local import = require(script.Private.import)
-local mixin = require(script.Private.mixin)
-local new = require(script.Private.new)
-local nullable = require(script.Private.nullable)
-local once = require(script.Private.once)
-local property = require(script.Private.property)
-local reactive = require(script.Private.reactive)
-local ref = require(script.Private.ref)
-local super = require(script.Private.super)
-local union = require(script.Private.union)
-local Configuration = require(script.Utility.Configuration)
+local abstract = require("@self/Private/abstract")
+local class = require("@self/Private/class")
+local extends = require("@self/Private/extends")
+local final = require("@self/Private/final")
+local free = require("@self/Private/free")
+local import = require("@self/Private/import")
+local mixin = require("@self/Private/mixin")
+local new = require("@self/Private/new")
+local nullable = require("@self/Private/nullable")
+local once = require("@self/Private/once")
+local property = require("@self/Private/property")
+local reactive = require("@self/Private/reactive")
+local ref = require("@self/Private/ref")
+local super = require("@self/Private/super")
+local union = require("@self/Private/union")
+local Configuration = require("@self/Utility/Configuration")
 
 local Class = {
     extends = extends,

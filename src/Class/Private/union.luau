@@ -1,8 +1,8 @@
 --!strict
 -- CLass/Private/union.lua
 
-local Types = require(script.Parent.Parent.Types)
-local Configuration = require(script.Parent.Parent.Utility.Configuration)
+local Types = require("../Types")
+local Configuration = require("../Utility/Configuration")
 
 type Union<T> = Types.Union<T>
 

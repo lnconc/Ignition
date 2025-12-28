@@ -118,6 +118,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
         end))
     end)
     ```
+
     > [!IMPORTANT]
     > `ref()` can only be called inside the methods or constructors of a class. Calling it outside will throw an error.
 
@@ -148,6 +149,7 @@ Root
       |   └── Player.implementation.luau <-- The "Source" (similar to Player.cpp)
       └── main.server.lua
 ```
+
 > [!WARNING]
 > `import()` is strictly case-sensitive. It extracts the class name from the file name. If your file is `Zombie.implementation.luau`, it will search the `Registry` for the interface `Zombie` by omitting `.implementation.lua` from the name.
 
@@ -169,6 +171,7 @@ MyClass(function(self)
     end)
 end)
 ```
+
 > [!NOTE]
 > `State` objects provides a `:Destroy`, so feel free to use `free()` on this. Additionally, `Class` automatically passes a destructor (being `free` itself) when reactivity is allowed.
 

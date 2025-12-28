@@ -21,6 +21,7 @@ type SerializedProperties = Types.SerializedProperties
 type InternalObject = Types.InternalObject<Properties>
 type BaseObject = Types.BaseObject<Properties>
 type Function = Types.Function
+type Set<T> = Types.Set<T>
 
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 local NULL_PLACEHOLDER = Symbol("null")
@@ -44,7 +45,7 @@ local function run_enforced_typecheck<V>(value: V, typeCheck: TypeCheck?): boole
     return true
 end
 
-local function upsert<K, V>(ring: any, key: K, value: V, flags: any, enforcedTypeOrPredicate: TypeCheck?, build_context: string?, environment: Environment?)
+local function upsert<K, V>(ring: any, key: K, value: V, flags: any, enforcedTypeOrPredicate: TypeCheck?, build_contexts: Set<string>?, environment: Environment?)
     local cur = ring[key]
     if (flags.allowReactivity and cur and cur._DANGEROUS_value == value) or cur == value then 
         return 
@@ -56,7 +57,7 @@ local function upsert<K, V>(ring: any, key: K, value: V, flags: any, enforcedTyp
         end
         if not flags[PROPERTY_FLAGS.Optional] and value == nil then
             error(`cannot set nil to required property '{key}'`, 2)
-        elseif build_context ~= nil and environment and flags[PROPERTY_FLAGS.Readonly] and not WithinFunction(environment, build_context) then
+        elseif build_contexts ~= nil and environment and flags[PROPERTY_FLAGS.Readonly] and not WithinFunction(environment, build_contexts :: any) then
             error(`cannot set readonly property '{key}'`, 2)
         end
     end

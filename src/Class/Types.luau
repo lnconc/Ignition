@@ -7,7 +7,7 @@ local ValueTypes = require("../State/Types")
 
 type Symbol<T> = Symbol.Symbol<T>
 type ValueFull<T> = ValueTypes.ValueFull<T>
-type PropertyEffect<T> = ValueTypes.PropertyEffect<T>
+type Effect<T> = ValueTypes.Effect<T>
 type CanBe<T> = ValueTypes.CanBe<T>
 export type Curry<T> = Generics.Curry<T>
 
@@ -30,7 +30,7 @@ export type PropertyRaw<P> = {
     value: P?, 
     flags: { Symbol<string> } | { [Symbol<string>]: boolean },
 } | { 
-    effect: PropertyEffect<P>, 
+    effect: Effect<P>, 
     dependencies: any 
 }
 
@@ -103,7 +103,7 @@ export type Environment = {
         Refs: Set<string>,
         Friends: Set<string>,
         Family: Map<string, Set<string>>,
-        Constructor: string,
+        Constructor: Set<string>,
     },
     Closures: { any },
     Flags: {

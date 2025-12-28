@@ -40,13 +40,13 @@ local function buildClassObject(options): (BaseObject, Environment)
         SuperClass = { object = nil, environment = nil },
         Master = nil,
         Context = if PRODUCTION_MODE_ENABLED then {
-            Constructor = "<C>",
+            Constructor = {},
         } :: any else {
             Includes = {} :: Set<string>,
             Refs = setmetatable({}, { __mode = "k" }) :: Set<string>,
             Friends = {} :: Set<string>,
             Family = {},
-            Constructor = "<C>",
+            Constructor = {},
         },
         Flags = {
             AllowReactivity = options.AllowReactivity,
@@ -124,18 +124,19 @@ local function createClassInterface(name: string): (fields: Properties) -> ()
                     family[build_context] = true
                     environment.Context.Family[name] = family
                     
-                    environment.Context.Constructor = build_context
+                    environment.Context.Constructor[build_context] = true
                     environment.Context.Includes[build_context] = true
 
                     wrapper(...)
                 end
             end
             
-            if not fromDerivedClass then
+            if not fromDerivedClass then -- propagate master and constructors to superclasses
                 environment.Master = object
                 local current = environment
                 while current.SuperClass and current.SuperClass.environment do
                     current.SuperClass.environment.Master = object
+                    current.SuperClass.environment.Context.Constructor = environment.Context.Constructor
                     current = current.SuperClass.environment
                 end
             end

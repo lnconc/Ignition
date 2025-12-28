@@ -119,7 +119,7 @@ function StackSpider.WithinScope(environment: Environment, _defaultLevel: number
     return included, protected
 end
 
-function StackSpider.WithinFunction(environment: Environment, targetFunction: string, _defaultLevel: number?): boolean
+function StackSpider.WithinFunction(environment: Environment, targetFunctions: { [string]: boolean }, _defaultLevel: number?): boolean
     local defaultLevel = _defaultLevel or 4
     local callerMethod, callerSign = getMethodContext(defaultLevel)
     if not callerMethod then return false end
@@ -136,7 +136,7 @@ function StackSpider.WithinFunction(environment: Environment, targetFunction: st
         local method, name = getMethodContext(defaultLevel + level)
         if not method then break end
 
-        if includes[name] and name == targetFunction then
+        if includes[name] and targetFunctions[name] then
             within = true
             break
         end

@@ -9,6 +9,7 @@ local Ser = require("@self/Modules/Ser")
 local Signal = require("@self/Modules/Signal")
 local Symbol = require("@self/Modules/Symbol")
 local Unyieldable = require("@self/Modules/Unyieldable")
+local Observe = require("@self/State/Observe")
 local Property = require("@self/State/Property")
 local Value = require("@self/State/Value")
 
@@ -48,5 +49,6 @@ return {
     Ser = Ser,
     Property = Property,
     Symbol = Symbol,
+    Observe = Observe,
     Unyieldable = Unyieldable,
 }

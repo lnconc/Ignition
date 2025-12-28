@@ -8,7 +8,6 @@ type Omit<T, K> = Generics.Omit<T, K>
 export type GraphObjectPublic<T> = {
     evaluate: (self: GraphObjectPublic<T>) -> boolean,
 }
-
 export type GraphDependencies = Set<any>
 
 export type GraphObjectInternal<T> = {
@@ -19,6 +18,7 @@ export type GraphObject<T> = GraphObjectPublic<T>
 
 type ValueMetatable<T> = {
     set: (self: ValueFull<T>, value: T) -> (),
+    Destroy: (self: ValueFull<T>) -> (),
 }
 
 export type ValueFull<T> = typeof(setmetatable({} :: {
@@ -26,7 +26,7 @@ export type ValueFull<T> = typeof(setmetatable({} :: {
     _CONSTANT_locked: boolean,
     _CONSTANT_error_msg: string?,
     _destructor: (obj: T) -> (),
-}, {} :: ValueMetatable<T>)) & GraphObjectInternal<T>
+} & ValueMetatable<T>, {} :: ValueMetatable<T>)) & GraphObjectInternal<T>
 
 export type Value<T> = Omit<ValueFull<T>, {
     _DANGEROUS_value: unknown,
@@ -36,8 +36,9 @@ export type Value<T> = Omit<ValueFull<T>, {
     _destructor: unknown,
 }>
 
-export type PropertyEffect<T> = (use: (GraphObject<T>) -> T, ...any) -> ()
+export type Effect<T> = (use: (GraphObjectInternal<T>) -> T) -> ()
 export type Property<T> = { }
+export type Observe = () -> ()
 export type CanBe<T> = Value<T> | T
 
 return {}

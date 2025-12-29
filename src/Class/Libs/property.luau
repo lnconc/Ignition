@@ -2,13 +2,20 @@
 -- CLass/Libs/property.lua
 
 local Types = require("../Types")
-local Configuration = require("../Utility/Configuration")
+local prop = require("./prop")
 
+type Symbol<T> = Types.Symbol<T>
 type Property<P> = Types.Property<P>
-type PropertyRaw<P> = Types.PropertyRaw<P>
 
-local function property<P>(options: PropertyRaw<P>): Property<P>
-    return setmetatable(options, { __metatable = Configuration.PROPERTY_SIGNATURE })
+type PropertyOptions = {
+    exposure: string?,
+    flags: { Symbol<string>? },
+    value: any?,
+    type: string?,
+} | any
+
+local function property<P>(options: PropertyOptions): Property<P>
+    return prop({ value = options.value, flags = options.flags, exposure = options.exposure or "shared", type = options.type } :: any) :: any
 end
 
 return property

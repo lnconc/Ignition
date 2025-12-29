@@ -16,6 +16,7 @@ return {
     NULLABLE_SIGNATURE = "$nullable",
     UNION_SIGNATURE = "$union",
     METADATA = symbol("metadata"),
+    PLACEHOLDER = symbol("placeholder"),
     PROPERTY_FLAGS = {
         Optional = symbol("optional"),
         Static = symbol("static"),

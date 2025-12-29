@@ -48,7 +48,7 @@ local function getMethodContext(level: number): (any?, string?)
 end
 
 local function getEffectiveCaller(currentLevel: number): (any?, string?)
-    local startLevel = currentLevel + 3
+    local startLevel = currentLevel + 2
     local raw, rawName = getMethodContext(startLevel)
     if not raw then return nil, nil end
     
@@ -115,34 +115,33 @@ function StackSpider.WithinScope(environment: Environment, _defaultLevel: number
         protected = protected, 
         traversed = traversed 
     })
-    
     return included, protected
 end
 
-function StackSpider.WithinFunction(environment: Environment, targetFunctions: { [string]: boolean }, _defaultLevel: number?): boolean
-    local defaultLevel = _defaultLevel or 4
-    local callerMethod, callerSign = getMethodContext(defaultLevel)
-    if not callerMethod then return false end
+function StackSpider.WithinFunction(environment: Environment, targetFunction: string, _defaultLevel: number?): boolean
+    local baseLevel = _defaultLevel or 3 
+    local effectiveMethod, effectiveSign = getEffectiveCaller(baseLevel)
+    if not effectiveMethod then return false, false end
     
-    local cache = accessCache[callerSign]
-    if cache and cache.within ~= nil then
-        return cache.within
+    local cached = accessCache[effectiveSign]
+    if cached then
+        return cached.within
     end
 
     local includes = environment.Context.Includes
     local within = false
     
-    for level = 0, MAX_DEPTH - 1 do
-        local method, name = getMethodContext(defaultLevel + level)
+    for level = baseLevel, baseLevel + MAX_DEPTH do
+        local method, name = getMethodContext(level)
         if not method then break end
-
-        if includes[name] and targetFunctions[name] then
+        print(name, targetFunction)
+        if includes[name] and name == targetFunction then
             within = true
             break
         end
     end
 
-    upsertCache(callerSign, { within = within })
+    upsertCache(_defaultLevel, { within = within })
     return within
 end
 

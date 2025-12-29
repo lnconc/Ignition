@@ -8,12 +8,13 @@ local Registry = require("../Utility/Registry")
 
 local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
 
-type ReflectedClass<P> = Types.ReflectedClass<P>
+type Properties = Types.Properties
+type ReflectedClass = Types.ReflectedClass
 type Function = Types.Function
 type Expects = Types.Expects
 type OverloadRecord = Types.OverloadRecord
 
-local function import<P>(): ReflectedClass<P>
+local function import(): ReflectedClass
     local callerScript = getCaller(2)
     local className = callerScript.Name:split(".")[1]
     local interface = Registry.WaitForInterface(className)
@@ -48,7 +49,7 @@ local function import<P>(): ReflectedClass<P>
                 if interface.constructor.defined then
                     error(`Constructor for '{interface.name}' already defined.`, 2)
                 end
-                interface.constructor.callback = targetOrSignature
+                interface.constructor.callback = targetOrSignature :: any
                 return nil :: any
             elseif type(targetOrSignature) == "table" and #targetOrSignature > 0 then
                 return function(memberNameOrConstructor: string | Function)
@@ -110,7 +111,7 @@ local function import<P>(): ReflectedClass<P>
         end
     })
 
-    return imported
+    return imported :: ReflectedClass
 end
 
 return import

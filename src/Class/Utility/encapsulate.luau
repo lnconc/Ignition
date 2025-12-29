@@ -21,6 +21,7 @@ type SerializedProperties = Types.SerializedProperties
 type InternalObject = Types.InternalObject<Properties>
 type BaseObject = Types.BaseObject<Properties>
 type Function = Types.Function
+type SerializedFlags = Types.SerializedFlags
 type Set<T> = Types.Set<T>
 
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
@@ -40,12 +41,12 @@ local function run_enforced_typecheck<V>(value: V, typeCheck: TypeCheck?): boole
     if type(typeCheck) == "string" then
         return typeof(value) == typeCheck
     elseif type(typeCheck) == "function" then
-        return Unyieldable(typeCheck, value)
+        return select(2, Unyieldable(typeCheck, value))
     end
     return true
 end
 
-local function upsert<K, V>(ring: any, key: K, value: V, flags: any, enforcedTypeOrPredicate: TypeCheck?, build_contexts: Set<string>?, environment: Environment?)
+local function upsert<K, V>(ring: any, key: K, value: V, flags: SerializedFlags, enforcedTypeOrPredicate: TypeCheck?, build_contexts: string?, environment: Environment?)
     local cur = ring[key]
     if (flags.allowReactivity and cur and cur._DANGEROUS_value == value) or cur == value then 
         return 
@@ -57,7 +58,8 @@ local function upsert<K, V>(ring: any, key: K, value: V, flags: any, enforcedTyp
         end
         if not flags[PROPERTY_FLAGS.Optional] and value == nil then
             error(`cannot set nil to required property '{key}'`, 2)
-        elseif build_contexts ~= nil and environment and flags[PROPERTY_FLAGS.Readonly] and not WithinFunction(environment, build_contexts :: any) then
+        elseif build_contexts ~= nil and environment and flags[PROPERTY_FLAGS.Readonly] and not WithinFunction(environment, build_contexts) then
+            print(build_contexts)
             error(`cannot set readonly property '{key}'`, 2)
         end
     end
@@ -71,7 +73,7 @@ local function upsert<K, V>(ring: any, key: K, value: V, flags: any, enforcedTyp
             end
             ring[key] = cur
         else
-            cur:set(value)
+            (cur :: ValueTypes.ValueFull<any>):set(value)
         end
     else
         ring[key] = if value == nil then NULL_PLACEHOLDER else value
@@ -91,7 +93,7 @@ local function encapsulate(object: any, metatable: any, environment: Environment
     if not PRODUCTION_MODE_ENABLED then
         for specifier, field in pairs(properties) do
             for key, property in pairs(field) do
-                local isStatic = if is_property(property) then property.flags and property.flags[PROPERTY_FLAGS.Static] else false
+                local isStatic = if is_property(property) then property.flags and (property.flags :: SerializedFlags)[PROPERTY_FLAGS.Static] else false
                 specifierMap[key] = { specifier = specifier, static = isStatic }
             end
         end
@@ -107,12 +109,12 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         local info = specifierMap[key]
         if not info then
             local super = environment.SuperClass
-            if super.object then return super.object[key] end
+            if super.object then return (super.object :: any)[key] end
             error(`attempt to index missing property '{key}'`, 2)
         end
         local static, specifier = info.static, info.specifier
         if specifier == "public" and not static and not allowReactivity then
-            return data.public[key]
+            return (data.public :: any)[key]
         elseif specifier ~= "public" then
             local included, protects = WithinScope(environment)
             if specifier == "private" and not included then
@@ -138,12 +140,12 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         local info = specifierMap[key]
         if not info then
             local super = environment.SuperClass
-            if super.object then super.object[key] = value; return end
+            if super.object then (super.object :: any)[key] = value; return end
             error(`attempt to write missing property '{key}'`, 2)
         end
         local static, specifier = info.static, info.specifier
         if specifier == "public" and not static and not allowReactivity then
-            data.public[key] = if value == nil then NULL_PLACEHOLDER else value
+            (data.public :: any)[key] = if value == nil then NULL_PLACEHOLDER else value
             return
         elseif specifier ~= "public" then
             local included, protects = WithinScope(environment)

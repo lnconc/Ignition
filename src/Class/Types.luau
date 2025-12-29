@@ -5,7 +5,7 @@ local Generics = require("../Generics")
 local Symbol = require("../Modules/Symbol")
 local ValueTypes = require("../State/Types")
 
-type Symbol<T> = Symbol.Symbol<T>
+export type Symbol<T> = Symbol.Symbol<T>
 type ValueFull<T> = ValueTypes.ValueFull<T>
 type Effect<T> = ValueTypes.Effect<T>
 type CanBe<T> = ValueTypes.CanBe<T>
@@ -24,22 +24,27 @@ export type Flags = Generics.Required<{
 
 export type Nullable<T> = typeof(setmetatable({} :: { type: T }, {} :: { __metatable: string }))
 export type Union<T> = typeof(setmetatable({} :: { types: T }, {} :: { __metatable: string }))
+export type SerializedFlags = { [Symbol.Symbol<string>]: boolean }
 
-export type PropertyRaw<P> = { 
-    type: string | (value: P) -> boolean, 
-    value: P?, 
-    flags: { Symbol<string> } | { [Symbol<string>]: boolean },
-} | { 
-    effect: Effect<P>, 
-    dependencies: any 
+type NormalProperty<P> = {
+    type: string | (value: P) -> boolean?,
+    value: P?,
+    flags: { Symbol<string> }?,
+    exposure: string?
 }
+type ReactiveProperty<P> = { 
+    effect: Effect<P>,
+    dependencies: { [string]: any }?,
+    exposure: string?
+}
+export type PropertyRaw<P> = NormalProperty<P> | ReactiveProperty<P>
 
 export type Property<P> = typeof(setmetatable(
     {} :: PropertyRaw<P>, 
     {} :: { __metatable: string }
 ))
 
-export type Function = (...any) -> ...any
+export type Function = <A..., R...>(A...) -> R...
 
 type Field = Map<string, CanBe<any>>
 export type FieldOptions = Map<any, Property<any> | any>
@@ -103,7 +108,7 @@ export type Environment = {
         Refs: Set<string>,
         Friends: Set<string>,
         Family: Map<string, Set<string>>,
-        Constructor: Set<string>,
+        Constructor: string?,
     },
     Closures: { any },
     Flags: {
@@ -116,10 +121,12 @@ export type Environment = {
 }
 
 type OverloadSequence = (string) -> ((...any) -> (...any)) -> ()
-export type ReflectedClass<P> = {
-    [string]: (self: InternalObject<P>, ...any) -> ...any,
-    __call: (self: any, targetOrSignature: Function, _signature: Expects?) -> any
-}
+type ReflectedClassCurry = (memberNameOrConstructor: any) -> (implementation: any) -> ()
+export type ReflectedClass = typeof(setmetatable({}, {} :: {
+    __newindex: (_self: any, key: any, value: any) -> (),
+    __index: (_self: any) -> (),
+    __call: (_self: any, targetOrSignature: any) -> ReflectedClassCurry?
+}))
 
 export type function TransformProperties(Props: type, level: "0" | "1" | "2")
     local result = types.newtable()

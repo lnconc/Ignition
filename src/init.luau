@@ -30,11 +30,38 @@ local Ignition = {
     Unyieldable = Unyieldable,
 }
 
-type IgnitionLinker = (_self: any, overrideDefinition: string?) -> IgnitionFramework
-export type IgnitionFramework = typeof(Ignition)
-export type ExposedIgnitionFramework = typeof(setmetatable({}, {} :: { __index: IgnitionFramework, __call: IgnitionLinker }))
+type IgnitionLinker = (_self: any, overrideDefinition: string?) -> _Ignition
 
-local ExposedIgnition: ExposedIgnitionFramework = setmetatable({}, {
+--#region If you are using wally, copy all of these and replace them with `Ignition` to your `Ignition.lua` file under `Packages`
+export type Promise = Promise.Promise
+export type Signal = Signal.Signal
+export type Connection = Signal.Connection
+export type func = Class.func
+export type class = Class.class
+export type extends = Class.extends
+export type abstract = Class.abstract
+export type final = Class.final
+export type mixin = Class.mixin
+export type import = Class.import
+export type ref = Class.ref
+export type super = Class.super
+export type property = Class.property
+export type new = Class.new
+export type reactive = Class.reactive
+export type once = Class.once
+export type nullable = Class.nullable
+export type union = Class.union
+export type free = Class.free
+export type FLAGS = Class.FLAGS
+export type METADATA = Class.METADATA
+export type PLACEHOLDER = Class.PLACEHOLDER
+export type PRODUCTION_MODE_ENABLED = boolean
+--#endregion
+
+type _Ignition = typeof(Ignition)
+export type Ignition = typeof(setmetatable({}, {} :: { __index: _Ignition, __call: IgnitionLinker }))
+
+local ExposedIgnition: Ignition = setmetatable({}, {
     __index = Ignition,
     __call = function(_, overrideDefinition: string?)
         if loaded then

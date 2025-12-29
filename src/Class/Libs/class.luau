@@ -40,13 +40,13 @@ local function buildClassObject(options): (BaseObject, Environment)
         SuperClass = { object = nil, environment = nil },
         Master = nil,
         Context = if PRODUCTION_MODE_ENABLED then {
-            Constructor = {},
+            Constructor = nil,
         } :: any else {
             Includes = {} :: Set<string>,
             Refs = setmetatable({}, { __mode = "k" }) :: Set<string>,
             Friends = {} :: Set<string>,
             Family = {},
-            Constructor = {},
+            Constructor = nil,
         },
         Flags = {
             AllowReactivity = options.AllowReactivity,
@@ -124,19 +124,17 @@ local function createClassInterface(name: string): (fields: Properties) -> ()
                     family[build_context] = true
                     environment.Context.Family[name] = family
                     
-                    environment.Context.Constructor[build_context] = true
+                    environment.Context.Constructor = build_context
                     environment.Context.Includes[build_context] = true
 
                     wrapper(...)
                 end
             end
-            
-            if not fromDerivedClass then -- propagate master and constructors to superclasses
+            if not fromDerivedClass then
                 environment.Master = object
                 local current = environment
                 while current.SuperClass and current.SuperClass.environment do
                     current.SuperClass.environment.Master = object
-                    current.SuperClass.environment.Context.Constructor = environment.Context.Constructor
                     current = current.SuperClass.environment
                 end
             end
@@ -155,11 +153,11 @@ local function createClassInterface(name: string): (fields: Properties) -> ()
             if not super then return end
             
             local parent_fields = super.properties_fields[specifier]
-            local existing = parent_fields[key]
+            local existing: any = parent_fields[key]
             if existing then
                 local is_virtual = false
                 if type(existing) == "table" and existing.flags then
-                    is_virtual = find(existing.flags, propertyFlags.Virtual) ~= nil
+                    is_virtual = find(existing.flags :: {any}, propertyFlags.Virtual) ~= nil
                 end
                 
                 if not is_virtual then
@@ -172,9 +170,10 @@ local function createClassInterface(name: string): (fields: Properties) -> ()
             local is_specifier = (k == 'public' or k == 'private' or k == 'protected') 
             local is_field_group = is_specifier and type(v) == "table" and not is_property(v)
             if is_field_group then
-                for subKey, subValue in pairs(v :: any) do
-                    handleVirtuals(k, subKey)
-                    interface.properties_fields[k][subKey] = subValue
+                for subKey, subValue in pairs(v :: { [string]: any }) do
+                    if not subKey or not subValue then continue end
+                    handleVirtuals(k, subKey);
+                    (interface.properties_fields[k] :: any)[subKey] = subValue
                 end
             else
                 handleVirtuals("public", k)

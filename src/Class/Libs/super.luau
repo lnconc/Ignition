@@ -4,6 +4,9 @@
 local getCaller = require("../../Internal/getCaller")
 local Configuration = require("../Utility/Configuration")
 local bloodline = require("../Utility/bloodline")
+local Types = require("../Types")
+
+type Environment = Types.Environment
 
 local DEVELOPMENT_MODE_ENABLED = not Configuration.PRODUCTION_MODE_ENABLED
 
@@ -16,7 +19,7 @@ local function super(...: any)
         error("'super' must be called within a class constructor", 2)
     end
     
-    local environment = callEnv.environment
+    local environment: Environment = callEnv.environment
     if not environment then
         error("Could not resolve source environment for 'super' call", 2)
     end

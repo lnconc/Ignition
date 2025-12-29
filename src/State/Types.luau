@@ -34,7 +34,7 @@ export type Value<T> = Omit<ValueFull<T>, {
     _CONSTANT_error_msg: unknown,
     _dependencies: unknown,
     _destructor: unknown,
-}>
+}> & ValueMetatable<T>
 
 export type Effect<T> = (use: (GraphObjectInternal<T>) -> T) -> ()
 export type Property<T> = { }

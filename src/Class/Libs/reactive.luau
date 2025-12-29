@@ -3,7 +3,7 @@
 
 local fetchInterface = require("../Utility/fetchInterface")
 
-local function reactive(_)
+local function reactive(_: any)
     fetchInterface().flags.AllowReactivity = true
 end
 

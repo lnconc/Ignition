@@ -11,8 +11,18 @@ local function set<T>(...: T): { [T]: boolean }
     return s
 end
 
+local version = setmetatable({
+    major = 1,
+    minor = 1,
+    patch = 0,
+}, {
+    __tostring = function(self)
+        return `v{self.major}.{self.minor}.{self.patch}`
+    end,
+})
+
 return {
-    VERSION = "v1.0.5",
+    VERSION = version,
     ROOT = if game:GetService("RunService"):IsServer() 
     then game:GetService("ServerScriptService") 
     else game:GetService("Players").LocalPlayer:WaitForChild("PlayerScripts"),

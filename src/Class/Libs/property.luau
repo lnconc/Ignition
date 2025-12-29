@@ -2,20 +2,21 @@
 -- CLass/Libs/property.lua
 
 local Types = require("../Types")
-local prop = require("./prop")
+local Configuration = require("../Utility/Configuration")
 
-type Symbol<T> = Types.Symbol<T>
 type Property<P> = Types.Property<P>
+type FinalProperty<P> = Types.FinalProperty<P>
 
-type PropertyOptions = {
-    exposure: string?,
-    flags: { Symbol<string>? },
-    value: any?,
-    type: string?,
-} | any
+local IS_SERVER = game:GetService("RunService"):IsServer()
 
-local function property<P>(options: PropertyOptions): Property<P>
-    return prop({ value = options.value, flags = options.flags, exposure = options.exposure or "shared", type = options.type } :: any) :: any
+local function property<P>(options: Property<P>): FinalProperty<P>?
+    local exposure = options.exposure
+    if (exposure and exposure ~= "shared") and
+        ((IS_SERVER and exposure ~= "server") or (not IS_SERVER and exposure ~= "client"))
+    then
+        return nil
+    end
+    return setmetatable(options, { __metatable = Configuration.PROPERTY_SIGNATURE })
 end
 
 return property

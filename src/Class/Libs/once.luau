@@ -1,14 +1,8 @@
 --!strict
--- Class/Libs/once.lua
+-- Class/libs/once.lua
 
-local getCaller = require("../../Internal/getCaller")
-
-local function once(): boolean
-    local _, _, env = getCaller(2)
-    if env.pragma_once then
-        return true
-    end
-    env.pragma_once = true
+local function once()
+    warn("The 'once' module is deprecated and will be removed in future versions. Please avoid using it.")
     return false
 end
 

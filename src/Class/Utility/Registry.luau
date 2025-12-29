@@ -5,15 +5,14 @@ local env = require("../../Internal/env")
 local getCaller = require("../../Internal/getCaller")
 local Types = require("../Types")
 
-type Map<K, V> = Types.Map<K, V>
-type Set<T> = Types.Set<T>
 type Interface = Types.Interface
+type Yields = { [string]: { [thread]: boolean } }
 
 local ANCESTOR = script.Parent.Parent
 
 local Registry = {}
-local InterfaceYields, LinkYields = {}, {}
-local Interfaces: Map<string, Interface> = setmetatable({}, { __mode = "v" })
+local InterfaceYields: Yields, LinkYields: Yields = {}, {}
+local Interfaces: { [string]: Interface } = setmetatable({}, { __mode = "v" })
 
 -- restrict access only within the Class folder; not necessarily an anti-cheat, just to prevent misuse
 -- ex. if you call SaveInterface without using the `class` module found in the private folder, this will error
@@ -28,7 +27,7 @@ function Registry.WaitForInterface(name: string): Interface
     assertCallingScript()
     if not Interfaces[name] then
         local thread = coroutine.running()
-        local group: Set<thread> = InterfaceYields[name] or {}
+        local group = InterfaceYields[name] or {}
         group[thread] = true
         InterfaceYields[name] = group
         return coroutine.yield()
@@ -57,7 +56,7 @@ function Registry.WaitForLink(name: string): Interface
         return interface
     end
     local thread = coroutine.running()
-    local group: Set<thread> = LinkYields[name] or {}
+    local group = LinkYields[name] or {}
     group[thread] = true
     LinkYields[name] = group
     return coroutine.yield()

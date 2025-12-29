@@ -12,10 +12,12 @@ type Stats = {
 }
 
 type LabelRecord = { label: string, start: number }
-export type Controller = typeof(setmetatable({} :: { _activeLabels: { LabelRecord }, _results: { [string]: {number} } }, {} :: {
-    profilebegin: (self: Controller, label: string) -> (),
-    profileend: (self: Controller) -> (),
-}))
+export type Controller = setmetatable<{ _activeLabels: { LabelRecord }, _results: { [string]: {number} } }, {
+	__index: {
+		profilebegin: (self: Controller, label: string) -> (),
+		profileend: (self: Controller) -> (),
+	}
+}>
 
 local function getStats(data: {number}): Stats
 	table.sort(data)

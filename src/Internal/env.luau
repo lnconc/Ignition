@@ -1,19 +1,21 @@
---!nocheck
+--!strict
 -- Internal/env.lua
 
 local Types = require("./Types")
 
-type Closure = Types.Closure
-type Environment<K, V> = Types.Environment<K, V>
+type Function = Types.Function
+type FunctionEnvironment = Types.FunctionEnvironment
 
 return {
-    set = function(closure: Closure?, registry: Environment<any, any>)
-        if not closure then return end
-        assert(next(registry), "empty modified registry")
-        local originalEnvironment = getfenv(closure)
-        setfenv(closure, setmetatable(registry, { __index = originalEnvironment }))
+    set = function(fn: Function, environment: FunctionEnvironment)
+        if type(fn) ~= "function" then return end
+        assert(next(environment), "empty modified registry")
+        local originalEnvironment = getfenv(fn)
+        for key, value in environment do
+            originalEnvironment[key] = value
+        end
     end,
-    get = function(closure): Environment<any, any>
+    get = function(closure): FunctionEnvironment
         return getfenv(closure)
     end
 }

@@ -1,12 +1,8 @@
 --!strict
 -- State/Internal.luau
 
-local Generics = require("../Generics")
-
-type Map<K, V> = Generics.Map<K, V>
-type Array<V> = Generics.Array<V>
-
-export type Closure = Generics.Closure
-export type Environment<K, V> = Map<K, V> | Array<V>
+export type Function = <V>(...V) -> (...V)
+export type FunctionEnvironment = { [string]: any }
+export type Scriptable = LocalScript | Script | ModuleScript
 
 return {}

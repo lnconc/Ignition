@@ -2,7 +2,9 @@
 -- Class/Utility/bloodline.lua
 
 local Types = require("../Types")
-type Environment = Types.Environment
+
+type PropertiesField = Types.PropertiesFields
+type Environment = Types.Environment<PropertiesField>
 
 local function bloodline(childEnv: Environment, superEnv: Environment)
     local childFamily = childEnv.Context.Family

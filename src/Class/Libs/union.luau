@@ -13,7 +13,7 @@ local function union<T>(...: T): Union<T>
         t[i] = nil
         t[u] = true
     end
-    return setmetatable({ types = t }, { __metatable = Configuration.UNION_SIGNATURE })
+    return setmetatable({ types = t :: { [T]: boolean } }, { __metatable = Configuration.UNION_SIGNATURE })
 end
 
 return union

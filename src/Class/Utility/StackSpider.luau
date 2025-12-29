@@ -1,10 +1,9 @@
 --!native
---!nocheck
+--!strict
 -- Class/Utility/StackSpider.lua
 
 local Configuration = require("./Configuration")
 local Types = require("../Types")
-
 
 type Environment = Types.Environment
 
@@ -16,8 +15,14 @@ local IGNORED_LUA_CLOSURES = {
     ['__newindex'] = true,
 }
 
-local accessCache = setmetatable({}, { __mode = "k" })
-local resolutionCache = setmetatable({}, { __mode = "k" })
+local accessCache: setmetatable<{[string?]: {
+    included: boolean,
+    protected: boolean,
+    traversed: { [string]: boolean },
+    within: boolean,
+    [string]: any,
+}}, { __mode: string }> = setmetatable({}, { __mode = "k" })
+local resolutionCache: setmetatable<{[string?]: { m: any, s: string, [string]: any }}, { __mode: string }> = setmetatable({}, { __mode = "k" })
 
 local debugInfo = debug.info
 local toString = tostring
@@ -30,7 +35,7 @@ local function any_traversed_in_refs(traversed: { [string]: boolean }, refs: { [
     return false
 end
 
-local function upsertCache(key: string, tbl: any)
+local function upsertCache(key: string, tbl: { [string]: any })
     local cache = accessCache[key]
     if cache then
         for k, v in next, tbl do
@@ -41,13 +46,12 @@ local function upsertCache(key: string, tbl: any)
     end
 end
 
-local function getMethodContext(level: number): (any?, string?)
+local function getMethodContext(level: number): (any, any)
     local f = debugInfo(level + 1, 'f')
-    if not f then return nil, nil end
     return f, toString(f)
 end
 
-local function getEffectiveCaller(currentLevel: number): (any?, string?)
+local function getEffectiveCaller(currentLevel: number): (any, any)
     local startLevel = currentLevel + 2
     local raw, rawName = getMethodContext(startLevel)
     if not raw then return nil, nil end
@@ -72,8 +76,8 @@ local function getEffectiveCaller(currentLevel: number): (any?, string?)
 end
 
 local StackSpider = {}
-function StackSpider.WithinScope(environment: Environment, _defaultLevel: number?): (boolean, boolean)
-    local baseLevel = _defaultLevel or 3 
+function StackSpider.WithinScope<P>(environment: Environment, _defaultLevel: number?): (boolean, boolean)
+    local baseLevel = _defaultLevel or 3
     
     local effectiveMethod, effectiveSign = getEffectiveCaller(baseLevel)
     if not effectiveMethod then return false, false end
@@ -118,10 +122,10 @@ function StackSpider.WithinScope(environment: Environment, _defaultLevel: number
     return included, protected
 end
 
-function StackSpider.WithinFunction(environment: Environment, targetFunction: string, _defaultLevel: number?): boolean
-    local baseLevel = _defaultLevel or 3 
-    local effectiveMethod, effectiveSign = getEffectiveCaller(baseLevel)
-    if not effectiveMethod then return false, false end
+function StackSpider.WithinFunction<P>(environment: Environment, targetFunction: string, _defaultLevel: number?): boolean
+    local baseLevel = _defaultLevel or 3
+    local effectiveMethod, effectiveSign: string = getEffectiveCaller(baseLevel)
+    if not effectiveMethod then return false end
     
     local cached = accessCache[effectiveSign]
     if cached then
@@ -134,14 +138,13 @@ function StackSpider.WithinFunction(environment: Environment, targetFunction: st
     for level = baseLevel, baseLevel + MAX_DEPTH do
         local method, name = getMethodContext(level)
         if not method then break end
-        print(name, targetFunction)
         if includes[name] and name == targetFunction then
             within = true
             break
         end
     end
 
-    upsertCache(_defaultLevel, { within = within })
+    upsertCache(effectiveSign, { within = within })
     return within
 end
 

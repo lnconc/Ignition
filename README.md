@@ -27,8 +27,7 @@ Ignition utilizes a **Functional DSL** to define class interfaces and a **Decoup
 ### 1. The Header (`MyClass.definition.luau`)
 ```lua
 local Class = require(game.ReplicatedStorage.Ignition).Class
-local class, property, once, final = Class.from("class", "property", "once", "final")
-if once() then return false end -- #pragma once
+local class, property, final = Class.from("class", "property", "final")
 
 final (class "MyClass" { 
     public = {

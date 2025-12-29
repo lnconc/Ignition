@@ -6,6 +6,7 @@ local Types = require("../Types")
 local Registry = require("../Utility/Registry")
 
 type Interface = Types.Interface
+type PropertiesFields = Types.PropertiesFields
 
 local function extends(superName: string): (...any) -> ...any
     local superInterface = Registry.WaitForLink(superName)
@@ -28,8 +29,8 @@ local function extends(superName: string): (...any) -> ...any
     end
     
     interface.superclass = superInterface
-    return function(...)
-        return ...
+    return function(fields: PropertiesFields): PropertiesFields
+        return fields
     end
 end
 

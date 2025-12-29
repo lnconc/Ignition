@@ -6,21 +6,19 @@ local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 local Registry = require("../Utility/Registry")
 
-local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
-
-type Properties = Types.Properties
-type ReflectedClass = Types.ReflectedClass
-type Function = Types.Function
+type AnyFunction = Types.AnyFunction
 type Expects = Types.Expects
 type OverloadRecord = Types.OverloadRecord
 
-local function import(): ReflectedClass
+local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
+
+local function import(): any
     local callerScript = getCaller(2)
     local className = callerScript.Name:split(".")[1]
     local interface = Registry.WaitForInterface(className)
     
     local function verifyImplementation(key: string, isFunction: boolean)
-        local rings = interface.properties_fields
+        local rings = interface.properties
         local found = rings.private[key] or rings.protected[key] or rings.public[key]
         
         if not found then
@@ -44,7 +42,7 @@ local function import(): ReflectedClass
     end
 
     local imported = setmetatable({}, {
-        __call = function(_, targetOrSignature: Function | Expects)
+        __call = function(_, targetOrSignature: AnyFunction | Expects)
             if type(targetOrSignature) == "function" then
                 if interface.constructor.defined then
                     error(`Constructor for '{interface.name}' already defined.`, 2)
@@ -52,14 +50,14 @@ local function import(): ReflectedClass
                 interface.constructor.callback = targetOrSignature :: any
                 return nil :: any
             elseif type(targetOrSignature) == "table" and #targetOrSignature > 0 then
-                return function(memberNameOrConstructor: string | Function)
+                return function(memberNameOrConstructor: string | AnyFunction)
                     if type(memberNameOrConstructor) == "function" then
                         local current = interface.constructor.callback
                         if current then
                             interface.constructor.callback = {
                                 isOverloaded = true,
                                 overloads = {},
-                                fallback = if type(current) == "function" then current else nil,
+                                fallback = if type(current) == "function" then current else nil :: any,
                             }
                             current = interface.constructor.callback
                         end
@@ -70,13 +68,13 @@ local function import(): ReflectedClass
                         return nil :: any
                     else
                         verifyImplementation(memberNameOrConstructor, true)
-                        return function(implementation: Function)
+                        return function(implementation: AnyFunction)
                             local current = interface.closures[memberNameOrConstructor]
                             if not current or type(current) == "function" then
                                 interface.closures[memberNameOrConstructor] = {
                                     overloads = {},
                                     isOverloaded = true,
-                                    fallback = if type(current) == "function" then current else nil,
+                                    fallback = if type(current) == "function" then current else nil :: any,
                                 }
                                 current = interface.closures[memberNameOrConstructor]
                             end
@@ -90,7 +88,7 @@ local function import(): ReflectedClass
             end
             error("Invalid import call. Expected a constructor or non-empty type signature.", 2)
         end,
-        __newindex = function(_, key, value)
+        __newindex = function(_, key, value: AnyFunction | any)
             local isFn = type(value) == "function"
             local found = verifyImplementation(key, isFn)
 
@@ -111,7 +109,7 @@ local function import(): ReflectedClass
         end
     })
 
-    return imported :: ReflectedClass
+    return imported
 end
 
 return import

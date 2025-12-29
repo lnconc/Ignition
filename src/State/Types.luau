@@ -2,42 +2,48 @@
 -- State/Types.lua
 local Generics = require("../Generics")
 
-type Set<T> = Generics.Set<T>
 type Omit<T, K> = Generics.Omit<T, K>
 
-export type GraphObjectPublic<T> = {
-    evaluate: (self: GraphObjectPublic<T>) -> boolean,
-}
-export type GraphDependencies = Set<any>
+export type GraphDependencies = { [any]: boolean }
 
-export type GraphObjectInternal<T> = {
+export type GraphObject<T> = setmetatable<{
     _dependencies: GraphDependencies,
     _dependents: GraphDependencies,
-} & GraphObjectPublic<T>
-export type GraphObject<T> = GraphObjectPublic<T>
+}, {
+    __index: {
+        evaluate: (self: GraphObject<T>) -> boolean,
+    },
+}>
 
-type ValueMetatable<T> = {
-    set: (self: ValueFull<T>, value: T) -> (),
-    Destroy: (self: ValueFull<T>) -> (),
-}
-
-export type ValueFull<T> = typeof(setmetatable({} :: {
+export type InternalValue<T> = setmetatable<{
     _DANGEROUS_value: T,
     _CONSTANT_locked: boolean,
     _CONSTANT_error_msg: string?,
-    _destructor: (obj: T) -> (),
-} & ValueMetatable<T>, {} :: ValueMetatable<T>)) & GraphObjectInternal<T>
+    _dependencies: GraphDependencies,
+    _destructor: (() -> ())?,
+}, {
+    __index: {
+        set: (self: InternalValue<T>, newValue: T) -> (),
+        Destroy: (self: InternalValue<T>) -> (),
+    },
+}> & GraphObject<T>
 
-export type Value<T> = Omit<ValueFull<T>, {
+export type Value<T> = Omit<InternalValue<T>, {
     _DANGEROUS_value: unknown,
     _CONSTANT_locked: unknown,
     _CONSTANT_error_msg: unknown,
     _dependencies: unknown,
     _destructor: unknown,
-}> & ValueMetatable<T>
+    evaluate: unknown,
+    Destroy: unknown,
+}>
 
-export type Effect<T> = (use: (GraphObjectInternal<T>) -> T) -> ()
-export type Property<T> = { }
+export type Effect<T> = (use: (value: CanBe<T>) -> T) -> T
+export type Dependencies = { [any]: any }?
+
+export type Property<T> = Omit<Value<T>, {
+    set: unknown,
+}>
 export type Observe = () -> ()
 export type CanBe<T> = Value<T> | T
 

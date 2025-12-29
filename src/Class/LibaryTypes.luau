@@ -14,7 +14,7 @@ type PropertyExposure = Types.PropertyExposure
 
 export type ClassDSL = (name: string) -> (fields: PropertiesFields) -> boolean
 export type ImportDSL = () -> setmetatable<{}, {
-    __call: (targetOrSignature: AnyFunction | Types.Expects) -> (memberNameOrConstructor: string | AnyFunction) -> ((implementation: AnyFunction) -> ()) | nil,
+    __call: (self: any, targetOrSignature: AnyFunction | Types.Expects) -> (memberNameOrConstructor: string | AnyFunction) -> ((implementation: AnyFunction) -> ()) | nil,
     __newindex: (self: any, key: string, value: AnyFunction | any) -> (),
     __index: (self: any) -> any,
 }>

@@ -17,7 +17,7 @@ type GetClassObject<P, A> = Types.GetClassObject<P, A>
 type PropertiesFields = Types.PropertiesFields
 type AnyFunction = Types.AnyFunction
 type OverloadRecord = Types.OverloadRecord
-type FinalProperty<T> = Types.FinalProperty<T>
+type FinalProperty = Types.FinalProperty<any, "any", any>
 type OverloadFunction = Types.OverloadFunction
 type Symbol<T> = Types.Symbol<T>
 
@@ -52,8 +52,8 @@ local function buildClassObject(name: string, interface: Interface): (any, Envir
     
     for _, field in pairs(interface.properties) do
         for key, property in pairs(field :: { [string]: any }) do
-            environment.PropertyTypes[key] = (property :: FinalProperty<any>).type
-            local flags = (property :: FinalProperty<any>).flags
+            environment.PropertyTypes[key] = (property :: FinalProperty).type
+            local flags = (property :: FinalProperty).flags
             if flags then
                 environment.PropertyFlags[key] = flags :: { [Symbol<string>]: boolean }
             end
@@ -135,7 +135,7 @@ local function createInterface(name: string): Interface
     return interface :: Interface
 end
 
-local function createClassInterface(name: string): (fields: PropertiesFields) -> ()
+local function createClassInterface(name: string): <I>(fields: PropertiesFields & I) -> I
     local script, fn = getCaller(2)
     local headerExt = Configuration.HEADER_EXTENSION
     if not match(script.Name, `%.{headerExt}$`) then
@@ -149,9 +149,8 @@ local function createClassInterface(name: string): (fields: PropertiesFields) ->
     local interface: Interface = createInterface(name)
     Registry.FlushTasks(2, interface)
     env.set(fn, { interface = interface })
-    return function(fields: PropertiesFields)
+    return function<I>(fields: PropertiesFields & I): I
         local propertyFlags = Configuration.PROPERTY_FLAGS
-        
         local function handleVirtuals(specifier: string, key: string)
             local super = interface.superclass
             if not super then return end
@@ -170,7 +169,7 @@ local function createClassInterface(name: string): (fields: PropertiesFields) ->
             end
         end
 
-        local function normalizeProperty(property: FinalProperty<any>): FinalProperty<any>
+        local function normalizeProperty(property: FinalProperty): FinalProperty
             if is_property(property) then
                 local flags = property.flags
                 if flags then
@@ -195,7 +194,7 @@ local function createClassInterface(name: string): (fields: PropertiesFields) ->
                 end
             else
                 handleVirtuals("public", k)
-                interface.properties.public[k] = normalizeProperty(v :: FinalProperty<any>)
+                interface.properties.public[k] = normalizeProperty(v :: FinalProperty)
             end
         end
         
@@ -204,6 +203,8 @@ local function createClassInterface(name: string): (fields: PropertiesFields) ->
             Registry.SaveInterface(interface :: any, name)
         end
         Registry.SignalLink(name, interface :: any)
+
+        return (interface :: any) :: I
     end
 end
 

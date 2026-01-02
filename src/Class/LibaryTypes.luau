@@ -6,21 +6,19 @@ type PropertiesFields = Types.PropertiesFields
 type GetClassObject<I, A> = Types.GetClassObject<I, A>
 type AnyFunction = Types.AnyFunction
 type Symbol<T> = Types.Symbol<T>
-type FinalProperty<T> = Types.FinalProperty<T>
-type Property<T> = Types.Property<T>
+type FinalProperty<V, T, D> = Types.FinalProperty<V, T, D>
 type Nullable<T> = Types.Nullable<T>
 type Union<T> = Types.Union<T>
 type PropertyExposure = Types.PropertyExposure
+type ImportedClassObject<G> = Types.ImportedClassObject<G>
+type InheritFields<S1, S2> = Types.InheritFields<S1, S2>
+type MergeInterfaces<I> = Types.MergeInterfaces<I>
 
-export type ClassDSL = (name: string) -> (fields: PropertiesFields) -> boolean
-export type ImportDSL = () -> setmetatable<{}, {
-    __call: (self: any, targetOrSignature: AnyFunction | Types.Expects) -> (memberNameOrConstructor: string | AnyFunction) -> ((implementation: AnyFunction) -> ()) | nil,
-    __newindex: (self: any, key: string, value: AnyFunction | any) -> (),
-    __index: (self: any) -> any,
-}>
-export type NewDSL = <T>(className: T) -> (...any) -> GetClassObject<Interface, "Public">
-export type ExtendsDSL = (superName: string) -> <T>(fields: T) -> T
-export type MixinDSL = (name: string) -> (...string) -> (mixin_fields: PropertiesFields) -> ()
+export type ClassDSL = (name: string) -> <I>(fields: PropertiesFields & I) -> I
+export type ImportDSL = <I>(interface: I) -> ImportedClassObject<GetClassObject<I, "Private">>
+export type NewDSL = <I>(interface: I) -> (...any) -> GetClassObject<I, "Public">
+export type ExtendsDSL = <I>(superInterface: I) -> <J>(fields: PropertiesFields & J) -> InheritFields<I, J>  -- extends returns PropertiesField, since it executes before Class
+export type MixinDSL = (name: string) -> <I>(...I) -> (mixin_fields: PropertiesFields) -> MergeInterfaces<I>
 
 export type ClassLibrary = {
     -- core
@@ -32,14 +30,21 @@ export type ClassLibrary = {
     from: (...string) -> (...any),
 
     -- modifiers
-    abstract: (target: any) -> (),
-    final: (target: any) -> (),
-    reactive: (target: any) -> (),
+    abstract: <I>(target: I) -> I,
+    final: <I>(target: I) -> I,
+    reactive: <I>(target: I) -> I,
     
     -- member definitions
-    property: <P>(options: Property<P>) -> FinalProperty<P>?,
-    func: (options: { exposure: PropertyExposure?, flags: { Symbol<string> }? } | any) -> FinalProperty<any>,
-    
+    property: <V, T>(options: {
+        type: T,
+        value: V,
+        flags: { Symbol<string> } | { [Symbol<string>]: boolean },
+    }) -> FinalProperty<V, T, nil>?,
+    func: <D>(options: { 
+        exposure: PropertyExposure?, 
+        flags: { Symbol<string> }?, 
+        dummy: D 
+    }) -> FinalProperty<nil, "function", D>,    
     -- type wrappers
     nullable: <T>(type: T) -> Nullable<T>,
     union: <T>(...T) -> Union<T>,
@@ -60,8 +65,6 @@ export type ClassLibrary = {
         Readonly: Symbol<string>,
         Reactive: Symbol<string>,
     },
-
-    [any]: any,
 }
 
 return {}

@@ -3,8 +3,9 @@
 
 local fetchInterface = require("../Utility/fetchInterface")
 
-local function final(_: any)
+local function final(interface: any): any
     fetchInterface().flags.ClassFinalized = true
+    return interface
 end
 
 return final

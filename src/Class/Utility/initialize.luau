@@ -10,7 +10,6 @@ local is_property = require("./is_property")
 
 type Environment = Types.Environment
 type PropertyField = Types.PropertyField
-type CanBeProperty<T> = Types.CanBeProperty<T>
 type GetClassObject<P, A> = Types.GetClassObject<P, A>
 type Symbol<T> = Types.Symbol<T>
 
@@ -38,12 +37,12 @@ local function initialize(
             if templateOrValue == Configuration.METADATA then continue end
             local flags = propertyFlags[key]
             local is_static = flags and flags[PROPERTY_FLAGS.Static]
-            local isProp = is_property(templateOrValue :: CanBeProperty<any>)
+            local isProp = is_property(templateOrValue)
             -- reactive props
-            if isProp and type((templateOrValue :: CanBeProperty<any>).effect) == "function" and reactiveStatesBatch then
+            if isProp and type(templateOrValue.effect) == "function" and reactiveStatesBatch then
                 reactiveStatesBatch[templateOrValue] = { field = destinationField, key = key }
             -- functions
-            elseif (isProp and (templateOrValue :: CanBeProperty<any>).type == "function") or (not isProp and type(templateOrValue) == "function") then
+            elseif (isProp and templateOrValue.type == "function") or (not isProp and type(templateOrValue) == "function") then
                 local closureData = closures[key]
                 local fn = if type(closureData) == "table" and closureData.isOverloaded 
                     then getOverloadedFunction(key, closureData) 
@@ -71,7 +70,7 @@ local function initialize(
                 destinationField[key] = wrapper
             -- standard props
             else
-                local value = if isProp then (templateOrValue :: CanBeProperty<any>).value else templateOrValue
+                local value = if isProp then templateOrValue.value else templateOrValue
                 local source = if is_static then interface.staticproperties[specifier] else destinationField
                 upsert(source, key, value, {
                     flags = flags or {},

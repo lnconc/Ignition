@@ -1,22 +1,17 @@
 --!strict
 -- Class/Libs/import.lua
 
-local getCaller = require("../../Internal/getCaller")
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
-local Registry = require("../Utility/Registry")
 
 type AnyFunction = Types.AnyFunction
 type Expects = Types.Expects
 type OverloadRecord = Types.OverloadRecord
+type Interface = Types.Interface
 
 local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
 
-local function import(): any
-    local callerScript = getCaller(2)
-    local className = callerScript.Name:split(".")[1]
-    local interface = Registry.WaitForInterface(className)
-    
+local function import(interface: Interface): any
     local function verifyImplementation(key: string, isFunction: boolean)
         local rings = interface.properties
         local found = rings.private[key] or rings.protected[key] or rings.public[key]
@@ -30,7 +25,7 @@ local function import(): any
             local isVirtual = interface.virtuals[key]
             if isVirtual == nil then
                 local flags = if type(found) == "table" then found.flags else nil
-                isVirtual = if type(flags) == "table" then table.find(flags, VIRTUAL_FLAG) ~= nil else flags[VIRTUAL_FLAG]
+                isVirtual = flags and flags[VIRTUAL_FLAG] ~= nil
                 interface.virtuals[key] = isVirtual
             end
 

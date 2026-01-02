@@ -16,15 +16,13 @@ local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
 
 local function mixin(name: string)
     local mixin_interface = class(name)
-    return function(...: string)
+    return function(...: Interface)
         -- retrieve other interfaces for field dumping
-        local components: { Interface } = {}
-        for _, other_name in ipairs {...} do
-            local component = Registry.GetInterface(other_name)
+        local components: { Interface } = { ... }
+        for _, component in ipairs(components) do
             if component.flags.ClassFinalized then
-                error(`Cannot mixin finalized class '{other_name}' into '{name}'`, 2)
+                error(`Cannot mixin finalized class '{component.name}' into '{name}'`, 2)
             end
-            table.insert(components, component)
         end
         return function(mixin_fields: PropertiesFields)
             local final_fields = { public = {}, private = {}, protected = {} }
@@ -48,7 +46,7 @@ local function mixin(name: string)
                 for specifierOrKey, fieldOrProperty in pairs(src) do
                     if not is_property(fieldOrProperty) then
                         for k, v in pairs(fieldOrProperty :: PropertyField) do
-                            explicit_copy(final_fields[specifierOrKey], k, v, fromName)
+                            explicit_copy(final_fields[specifierOrKey], k, v :: any, fromName)
                         end
                     else
                         explicit_copy(final_fields.public, specifierOrKey, fieldOrProperty, fromName)

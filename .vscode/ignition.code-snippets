@@ -1,4 +1,27 @@
 {
+	"class-func": {
+		"prefix": "func",
+		"body": [
+			"${1:fn} = func {",
+			"\texposure = \"shared\",",
+			"\tflags = { },",
+			"\tdummy = (nil :: any) :: ${0:() -> ()},",
+			"},"
+		],
+		"description": "Create a Class function template"
+	},
+	"class-prop": {
+		"prefix": "prop",
+		"body": [
+			"${1:prop} = property {",
+			"\texposure = \"shared\",",
+			"\tflags = { ${0:FLAGS.Optional} },",
+			"\ttype = \"${3:any}\",",
+			"\tvalue = ${2:nil}",
+			"},"
+		],
+		"description": "Create a Class property template"
+	},
 	"abstract-definition": {
 		"prefix": "abstract-def",
 		"body": [
@@ -9,18 +32,15 @@
 			"local Ignition = require(ReplicatedStorage.Ignition)",
 			"local Class = Ignition.Class",
 			"",
-			"local class, extends, property, abstract = Class.class, Class.extends, Class.property, Class.abstract",
-			"local final, reactive, mixin, func = Class.final, Class.reactive, Class.mixin, Class.func",
+			"local class, property, abstract, func, FLAGS = Class.class, Class.property, Class.abstract, Class.func, Class.FLAGS",
 			"",
-			"abstract (class \"${1}\" {",
+			"return abstract (class \"${1}\" {",
 			"\tpublic = {",
 			"\t\t${0}",
 			"\t},",
 			"\tprotected = {},",
 			"\tprivate = {},",
-			"})",
-			"",
-			"return true"
+			"})"
 		],
 		"description": "Create an abstract Class header template"
 	},
@@ -34,17 +54,15 @@
 			"local Ignition = require(ReplicatedStorage.Ignition)",
 			"local Class = Ignition.Class",
 			"",
-			"local class, property, final = Class.class, Class.property, Class.final",
+			"local class, property, final, func, FLAGS = Class.class, Class.property, Class.final, Class.func, Class.FLAGS",
 			"",
-			"final (class \"${1}\" {",
+			"return final (class \"${1}\" {",
 			"\tpublic = {",
 			"\t\t${0}",
 			"\t},",
 			"\tprotected = {},",
 			"\tprivate = {},",
-			"})",
-			"",
-			"return true"
+			"})"
 		],
 		"description": "Create a final Class header template"
 	},
@@ -58,19 +76,41 @@
 			"local Ignition = require(ReplicatedStorage.Ignition)",
 			"local Class = Ignition.Class",
 			"",
-			"local class, extends, property, final = Class.class, Class.extends, Class.property, Class.final",
+			"local class, extends, property, func, FLAGS, final = Class.class, Class.extends, Class.property, Class.func, Class.FLAGS, Class.final",
 			"",
-			"final (class \"${2}\" (extends \"${1:Parent}\" {",
+			"local ${1:Parent} = require(\"./${1:Parent}\")",
+			"return final (class \"${2}\" (extends (${1:Parent}) {",
 			"\tpublic = {",
 			"\t\t${0}",
 			"\t},",
 			"\tprotected = {},",
 			"\tprivate = {},",
-			"}))",
-			"",
-			"return true"
+			"}))"
 		],
 		"description": "Create an extended final Class header template"
+	},
+	"definition-extends": {
+		"prefix": "def-ext",
+		"body": [
+			"--!strict",
+			"-- ${2:${TM_FILENAME_BASE/^(.+?)\\.(?:definition|implementation|d|h|header)$|^(.+)$/${1}${2}/}}.d.lua",
+			"",
+			"local ReplicatedStorage = game:GetService(\"ReplicatedStorage\")",
+			"local Ignition = require(ReplicatedStorage.Ignition)",
+			"local Class = Ignition.Class",
+			"",
+			"local class, extends, property, func, FLAGS = Class.class, Class.extends, Class.property, Class.func, Class.FLAGS",
+			"",
+			"local ${1:Parent} = require(\"./${1:Parent}\")",
+			"return class \"${2}\" (extends (${1:Parent}) {",
+			"\tpublic = {",
+			"\t\t${0}",
+			"\t},",
+			"\tprotected = {},",
+			"\tprivate = {},",
+			"})"
+		],
+		"description": "Create an extended Class header template"
 	},
 	"definition": {
 		"prefix": "def",
@@ -82,17 +122,15 @@
 			"local Ignition = require(ReplicatedStorage.Ignition)",
 			"local Class = Ignition.Class",
 			"",
-			"local class, property = Class.class, Class.property",
+			"local class, property, func, FLAGS = Class.class, Class.property, Class.func, Class.FLAGS",
 			"",
-			"class \"${1}\" {",
+			"return class \"${1}\" {",
 			"\tpublic = {",
 			"\t\t${0}",
 			"\t},",
 			"\tprotected = {},",
 			"\tprivate = {},",
-			"}",
-			"",
-			"return true"
+			"}"
 		],
 		"description": "Create a Class header template"
 	},
@@ -100,7 +138,7 @@
 		"prefix": "impl",
 		"body": [
 			"--!strict",
-			"-- ${1:$TM_FILENAME_BASE}.lua",
+			"-- ${2:$TM_FILENAME_BASE}.lua",
 			"",
 			"local ReplicatedStorage = game:GetService(\"ReplicatedStorage\")",
 			"local Ignition = require(ReplicatedStorage.Ignition)",
@@ -108,8 +146,11 @@
 			"",
 			"local import, ref, free = Class.import, Class.ref, Class.free",
 			"",
-			"local ${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}} = import()",
-			"${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}(function(self)",
+			"local ${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Header = require(\"./${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}.${1:definition}\")",
+			"local ${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}} = import(${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Header)",
+			"type ${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Instance = typeof(${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}})",
+			"",
+			"${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}(function(self)",
 			"\t$0",
 			"end)",
 			"",
@@ -129,7 +170,10 @@
 			"",
 			"local import, super = Class.import, Class.super",
 			"",
-			"local ${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}} = import()",
+			"local ${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Header = require(\"./${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}.${2:definition}\")",
+			"local ${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}} = import(${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Header)",
+			"type ${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Instance = typeof(${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}})",
+			"",
 			"${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}(function(self)",
 			"\tsuper()",
 			"\t$0",

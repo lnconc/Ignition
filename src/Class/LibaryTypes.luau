@@ -15,11 +15,10 @@ type InheritFields<S1, S2> = Types.InheritFields<S1, S2>
 type MergeInterfaces<I> = Types.MergeInterfaces<I>
 
 export type ClassDSL = (name: string) -> <I>(fields: PropertiesFields & I) -> I
-export type ImportDSL = <I>(interface: I) -> ImportedClassObject<GetClassObject<I, "Private">>
-export type NewDSL = <I>(interface: I) -> (...any) -> GetClassObject<I, "Public">
-export type ExtendsDSL = <I>(superInterface: I) -> <J>(fields: PropertiesFields & J) -> InheritFields<I, J>  -- extends returns PropertiesField, since it executes before Class
-export type MixinDSL = (name: string) -> <I>(...I) -> (mixin_fields: PropertiesFields) -> MergeInterfaces<I>
-
+export type ImportDSL = <I>(interface: I | string) -> ImportedClassObject<GetClassObject<I, "Private">>
+export type NewDSL = <I>(interface: I | string) -> (...any) -> GetClassObject<I, "Public">
+export type ExtendsDSL = <I>(superInterface: I | string) -> <J>(fields: PropertiesFields & J) -> InheritFields<I, J>
+export type MixinDSL = (name: string) -> <I>(...I | string) -> (mixin_fields: PropertiesFields) -> MergeInterfaces<I>
 export type ClassLibrary = {
     -- core
     class: ClassDSL,

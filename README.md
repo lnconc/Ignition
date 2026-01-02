@@ -20,6 +20,7 @@
     * [🏛️ abstract, reactive, and final Classes](#️-abstract-reactive-and-final-classes)
     * [🧬 Inheritance with extends and super](#-inheritance-with-extends-and-super)
     * [🧩 Composition with mixin](#-composition-with-mixin)
+9. 🎹 Type Checking (#-type-checking)
 
 ## 🚀 Quick Start
 Ignition utilizes a **Functional DSL** to define class interfaces and a **Decoupled Linker** for implementations. This structure eliminates circular dependencies and enforces strict memory safety.
@@ -27,9 +28,9 @@ Ignition utilizes a **Functional DSL** to define class interfaces and a **Decoup
 ### 1. The Header (`MyClass.definition.luau`)
 ```lua
 local Class = require(game.ReplicatedStorage.Ignition).Class
-local class, property, final = Class.from("class", "property", "final")
+local class, property, final = Class.class, Class.property, Class.final
 
-final (class "MyClass" { 
+return final (class "MyClass" { 
     public = {
         Health = property { type = "number", value = 100 },
         Hello = "World!"
@@ -38,15 +39,14 @@ final (class "MyClass" {
         Secret = "Encapsulated!"
     }
 })
-
-return true
 ```
 ### 2. The Source (`MyClass.implementation.luau`)
 ```lua
 local Class = require(game.ReplicatedStorage.Ignition).Class
-local import = Class.from("import")
+local import = Class.import
 
-local MyClass = import() -- Implementation is write-only
+local MyClassHeader = require(script.Parent["MyClass"])
+local MyClass = import(MyClassHeader) -- Implementation is write-only
 
 -- The constructor
 MyClass(function(self) 
@@ -60,13 +60,15 @@ return true
 ### 3. Usage (`main.server.luau`)
 ```lua
 local new = require(game.ReplicatedStorage.Ignition).new
+local MyClass = require(script.Parent["MyClass"])
 -- Ignition loads everything in folders with the word "Solution" upon requiring.
 
-local instance = new "MyClass"()
+local instance = new (MyClass)()
 print(instance.Hello)  -- "World!"
 instance.Health = 50
 print(instance.Secret) -- ERROR (attempt to access private member)
 ```
+**The provided code above is on `
 
 ## 🧠 Why Ignition?
 Most OOP libraries are **monolithic:** both definition and implementation living at the same table, making circular dependencies a *constant threat and eventual hassle* on large-scale projects (calling out poor file structure organizers like me). Ignition introduces a **Decoupled Lifecycle** inspired by C++ environments.
@@ -131,7 +133,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
     * **Why?** Luau's engine signals run on a separate stack. Without `ref()`, the **StackSpider**™ won't recognize the caller and will throw an access violation.
     * `ref(self.MyMethod)` creates a secure tunnel for that specific function, allowing it to use that specific `class`'s `private` and `protected` fields.
     ```lua
-    local ref = Class.from("ref")
+    local ref = Class.ref
 
     MyClass(function(self)
         task.spawn(function()
@@ -157,7 +159,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
 6. **Constructors**\
     The returned object from `import()` has a `__call` method, this callback serves as your primary way of creating constructors as it provides the necessary wrapping and measures internally required by `Class`.
     ```lua
-    local import = Class.from("import")
+    local import = Class.import
     local MyClass = import() -- returns a write-only implementation with a __call method
     MyClass(function(self)
         print(`{tostring(self)} created.`)
@@ -175,8 +177,8 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
     -- Inside your definition
     public = {
         -- Uses the property utility to wrap value with flags and types
-        Health = property {
-            type = "number",
+        Name = property {
+            value = "Stewart",
             flags = { FLAGS.Readonly }
         }
     }
@@ -188,7 +190,9 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
     * **`union(...)`:** Allows the argument to be any type within the provided set.
     ```lua
     local Class = require(game.ReplicatedStorage.Ignition).Class
-    local nullable, union = Class.from("nullable", "union")
+    local import, nullable, union = Class.import, Class.nullable, Class.union
+
+    local MyClass = import()
 
     -- Overload with complex types
     MyClass { union( "string", "table" ) } "DataLog" (function(self, input)
@@ -202,7 +206,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
 > [!NOTE]
 > You can do `nullable(union(...))` but not `union(nullable("string"), ...)`
 
-### 🏷️ Using `METADATA` for Header Safety
+### 🏷️ Using `METADATA` and `PLACEHOLDER` for Header Safety
 Ignition allows you to define members in your Header that don't actually exist in the final object's data table. This is handled via the `METADATA` marker.
 
 **What is it?**\
@@ -217,7 +221,7 @@ A member marked as `METADATA` will be registered by the header but will not be i
 -- Vector.definition.luau
 local class, METADATA = Class.from("class", "METADATA")
 
-class "Vector" {
+return class "Vector" {
     private = {
         -- Tells initialize() "__mul is private," but doesn't create 
         -- a 'Vector.__mul' property in memory.
@@ -228,6 +232,13 @@ class "Vector" {
     }
 }
 ```
+
+Moreover, unlike `METADATA`, Ignition also provides `PLACEHOLDER`, which allows you to store actual values that cannot be created on the header, such as `Signals`, `Promises`, `Instances`, `Events`, and many more that has a `new()` or in general terms: **can be instantiated**.
+
+This is useful if you have members such as `self._update`, `self.Event`, `self.Thread`
+
+> [!NOTE]
+> Placeholders cannot get dynamically type-checked and will instead be replaced with `any`.
 
 ### 📂 Project Structure & Naming
 To ensure the **Solution Linker** (upon using `require(path.to.Ignition)`) and `import()` function work correctly, follow this standardized layout. Ignition's auto-loader specifically looks for the **"Solutions"** keyword.
@@ -254,13 +265,11 @@ Use the `free()` primitive for deep cleanup. Instead of just setting variables t
 3. **Recursively clear** tables and their keys; or,
 4. Call the function if you pass a closure (acting as a destructor).
 ```lua
-local free = Class.from("free")
+local free = Class.free
 
-MyClass(function(self)
-    self:OnDestroy(function()
-        free(self.ActiveTweens) -- Cleans the table and all its contents
-    end)
-end)
+function MyClass:Destroy()
+    free(self.ActiveTweens) -- Cleans the table and all its contents
+end
 ```
 
 > [!NOTE]
@@ -311,9 +320,9 @@ Ignition allows you to overload standard Lua operators (`__add`, `__sub`, `__mul
 1. **The Header (Vector.definition.luau)**\
     If an operator isn't defined in the header, it defaults to public. To restrict it, define it explicitly:
     ```lua
-    local class, METADATA = Class.from("class", "METADATA")
+    local class, METADATA = Class.class, Class.METADATA
 
-    class "Vector" {
+    return class "Vector" {
         public = {
             X = 0, Y = 0,
             __add = METADATA, -- Public by default, you don't have to put this, but this is for showcase
@@ -336,6 +345,8 @@ Ignition allows you to overload standard Lua operators (`__add`, `__sub`, `__mul
     function Vector:__mul(scalar)
         return new "Vector"(self.X * scalar, self.Y * scalar)
     end
+
+    return {}
     ```
 > [!NOTE]
 > This is powerful for internal engine math. You can prevent external scripts from performing certain operations on your objects while allowing your internal systems to do so freely, all enforced by the `StackSpider`.
@@ -343,7 +354,7 @@ Ignition allows you to overload standard Lua operators (`__add`, `__sub`, `__mul
 ### 🏛️ `abstract`, `reactive`, and `final` Classes
 Use these decorators to control the *"Life Cycle"* of your class hierarchy.
 ```lua
-local class, abstract, reactive, final = Class.from("class", "abstract", "reactive", "final")
+local class, abstract, reactive, final = Class.class, Class.abstract, Class.reactive, Class.final
 
 -- Reactive: All properties are creatted as a State object instead
 reactive( class "MainMenu" { ... } )
@@ -358,7 +369,7 @@ final( class "BossZombie" (extends "BaseEnemy" { ... }) )
 Ignition's `extends` is asynchronous. If the parent hasn't loaded yet, Ignition will yield until it is ready.
 ```lua
 -- BaseEntity.definition.lua
-local class, property = Class.from("class", "property")
+local class, property = Class.class, Class.property
 class "BaseEntity" {
     public = {
         name = "No Name",
@@ -367,13 +378,12 @@ class "BaseEntity" {
 }
 
 -- Fighter.definition.lua
-local class, extends = Class.from("class", "extends")
+local class, extends = Class.class, Class.extends
+
 class "Fighter" (extends "BaseEntity" { ... })
 ```
 ```lua
 -- Fighter.implementation.luau
-local import, super = Class.from("import", "super")
-
 local Fighter = import()
 Fighter(function(self, name: string)
     super(name) -- Initializes the 'BaseEntity' portion of this object
@@ -387,10 +397,11 @@ end
 When inheritance becomes too deep, use `mixin`s to inject functionality horizontally. Ignition performs a **Smart Merge** to ensure no two `mixin`s overwrite the same non-virtual member.
 ```lua
 local Class = require(game.ReplicatedStorage.Ignition).Class
-local mixin = Class.from("mixin")
+local mixin = Class.mixin
 
 -- Injects "Flyable" and "Damageable" logic directly into "Dragon"
-mixin "Dragon" ("Flyable", "Damageable") {
+local Flyable, Damageable = require(script.Parent["Flyable"]), require(script.Parent["Damageable"])
+return mixin "Dragon" ("Flyable", "Damageable") {
     public = {
         Health = 500
     }

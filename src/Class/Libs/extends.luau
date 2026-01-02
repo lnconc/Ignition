@@ -3,11 +3,16 @@
 
 local getCaller = require("../../Internal/getCaller")
 local Types = require("../Types")
+local Registry = require("../Utility/Registry")
 
 type Interface = Types.Interface
 type PropertiesFields = Types.PropertiesFields
 
-local function extends<I>(superInterface: I): (...any) -> ...any
+local function extends<I>(targetOrSuperInterface: string | I): (...any) -> ...any
+    local superInterface: Interface = targetOrSuperInterface :: I
+    if type(superInterface) == "string" then
+        superInterface = Registry.WaitForLink(targetOrSuperInterface)
+    end
     local _, _, env = getCaller(2)
     if not env then
         error("Extension must be called from a Luau thread context", 2)

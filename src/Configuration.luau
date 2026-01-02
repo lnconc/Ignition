@@ -13,8 +13,8 @@ end
 
 local version = setmetatable({
     major = 1,
-    minor = 1,
-    patch = 3,
+    minor = 2,
+    patch = 0,
 }, {
     __tostring = function(self)
         return `v{self.major}.{self.minor}.{self.patch}`

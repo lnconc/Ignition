@@ -87,6 +87,13 @@ export type function ForceSingleton(s: type): type
 end
 
 export type function GetClassObject(interface: type, accessLevel: type): type
+    if interface:is("string") or interface:is("singleton") or interface:is("any") or interface:is("never") or interface:is("unknown") then
+        local prototype = types.newtable({})
+        prototype:setindexer(types.string, types.any)
+        prototype:setreadproperty(types.singleton("__lazy__"), types.singleton(true))
+        return prototype
+    end
+
     local level = accessLevel:value()
     local allowedScopes = { "public" }
     if level == "Protected" then table.insert(allowedScopes, "protected") end
@@ -271,6 +278,24 @@ export type function GetClassObject(interface: type, accessLevel: type): type
 end
 
 export type function ImportedClassObject(getClassObject: type): type
+    if getClassObject:readproperty(types.singleton("__lazy__")) then
+        local lazyInstance = types.newtable({}, { 
+            index = types.string, 
+            readresult = types.any, 
+            writeresult = types.any 
+        })
+        
+        local dslCall = types.newfunction({
+            head = { types.any, types.any }
+        }, { head = { types.any } })
+        
+        lazyInstance:setmetatable(types.newtable({
+            [types.singleton("__call")] = dslCall,
+        }))
+        
+        return lazyInstance
+    end
+
     local instance = types.newtable({}, { 
         index = types.string, 
         readresult = types.any, 
@@ -324,6 +349,13 @@ export type function ImportedClassObject(getClassObject: type): type
 end
 
 export type function InheritFields(superInterface: type, subFields: type): type
+    if superInterface:is("string") or superInterface:is("singleton") or superInterface:is("any") or superInterface:is("never") or superInterface:is("unknown") then
+        local prototype = types.newtable({})
+        prototype:setindexer(types.string, types.any)
+        prototype:setreadproperty(types.singleton("__lazy__"), types.singleton(true))
+        return prototype
+    end
+
     local mergedFields = types.newtable({})
     local scopes = { "public", "protected" }
     

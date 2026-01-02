@@ -1,8 +1,10 @@
 --!strict
 -- Class/Libs/import.lua
 
+local getCaller = require("../../Internal/getCaller")
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
+local Registry = require("../Utility/Registry")
 
 type AnyFunction = Types.AnyFunction
 type Expects = Types.Expects
@@ -11,7 +13,13 @@ type Interface = Types.Interface
 
 local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
 
-local function import(interface: Interface): any
+local function import(_interface: Interface?): any
+    local interface: Interface = _interface :: Interface
+    if not _interface then
+        local callerScript = getCaller(2)
+        interface = Registry.WaitForInterface(callerScript.Name:split(".")[1])
+    end
+
     local function verifyImplementation(key: string, isFunction: boolean)
         local rings = interface.properties
         local found = rings.private[key] or rings.protected[key] or rings.public[key]

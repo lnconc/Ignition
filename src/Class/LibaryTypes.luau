@@ -43,15 +43,23 @@ export type ClassLibrary = {
         exposure: PropertyExposure?, 
         flags: { Symbol<string> }?, 
         dummy: D 
-    }) -> FinalProperty<nil, "function", D>,    
-    -- type wrappers
+    }) -> FinalProperty<nil, "function", D>,
+
+    -- type wrappers for overloading
     nullable: <T>(type: T) -> Nullable<T>,
     union: <T>(...T) -> Union<T>,
     
-    -- runtime helpers
+    -- memory helpers
     free: (item: any) -> (),
+    delete: (object: any) -> (),
+
+    -- runtime helpers
     ref: <T>(callback: T) -> T,
+    anon: <T>(callback: T) -> T,
     super: (...any) -> (),
+
+    -- debug helpers
+    dumpsize: () -> string,
 
     -- constants
     METADATA: Symbol<string>,

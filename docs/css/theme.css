@@ -1,0 +1,101 @@
+:root {
+    --ignition-void: #131212;
+    --ignition-orange: #ff6a00;
+    --ignition-text: #ececec;
+    --ignition-subtext: #a3a3a3;
+}
+
+[data-md-color-scheme="slate"] {
+    --md-default-bg-color: var(--ignition-void);
+    --md-primary-fg-color: var(--ignition-void);
+    --md-footer-bg-color: var(--ignition-void);
+    
+    --md-default-fg-color: var(--ignition-text);
+    --md-typeset-color: var(--ignition-text);
+    --md-typeset-a-color: var(--ignition-orange);
+
+    --md-default-bg-color: var(--ignition-void);
+}
+
+.md-header {
+    background-color: var(--ignition-void) !important;
+    box-shadow: none !important;
+    border: none !important;
+    transition: box-shadow 0.3s;
+}
+
+[data-md-color-scheme="slate"] .md-header--shadow {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+    border: none !important;
+}
+
+
+.md-footer {
+    background-color: var(--md-footer-bg-color) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.md-typeset__table table:not([class]) {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+td, th {
+    border: none !important;
+}
+
+p, li {
+    color: #BCB8B8 !important;
+}
+
+h1, h2, h3, p.admonition-title {
+    color: white !important;
+    font-weight: 800 !important;
+}
+
+b, i, strong, em {
+    color: #D4D4D4 !important;
+}
+
+.md-tabs__link {
+    color: #BCB8B8 !important;
+    opacity: 0.7;
+    transition: opacity 0.25s;
+}
+
+.md-tabs__item--active .md-tabs__link {
+    color: #ff6a00 !important;
+    opacity: 1;
+}
+
+.md-tabs__link:hover {
+    color: #ff6a00 !important;
+    opacity: 1;
+}
+
+.md-nav__link:hover, .md-path__link:hover {
+    color: #ff6a00 !important;
+}
+
+.md-nav__link--active {
+    color: #ff6a00 !important;
+    font-weight: 700;
+}
+
+.md-nav__link.md-toc__link, .md-path__link {
+    color: #BCB8B8;
+    opacity: 0.7;
+    transition: opacity 0.25s, color 0.25s;
+}
+
+.md-nav__link.md-toc__link:hover {
+    color: #ff6a00 !important;
+    opacity: 1;
+}
+
+.md-nav__link--active.md-toc__link {
+    color: #ff6a00 !important;
+    opacity: 1;
+}

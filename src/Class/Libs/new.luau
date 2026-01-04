@@ -10,7 +10,7 @@ local function new(nameOrInterface: string | Interface): (...any) -> any
     return function(...: any): any
         local interface: Interface = nameOrInterface :: Interface
         if type(nameOrInterface) == "string" then
-            nameOrInterface = Registry.WaitForLink(nameOrInterface)
+            interface = Registry.WaitForLink(nameOrInterface)
         end
         local object = interface:instantiate(false, ...)
         return object

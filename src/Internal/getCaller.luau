@@ -2,16 +2,20 @@
 -- Internal/getCaller.lua
 
 local Types = require("./Types")
+local env = require("./env")
+local resolvePath = require("./resolvePath")
 
 type Scriptable = Types.Scriptable
 type FunctionEnvironment = Types.FunctionEnvironment
 type Function = Types.Function
 
 local accessCache = setmetatable({}, {__mode = "k"})
+local debugInfo = debug.info :: any
 
 local function callerInternals(fn: any): ...any
-    local env = getfenv(fn)
-    return env.script, fn, env
+    local env = env.get(fn)
+    local script = resolvePath(debugInfo(fn, "s"))
+    return script, fn, env
 end
 
 local function getCaller(level: number | boolean): (Scriptable, Function, FunctionEnvironment)

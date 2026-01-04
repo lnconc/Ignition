@@ -1,0 +1,92 @@
+
+.md-header__inner {
+    padding-top: 0.75rem;
+    padding-bottom: 0.15rem;
+
+    margin: 0 auto;
+}
+
+.md-container, .md-footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+}
+
+.md-tabs, .md-header__inner, .md-footer-meta {
+    max-width: 60rem;
+}
+
+.md-main__inner {
+    max-width: 60rem;
+    margin-top: 1rem;
+}
+
+.md-footer, .md-main, .md-footer__inner, .md-footer-meta {
+    width: 100%
+}
+
+.__cloak {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.md-header__title {
+    margin-left: 0.2rem !important;
+}
+
+.md-logo img {
+    height: 64px !important;
+    width: auto !important;
+    filter: drop-shadow(0 0 10px rgba(254, 120, 4, 0.3));
+}
+
+.md-typeset h2 + p + ol a {
+    color: #ff6a00;
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1px dashed #ff6a00;
+}
+
+.md-typeset h2 + p + ol a:hover {
+    background-color: rgba(255, 106, 0, 0.1);
+    border-bottom: 1px solid #ff6a00;
+}
+
+.md-header__topic,
+.md-header__topic * {
+    transition: none !important;
+    animation: none !important;
+}
+
+.md-header__title {
+    transition: none !important;
+}
+
+.md-header__topic {
+    font-size: 0 !important;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    height: 2.65rem;
+    line-height: 0.85;
+}
+
+.md-header__topic::before {
+    content: "IGNITION";
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #ff6a00;
+    visibility: visible;
+    letter-spacing: 2px;
+}
+
+.md-header__topic::after {
+    content: "DOCUMENTATION";
+    font-size: 0.6rem;
+    font-weight: 400;
+    color: #A3A3A3;
+    visibility: visible;
+    text-transform: uppercase;
+    letter-spacing: 0.725px;
+}

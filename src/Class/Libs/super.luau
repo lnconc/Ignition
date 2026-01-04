@@ -13,7 +13,7 @@ local DEVELOPMENT_MODE_ENABLED = not Configuration.PRODUCTION_MODE_ENABLED
 local traceback = debug.traceback
 
 local function super(...: any)
-    local _, _, callEnv = getCaller(3)
+    local _, _, callEnv = getCaller(2)
     
     if not callEnv then
         error("'super' must be called within a class constructor", 2)

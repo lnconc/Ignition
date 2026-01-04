@@ -6,7 +6,7 @@ local Configuration = require("../Utility/Configuration")
 
 type Symbol<T> = Types.Symbol<T>
 type Property<V, T> = {
-    type: T,
+    type: T?,
     value: V,
     flags: { Symbol<string> } | { [Symbol<string>]: boolean },
 }

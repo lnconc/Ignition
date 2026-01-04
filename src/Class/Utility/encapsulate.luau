@@ -3,19 +3,19 @@
 -- Class/Utility/encapsulate.lua
 
 local Configuration = require("./Configuration")
-local Symbol = require("../../Modules/Symbol")
 local Value = require("../../State/Value")
 local Types = require("../Types")
 local StackSpider = require("./StackSpider")
 local initialize = require("./initialize")
 local ValueTypes = require("../../State/Types")
 local free = require("../Libs/free")
+local Registry = require("./Registry")
 
 type Symbol<T> = Types.Symbol<T>
 type Environment = Types.Environment
 
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
-local NULL_PLACEHOLDER = Symbol("null")
+local NULL_PLACEHOLDER = Configuration.PLACEHOLDER
 local PROPERTY_FLAGS = Configuration.PROPERTY_FLAGS
 local OPERATORS = {
     "__add", "__sub", "__mul", "__div", "__mod", "__pow", "__unm",
@@ -33,15 +33,17 @@ local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Sy
     if (reactive and cur and cur._DANGEROUS_value == value) or cur == value then 
         return 
     end
-    
+
     if not PRODUCTION_MODE_ENABLED then
         if type_ and typeof(value) ~= type_ then
             error(`change of property '{key}' failed to pass type check test`, 2)
         end
         if not flags[PROPERTY_FLAGS.Optional] and value == nil then
             error(`cannot set nil to required property '{key}'`, 2)
-        elseif constructorContext ~= nil and flags[PROPERTY_FLAGS.Readonly] and not WithinFunction(environment, constructorContext) then
-            error(`cannot set readonly property '{key}'`, 2)
+        elseif not (flags :: { FromInit: boolean }).FromInit then
+            if constructorContext ~= nil and flags[PROPERTY_FLAGS.Readonly] and not WithinFunction(environment, constructorContext) then
+                error(`cannot set readonly property '{key}'`, 2)
+            end
         end
     end
 
@@ -77,7 +79,7 @@ local function encapsulate(object: any, metatable: any, environment: Environment
 
     for specifier, field in pairs(interface.properties) do
         for key in pairs(field :: { [string]: any }) do
-             if not PRODUCTION_MODE_ENABLED then
+            if not PRODUCTION_MODE_ENABLED then
                 specifierMap[key] = { specifier = specifier, static = (environment.PropertyFlags[key] and environment.PropertyFlags[key][PROPERTY_FLAGS.Static] ~= nil) }
             end
             reactiveMap[key] = isReactive(key)
@@ -85,6 +87,9 @@ local function encapsulate(object: any, metatable: any, environment: Environment
     end
 
     function metatable:__index(key: any): any
+        if environment.Deleting then
+            error(`{environment.Id} is currently being deleted!`, 2)
+        end
         if PRODUCTION_MODE_ENABLED then
             local out = data[key]
             if reactiveMap[key] and out then out:evaluate() end
@@ -116,6 +121,9 @@ local function encapsulate(object: any, metatable: any, environment: Environment
     end
 
     function metatable:__newindex(key: any, value: any)
+        if environment.Deleting then
+            error(`{environment.Id} is currently being deleted!`, 2)
+        end
         if PRODUCTION_MODE_ENABLED then
             upsert(data, key, value, {
                 flags = environment.PropertyFlags[key] or {},
@@ -134,7 +142,7 @@ local function encapsulate(object: any, metatable: any, environment: Environment
             error(`attempt to write missing property '{key}'`, 2)
         end
         local static, specifier, reactive = info.static, info.specifier, reactiveMap[key]
-        if specifier == "public" and not static and not reactive then
+        if specifier == "public" and not static and (environment.PropertyFlags[key] and not next(environment.PropertyFlags[key])) then
             (data.public :: any)[key] = if value == nil then NULL_PLACEHOLDER else value
             return
         elseif specifier ~= "public" then
@@ -146,11 +154,11 @@ local function encapsulate(object: any, metatable: any, environment: Environment
 
         local ring = if static then staticproperties[specifier] else data[specifier]
         upsert(ring, key, value, {
-            flags = environment.PropertyFlags[key],
+            flags = environment.PropertyFlags[key] or {},
             reactive = reactive,
             environment = environment,
             type = environment.PropertyTypes[key],
-            constructorContext = environment.Context and environment.Context.Constructor or nil,
+            constructorContext = if environment.Context then environment.Context.Constructor else nil,
         })
     end
 
@@ -162,6 +170,9 @@ local function encapsulate(object: any, metatable: any, environment: Environment
             metatable[op] = impl
         else
             metatable[op] = function(a, b)
+                if environment.Deleting then
+                    error(`{environment.Id} is currently being deleted!`, 2)
+                end
                 local info = specifierMap[op]
                 local specifier = info.specifier or "public"
                 if info and specifier ~= "public" then
@@ -174,6 +185,8 @@ local function encapsulate(object: any, metatable: any, environment: Environment
             end
         end
     end
+
+    Registry.LinkData(object, data)
 end
 
 return encapsulate

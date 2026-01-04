@@ -16,7 +16,7 @@ type MergeInterfaces<I> = Types.MergeInterfaces<I>
 
 export type ClassDSL = (name: string) -> <I>(fields: PropertiesFields & I) -> I
 export type ImportDSL = <I>(interface: I | string) -> ImportedClassObject<GetClassObject<I, "Private">>
-export type NewDSL = <I>(interface: I | string) -> (...any) -> GetClassObject<I, "Public">
+export type NewDSL = <I>(interface: I | string) -> (...any) -> ResolveNew<I>
 export type ExtendsDSL = <I>(superInterface: I | string) -> <J>(fields: PropertiesFields & J) -> InheritFields<I, J>
 export type MixinDSL = (name: string) -> <I>(...I | string) -> (mixin_fields: PropertiesFields) -> MergeInterfaces<I>
 export type ClassLibrary = {
@@ -73,5 +73,16 @@ export type ClassLibrary = {
         Reactive: Symbol<string>,
     },
 }
+
+export type function ResolveNew(input: type): type
+    if input:is("string") or input:is("singleton") then
+        return types.any
+    end
+    local rawInterface = input:readproperty(types.singleton("__interface__"))
+    if rawInterface then
+        return GetClassObject(rawInterface, types.singleton("Public"))
+    end
+    return GetClassObject(input, types.singleton("Public"))
+end
 
 return {}

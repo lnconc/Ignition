@@ -107,7 +107,32 @@ local function import(_interface: Interface?): any
                 end
             end
         end,
-        __index = function(_)
+        __index = function(key: string)
+            if key == "__complete__" then
+                return function()
+                    return setmetatable({}, {
+                        __index = function(_, k: string)
+                            local val = interface.staticproperties.public[k]
+                            if val == nil then
+                                error(`'{k}' is not a public static member of {interface.name}`, 2)
+                            end
+                            return val
+                        end,
+                        __newindex = function(_, k: string, v: any)
+                            local val = interface.staticproperties.public[k]
+                            if val == nil then
+                                error(`cannot set missing public static member '{k}' of {interface.name}`, 2)
+                            end
+                            interface.staticproperties.public[k] = if v == nil then Configuration.PLACEHOLDER else v
+                        end,
+                        __metatable = {
+                            interface = interface,
+                            fromImport = true,
+                        },
+                        __tostring = function() return `StaticClass<{interface.name}>` end
+                    })
+                end
+            end
             error(`'{interface.name}' implementation is write-only. Use the header for type info.`, 2)
         end
     })

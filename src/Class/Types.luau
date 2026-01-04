@@ -79,7 +79,7 @@ export type Interface = setmetatable<{
     },
     virtuals: { [string]: boolean },
     superclass: Interface?,
-    instantiate: <A...>(self: Interface, fromDerivedClass: boolean, A...) -> (any, Environment),
+    instantiate: <A...>(self: Interface, fromDerivedClass: boolean, fromInit: boolean, A...) -> (any, Environment),
 }, { __metatable: string }>
 
 export type function ForceSingleton(s: type): type
@@ -283,6 +283,31 @@ export type function GetClassObject(interface: type, accessLevel: type): type
     return prototype
 end
 
+export type function StaticClassObject(getClassObject: type): type
+    local staticInstance = types.newtable({}, { index = types.string, readresult = types.any, writeresult = types.any })
+    local statics = getClassObject:readproperty(types.singleton("__statics__"))
+    local props = getClassObject:readproperty(types.singleton("__props__"))
+    local funcs = getClassObject:readproperty(types.singleton("__functions__"))
+
+    local function map_statics(source: type)
+        if not source then return end
+        if not statics then return end
+        for k, v in source:properties() do
+            if not k then continue end
+            local isStaticFlag = statics:readproperty(k)
+            if isStaticFlag and isStaticFlag:value() == true then
+                staticInstance:setproperty(k, v.read)
+            end
+        end
+    end
+
+    if props then map_statics(props) end
+    if props then map_statics(funcs :: type) end
+
+    staticInstance:setproperty(types.singleton("__interface__"), getClassObject:readproperty(types.singleton("__interface__"))) -- getClassObject has "Private", we have to expose this so that the next GetClassObject is forced to "Public"
+    return staticInstance
+end
+
 export type function ImportedClassObject(getClassObject: type): type
     if getClassObject:readproperty(types.singleton("__lazy__")) then
         local lazyInstance = types.newtable({}, { 
@@ -343,6 +368,13 @@ export type function ImportedClassObject(getClassObject: type): type
             end
         end
     end
+
+    local completeFunc = types.newfunction({
+        head = { instance }
+    }, { 
+        head = { StaticClassObject(getClassObject) } 
+    })
+    instance:setproperty(types.singleton("__complete__"), completeFunc)
     local constructorFunc = types.newfunction({ head = { types.any }, tail = types.any }, { tail = types.any })
     local dslCall = types.newfunction({
         head = { types.any, constructorFunc }
@@ -392,6 +424,7 @@ export type function InheritFields(superInterface: type, subFields: type): type
    
     return mergedFields
 end
+
 export type function MergeInterfaces(interfaceList: type): type
     local result = types.newtable({})
     

@@ -96,12 +96,14 @@ local function createInterface(name: string): Interface
         staticproperties = { public = {}, protected = {}, private = {} },
         properties = { public = {}, protected = {}, private = {} },
         virtuals = {},
-        instantiate = function(self: any, fromDerivedClass: boolean, ...: any): (any, any)
+        instantiate = function(self: any, fromDerivedClass: boolean, fromInit: boolean, ...: any): (any, any)
             if self.flags.ClassAbstracted and not fromDerivedClass then
                 error(`Cannot instantiate abstract class {self.name}`, 3)
             end
             
             local object, environment = buildClassObject(name, self)
+            Registry.SaveEnvironment(object, environment)
+            if fromInit then return object end
             local constructorData: OverloadRecord = self.constructor.callback
             local fn: OverloadFunction = if type(constructorData) == "table" and constructorData.isOverloaded 
                 then getOverloadedFunction(`Constructor<{tostring(object)}>`, constructorData) 
@@ -134,8 +136,6 @@ local function createInterface(name: string): Interface
                     current = current.SuperClass.environment
                 end
             end
-
-            Registry.SaveEnvironment(object, environment)
             return object, environment
         end
     }, { __metatable = "This metatable is locked!" })

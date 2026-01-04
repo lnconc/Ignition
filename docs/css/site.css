@@ -17,6 +17,10 @@
     max-width: 60rem;
 }
 
+.md-typeset table td:nth-child(n+2), .md-typeset table th:nth-child(n+2) {
+    text-align: center !important;
+}
+
 .md-main__inner {
     max-width: 60rem;
     margin-top: 1rem;

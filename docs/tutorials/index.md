@@ -1,4 +1,4 @@
-## **Get Started**
+# **Getting Started**
 Welcome to Ignition's tutorial section! Here, you'll learn how to architect code strictly and intuitively with Ignition.
 
 !!! failure "But wait, heed before you proceed..."
@@ -144,7 +144,7 @@ Ignition enforces a strict separation between *what* a class **is** and *what* a
         self.Name = name
     end)
 
-    return {}
+    return BaseRemote:__complete__()
     ```
 
     !!! danger "Type Integrity Warning"
@@ -202,7 +202,7 @@ baseRemote.Name = "SendMessage" -- ERRORS (Since it's a readonly property, you c
 
 If no errors were raised, the system is now operational. Any class defined in your solutions is now globally accessible and architecturally enforced.
 
-### Troubleshooting
+## Troubleshooting
 
 !!! question "Why can't I instantiate a class with new?"
     The most common reason for this is that your *header/source* files were not indexed by Ignition. Verify that:
@@ -211,7 +211,7 @@ If no errors were raised, the system is now operational. Any class defined in yo
     * Your files are **not** located within folders defined in `Configuration.EXCLUDES`.
     * You have called the Ignition module as a function `require(Ignition)()` to start the crawl.
 
-#### Common Pitfalls
+### Common Pitfalls
 1. **Incorrect Extension Overrides**
 
     If you passed an override to the Ignition constructor (e.g., `require(Ignition)(".d")`), but your files are named `.definition`, Ignition will ignore them. **Ensure your file extensions match your configuration exactly.**
@@ -234,7 +234,7 @@ If no errors were raised, the system is now operational. Any class defined in yo
 local instance = Ignition.Class.new "MyClass" ()
 ```
 
-#### Under the Hood: The `Registry`
+### Under the Hood: The `Registry`
 The `Registry` is the source of truth for all active interfaces. It uses `coroutine.yield()` to manage dependencies, ensuring that one class doesn't attempt to inherit from or link to another class that isn't ready.
 
 The `Registry` also handles deep inheritance chains (e.g., `Child` propagates upward to `Grandparent` first, then descends back from `Grandparent` to `Child`).

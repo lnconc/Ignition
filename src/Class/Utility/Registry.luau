@@ -20,7 +20,7 @@ local ObjectDatas: { [any]: any } = setmetatable({}, { __mode = "k" })
 -- ex. if you call SaveInterface without using the `class` module found in the private folder, this will error
 local function assertCallingScript(callerName: string?)
     local caller = getCaller(2)
-    if not caller:IsDescendantOf(ANCESTOR) then
+    if not caller:IsDescendantOf(ANCESTOR) and caller ~= ANCESTOR then
         error(`attempt to call Registry-related functions outside of Class scope (current caller: {caller.Name})`, 2)
     end
     if callerName and callerName ~= caller.Name then

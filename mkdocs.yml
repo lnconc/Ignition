@@ -37,10 +37,6 @@ markdown_extensions:
   - pymdownx.extra
   - attr_list
   - md_in_html
-nav:
-  - Home: index.md
-  - Tutorials:
-    - Tutorials: tutorials/index.md
 
 extra_css:
   - css/theme.css
@@ -55,3 +51,14 @@ extra_javascript:
 
 copyright: |
   &copy; 2025 <a href="https://github.com/lnconcinnity"  target="_blank" rel="noopener">lnconcinnity</a>
+
+nav:
+  - Home: index.md
+  - Tutorials:
+    - tutorials/index.md
+    - Basics:
+      - tutorials/basics/Classes and Objects.md
+      - tutorials/basics/Access Specifiers.md
+      - tutorials/basics/Class Importation.md
+      - tutorials/basics/Class Functions.md
+      - tutorials/basics/Class Properties.md

@@ -34,7 +34,7 @@ local function super(...: any)
         error(`Class '{environment.Interface.name}' has no superclass defined. Did you forget to use 'extends'?`, 2)
     end
     
-    local superObject, superEnvironment = superClassInterface:instantiate(true, ...)
+    local superObject, superEnvironment = superClassInterface:instantiate(true, false, ...)
     environment.SuperClass = { 
         object = superObject, 
         environment = superEnvironment 

@@ -43,6 +43,7 @@ local function initialize(
                 reactiveStatesBatch[templateOrValue] = { field = destinationField, key = key }
             -- functions
             elseif (isProp and templateOrValue.type == "function") or (not isProp and type(templateOrValue) == "function") then
+                if is_static and destinationField[key] ~= nil then continue end
                 local closureData = closures[key]
                 local fn = if type(closureData) == "table" and closureData.isOverloaded 
                     then getOverloadedFunction(key, closureData) 

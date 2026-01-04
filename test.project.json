@@ -1,0 +1,19 @@
+{
+    "name": "ignition-test",
+    "tree": {
+        "$className": "DataModel",
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+            "Ignition": {
+                "$path": "src"
+            }
+        },
+        "ServerScriptService": {
+            "$className": "ServerScriptService",
+            "Server": {
+                "$className": "Folder",
+                "$path": "test"
+            }
+        }
+    }
+}

@@ -19,6 +19,8 @@ jobs:
           python-version: 3.x
       - name: Install Aftman
         uses: ok-nick/setup-aftman@v0.4.2
+      - name: Install Tools
+        run: aftman install
       - name: Get Version
         id: wally_version
         run: |

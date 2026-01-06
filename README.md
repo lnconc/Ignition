@@ -76,7 +76,7 @@ Most OOP libraries are **monolithic:** both definition and implementation living
 ### ❓ What does it offer?
 Ignition offers a strictly controlled runtime environment that prioritizes structural integrity and memory safety over *"metatable soup"* (architectural mess, so to say).
 
-* **True Scope Locking (via `StackSpider`™):** Most libraries use a *"pinky promise"* for private variables, often denoted by prefixing an underscore `_` for intent. Ignition, however, uses **runtime stack reflection** where the class attempts to climb the stack and verify each function ids. When a **function id** is not within any valid context (`Includes`, `Refs`, `Family`, `Friends`, `Constructor`), the class will throw a **hard access violation**.
+* **True Scope Locking (via `StackSpider`™):** Most libraries use a *"pinky promise"* for private variables, often denoted by prefixing an underscore `_` for intent. Ignition, however, uses **runtime stack reflection** where the class attempts to climb the stack and verify each function ids. When a **function id** is not within any valid context (`Includes`, `Refs`, `Family`, `Friends`, `Constructor`), the class will throw a **hard access violation.**
 
 * **Reactive State Integration:** Properties aren't just plain old values, they can be `State` objects as well. By wrapping your `class` inside a `reactive` decorator, all properties of that class will be created as a `State`; though, if you prefer standalone ones, feel free to do `Value.new()` instead without wrapping your class on a decorator. This allows you to bind class properties directly to UI components (such as **Fusion**) or to other externals systems that automatically update when the property changes.
 
@@ -104,12 +104,12 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
 ### 🙋 FAQ
 1. ***"Is this just more 'Metatable Soup'?"*** No. In traditional OOP, you manage the metatables yourself, leading to an architectural mess. In Ignition, the metatables are internal engine components. You write clean, declarative code; Ignition handles the "soup" behind the scenes so you don't have to.
 
-2. ***"Why the two-file system?"*** It's about **scale**. Standard one-file classes crash when they reference each other (Circular Dependencies). Ignition's split system allows the Registry to map out your game before the logic ever runs, making it impossible to "break" your requirements.
+2. ***"Why the two-file system?"*** It's about **scale.** Standard one-file classes crash when they reference each other (Circular Dependencies). Ignition's split system allows the Registry to map out your game before the logic ever runs, making it impossible to "break" your requirements.
 
 3. ***"Wait, how is this fast if it's crawling the stack?"*** Ignition uses a high-performance reflection engine called `StackSpider`. While stack crawling is usually expensive, Ignition utilizes three specific optimizations to keep it "near-zero":
     * **Memoization (Double Caching):** Ignition caches the results of every security check (via `accessCache` and `resolutionCache`). Once a function is verified, the next time it calls a private member, the *"Bouncer"* checks a high-speed Hash Map instead of re-crawling the stack.
     * **Native Luau Execution:** By using the `--!native` attribute, the core logic of the `StackSpider` is compiled into machine code, making the reflection logic significantly faster than standard interpreted Luau.
-    * **The "Racer" Bypass:** In Production, these checks are **stripped entirely**. You get the security during development without paying for it in your live game.
+    * **The "Racer" Bypass:** In Production, these checks are **stripped entirely.** You get the security during development without paying for it in your live game.
 
 ### 💡 Tips & Best Practices
 1. **Mastering Member Modifiers**\
@@ -117,8 +117,8 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
     * `FLAGS.Static`: Marks a member as belonging to the `Class`, not the `Instance`.
         * **Static Properties:** Shared across all instances.
         * **Static Functions:** These are stripped of the self variable. Use them for utility functions that don't need instance data.
-    * `FLAGS.Virtual`: Required if you intend for a member to be voverridden in a subclass**. If a child class tries to overwrite a non-virtual member, Ignition will throw an error to prevent accidental logic breakage.
-    * `FLAGS.Constant`: Once initialized in the constructor, the value is **locked forever**.
+    * `FLAGS.Virtual`: Required if you intend for a member to be voverridden in a subclass.** If a child class tries to overwrite a non-virtual member, Ignition will throw an error to prevent accidental logic breakage.
+    * `FLAGS.Constant`: Once initialized in the constructor, the value is **locked forever.**
     * `FLAGS.Optional`: Marks the property as **nullable**, preventing *"attempt to index missing property"* errors during runtime.
     * `FLAGS.React8ve`: Marks the property as **reactive**, instantiating itself as a `State` object.
     * `FLAGS.Readonly`: Prevents any modification to the property after initialization (or more concisely, it only permits modification **inside** the `constructor`). Perfect for IDs or `Configuration` constants.
@@ -152,7 +152,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
     Ignition enforces strict inheritance. You cannot override a property or method in a child class unless it was marked as a virtual in the parent. This prevents *"accidential shadowing"* where a subclass unknowingly breaks a parent's core logic.
 
 5. **Managing the Engine**
-    * **The Configuration Module:** Found under `Class/Utility`, this is your control center. You can adjust `MAX_STACK_DEPTH` (for `StackSpider` tuning), `FLAGS`, special signatures, and even on how your `definition` files should be named (by default, it expects a `.definition`).
+    * **The Configuration Module:** Found under `Class/Utility`, this is your control center. You can adjust `MAX_STACK_DEPTH` (for `StackSpider` tuning), `FLAGS`, special signatures, and even on how your definition` files should be named (by default, it expects a `.definition`).
 
     * **Testing Performance:** By default, Ignition knows if you are in Studio and enables *"Bouncer"* mode. To test your game's raw speed while still in Studio, toggle `FORCE_PRODUCTION_MODE` in the config to switch to *"Racer"* mode.
 
@@ -233,7 +233,7 @@ return class "Vector" {
 }
 ```
 
-Moreover, unlike `METADATA`, Ignition also provides `PLACEHOLDER`, which allows you to store actual values that cannot be created on the header, such as `Signals`, `Promises`, `Instances`, `Events`, and many more that has a `new()` or in general terms: **can be instantiated**.
+Moreover, unlike `METADATA`, Ignition also provides `PLACEHOLDER`, which allows you to store actual values that cannot be created on the header, such as `Signals`, `Promises`, `Instances`, `Events`, and many more that has a `new()` or in general terms: **can be instantiated.**
 
 This is useful if you have members such as `self._update`, `self.Event`, `self.Thread`
 
@@ -256,7 +256,7 @@ Root
 > `import()` is strictly case-sensitive. It extracts the class name from the file name. If your file is `Zombie.implementation.luau`, it will search the `Registry` for the interface `Zombie` by omitting `.implementation.lua` from the name.
 
 > [!IMPORTANT]
-> `Registry` innately prevents its own functions from being called by external scripts via `assertCallingScript()`, and only scripts inside the `Class` folder structure can. Doing so will throw an **error**.
+> `Registry` innately prevents its own functions from being called by external scripts via `assertCallingScript()`, and only scripts inside the `Class` folder structure can. Doing so will throw an **error.**
 
 ### 🛠️ Memory Management
 Use the `free()` primitive for deep cleanup. Instead of just setting variables to `nil`, `free(item)` will:
@@ -417,7 +417,7 @@ Ignition gives you two ways to reference classes. Your choice determines how muc
 | Feature  | Eager Loading (`require`) | Lazy Loading (via `string`) |
 | --- | --- | --- |
 | **Method** | `extends (require(path.to.Header))` | `extends "ClassName"` |
-| **Traceability** | **Full autocomplete** and signature checks. | Flexible but **returns an `any` type; no autocomplete**. |
+| **Traceability** | **Full autocomplete** and signature checks. | Flexible but **returns an `any` type; no autocomplete.** |
 | **Circular Safety** | Rather risky especially with `mixins` *(but who does that?)* | No risks as it waits until the `class` object completes loading |
 | **Use Case** | Best for core or complex systems with tight hierarchies where autocomplete and type safety are paramount. | Best for high-level logic, abstraction, and decoupled components. |
 
@@ -432,7 +432,7 @@ While `LibraryTypes` provides the API surface, the heavy lifting occurs within `
     * **Static vs. Instance logic**: It reads your `FLAGS.Static` and determines whether a function should be rebound with `self` or left as a pure utility.
 
 2. **Advanced Overload Resolution**\
-    Ignition handles complex method signatures through **Intersection Types**. When the engine encounters a function with multiple signatures (via the `dummy` field):
+    Ignition handles complex method signatures through **Intersection Types.** When the engine encounters a function with multiple signatures (via the `dummy` field):
     * It iterates through the dummy table.
     * It transforms each individual callback into a `self`-bound function.
     * It merges them using `types.intersectionof()`.
@@ -481,9 +481,9 @@ end)
 
 ### 📝 Read-Only vs. Write-Only UX
 To protect the integrity of your implementation, the `ImportedClassObject` (the table returned by `import`) behaves differently depending on how you use it:
-1. **For Type Inference:** It allows **reading**. This is what makes `type MyClass = typeof(MyClass)` work. The type engine can *"see"* the members to build the type definition.
+1. **For Type Inference:** It allows **reading.** This is what makes `type MyClass = typeof(MyClass)` work. The type engine can *"see"* the members to build the type definition.
 
-2. **At Runtime:** It is **write-only**.
+2. **At Runtime:** It is **write-only.**
     * **Success:** `function MyClass:Grit() ... end` (Writing an implementation).
     * **Failure:** `print(MyClass.Health)` (Reading a property from the implementation table).
 

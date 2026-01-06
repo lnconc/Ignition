@@ -12,9 +12,9 @@ local function unyieldable<A, R>(fn: (...any) -> ...any, ...: A): (boolean, ...R
 
     if coroutine.status(thread) == "suspended" then
         coroutine.close(thread)
-        return false, "coroutine suspended"
+        return true, "coroutine suspended"
     end
-    return true, table.unpack(results, 2)
+    return false, table.unpack(results, 2)
 end
 
 return unyieldable

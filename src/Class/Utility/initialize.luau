@@ -3,6 +3,7 @@
 
 local Configuration = require("./Configuration")
 local env = require("../../Internal/env")
+local Log = require("../../Log")
 local Property = require("../../State/Property")
 local Types = require("../Types")
 local getOverloadedFunction = require("./getOverloadedFunction")
@@ -12,6 +13,7 @@ type Environment = Types.Environment
 type PropertyField = Types.PropertyField
 type GetClassObject<P, A> = Types.GetClassObject<P, A>
 type Symbol<T> = Types.Symbol<T>
+type Type<V> = Types.Type<V>
 
 local PROPERTY_FLAGS = Configuration.PROPERTY_FLAGS
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
@@ -20,7 +22,7 @@ local function initialize(
     object: any, 
     environment: Environment,
     data: { [any]: any }, 
-    upsert: <K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: string?, constructorContext: string? }) -> ()
+    upsert: <K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: Type<V>?, constructorContext: string? }) -> ()
 )
     local interface = environment.Interface
     local properties, closures = interface.properties, interface.closures
@@ -48,14 +50,14 @@ local function initialize(
                 local fn = if type(closureData) == "table" and closureData.isOverloaded 
                     then getOverloadedFunction(key, closureData) 
                     else closureData
-                fn = fn or function() error(`method {key} is unimplemented in {interface.name}`, 2) end
+                fn = fn or function() Log.UNIMPLEMENTED:throw(2, key, interface.name) end
 
                 local wrapper = function(...: any): any
                     if is_static then return (fn :: any)(...) end
                     local first_arg = ...
                     local masterObject = (environment.Master :: any) or object
                     if first_arg ~= masterObject then
-                        error(`invalid call signature: {key} must be called with ':' on {interface.name}`, 2)
+                        Log.INVALID_CALL_SIG:throw(2, key, interface.name)
                     end
                     return (fn :: any)(masterObject, select(2, ...))
                 end

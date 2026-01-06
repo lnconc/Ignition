@@ -2,6 +2,7 @@
 -- Class/Libs/import.lua
 
 local getCaller = require("../../Internal/getCaller")
+local Log = require("../../Log")
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 local Registry = require("../Utility/Registry")
@@ -25,7 +26,7 @@ local function import(_interface: Interface?): any
         local found = rings.private[key] or rings.protected[key] or rings.public[key]
         
         if not found then
-            error(`Member '{key}' must be defined in the header...`, 3)
+            Log.CANNOT_FIND_IMPLEMENTATION:throw(2, key)
         end
 
         local currentClosure = interface.closures[key]
@@ -38,7 +39,7 @@ local function import(_interface: Interface?): any
             end
 
             if not isVirtual then
-                error(`Cannot override non-virtual member '{key}' in class '{interface.name}'`, 3)
+                Log.OVERRIDE_NON_VIRTUAL:throw(2, key, interface.name)
             end
         end
         return found
@@ -48,7 +49,7 @@ local function import(_interface: Interface?): any
         __call = function(_, targetOrSignature: AnyFunction | Expects)
             if type(targetOrSignature) == "function" then
                 if interface.constructor.defined then
-                    error(`Constructor for '{interface.name}' already defined.`, 2)
+                    Log.CONSTRUCTOR_EXISTS:throw(2, interface.name)
                 end
                 interface.constructor.callback = targetOrSignature :: any
                 return nil :: any
@@ -89,7 +90,8 @@ local function import(_interface: Interface?): any
                     end
                 end
             end
-            error("Invalid import call. Expected a constructor or non-empty type signature.", 2)
+            Log.INVALID_IMPORT_CALL:throw(2)
+            return nil
         end,
         __newindex = function(_, key, value: AnyFunction | any)
             local isFn = type(value) == "function"
@@ -99,7 +101,7 @@ local function import(_interface: Interface?): any
                 local current = interface.closures[key]
                 if type(current) == "table" and current.isOverloaded then
                     if current.fallback then
-                        error(`Default/fallback implementation for '{key}' is already defined in '{interface.name}'.`, 2)
+                        Log.FALLBACK_EXISTS:throw(2, key, interface.name)
                     end
                     current.fallback = value
                 else
@@ -107,21 +109,21 @@ local function import(_interface: Interface?): any
                 end
             end
         end,
-        __index = function(key: string)
+        __index = function(key: string): any
             if key == "__complete__" then
                 return function()
                     return setmetatable({}, {
                         __index = function(_, k: string)
                             local val = interface.staticproperties.public[k]
                             if val == nil then
-                                error(`'{k}' is not a public static member of {interface.name}`, 2)
+                                Log.MISSING_STATIC_INDEX:throw(2, k, interface.name)
                             end
                             return val
                         end,
                         __newindex = function(_, k: string, v: any)
                             local val = interface.staticproperties.public[k]
                             if val == nil then
-                                error(`cannot set missing public static member '{k}' of {interface.name}`, 2)
+                                Log.MISSING_STATIC_WRITE:throw(2, k, interface.name)
                             end
                             interface.staticproperties.public[k] = if v == nil then Configuration.PLACEHOLDER else v
                         end,
@@ -133,7 +135,8 @@ local function import(_interface: Interface?): any
                     })
                 end
             end
-            error(`'{interface.name}' implementation is write-only. Use the header for type info.`, 2)
+            Log.WRITE_ONLY_IMPL:throw(2, interface.name)
+            return nil
         end
     })
 

@@ -1,14 +1,18 @@
 --!nonstrict
 -- Class/Libs/free.lua
 
+local xtypeof = require("../Utility/xtypeof")
+
 local function free(item: any)
     if not item then return end
     if typeof(item) == "function" then
         item()
         return
     end
-    local item_type = typeof(item)
-    if item_type == "table" then
+    local item_type = xtypeof(item)
+    if item_type == "promise" then
+        item:cancel()
+    elseif item_type == "table" then
         if type(item.Destroy) == "function" then
             item:Destroy()
         elseif type(item.Disconnect) == "function" then

@@ -1,6 +1,7 @@
 --!strict
 -- Class/Libs/mixin.lua
 
+local Log = require("../../Log")
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 local Registry = require("../Utility/Registry")
@@ -16,7 +17,7 @@ local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
 
 local function mixin(name: string)
     local mixin_interface = class(name)
-    return function(...: string | Interface)
+    return function(...: string | Interface): (mixin_fields: PropertiesFields) -> Interface
         -- retrieve other interfaces for field dumping
         local components: { Interface } = {}
         for _, component in ipairs({ ... }) do
@@ -25,11 +26,11 @@ local function mixin(name: string)
                 interface = Registry.WaitForInterface(interface)
             end
             if interface.flags.ClassFinalized then
-                error(`Cannot mixin finalized class '{interface.name}' into '{name}'`, 2)
+                Log.MIXIN_FINALIZED:throw(2, interface.name, name)
             end
             table.insert(components, interface)
         end
-        return function(mixin_fields: PropertiesFields)
+        return function(mixin_fields: PropertiesFields): Interface
             local final_fields = { public = {}, private = {}, protected = {} }
             local closures, virtuals = {}, {}
             local function explicit_copy(dst: any, k, v, fromName: string)
@@ -39,7 +40,7 @@ local function mixin(name: string)
                     if dst[k] ~= nil then
                         local existingFlags = dst[k].flags :: { [Symbol<string>]: boolean }
                         if not isVirtual or not existingFlags[VIRTUAL_FLAG] then
-                            error(`Member '{k}' in '{name}' is defined in multiple components, and at least one is non-virtual. (Check component: {fromName})`, 3)
+                            Log.MIXIN_COLLISION:throw(2, k, name, fromName)
                         end
                     end
                     
@@ -66,9 +67,9 @@ local function mixin(name: string)
                 copy_fields_to(component.properties, component.name)
             end
             copy_fields_to(mixin_fields, name)
-            mixin_interface(final_fields :: PropertiesFields)
-            local interface = Registry.GetInterface(name)
+            local interface = mixin_interface(final_fields :: PropertiesFields)
             interface.closures = closures
+            return interface :: Interface
         end
     end
 end

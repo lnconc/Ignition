@@ -2,6 +2,7 @@
 --!strict
 -- Class/Utility/encapsulate.lua
 
+local Log = require("../../Log")
 local Configuration = require("./Configuration")
 local Value = require("../../State/Value")
 local Types = require("../Types")
@@ -10,12 +11,15 @@ local initialize = require("./initialize")
 local ValueTypes = require("../../State/Types")
 local free = require("../Libs/free")
 local Registry = require("./Registry")
+local Unyieldable = require("../../Unyieldable")
+local xtypeof = require("./xtypeof")
 
 type Symbol<T> = Types.Symbol<T>
 type Environment = Types.Environment
+type Type<V> = Types.Type<V>
 
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
-local NULL_PLACEHOLDER = Configuration.PLACEHOLDER
+local PLACEHOLDER = Configuration.PLACEHOLDER
 local PROPERTY_FLAGS = Configuration.PROPERTY_FLAGS
 local OPERATORS = {
     "__add", "__sub", "__mul", "__div", "__mod", "__pow", "__unm",
@@ -27,7 +31,22 @@ local match = string.match
 local WithinScope = StackSpider.WithinScope
 local WithinFunction = StackSpider.WithinFunction
 
-local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: string?, constructorContext: string? })
+local function assessTypeMatching<K, V>(k: K, v: V, t: Type<V>)
+    local vt = xtypeof(v)
+    if vt == "symbol" and v == PLACEHOLDER then return end
+    if t == "table" and type(t.match) == "function" then
+        local yielded, okay = Unyieldable(t.match, v)
+        if yielded then
+            Log.THREAD_YIELDED:throw(2, "match()")
+        elseif okay == false then
+            Log.FAILED_TYPE_CHECK:throw(2, k, t.expects or "unknown", vt)
+        end
+    elseif t == "string" and vt ~= t then
+        Log.FAILED_TYPE_CHECK:throw(2, k, t, vt)
+    end
+end
+
+local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: Type<V>?, constructorContext: string? })
     local cur = ring[key]
     local reactive, environment, flags, type_, constructorContext = options.reactive, options.environment, options.flags, options.type, options.constructorContext
     if (reactive and cur and cur._DANGEROUS_value == value) or cur == value then 
@@ -35,14 +54,19 @@ local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Sy
     end
 
     if not PRODUCTION_MODE_ENABLED then
-        if type_ and typeof(value) ~= type_ then
-            error(`change of property '{key}' failed to pass type check test`, 2)
+        if type_ and type_ ~= "any" then
+            assessTypeMatching(key, value, type_)
         end
-        if not flags[PROPERTY_FLAGS.Optional] and value == nil then
-            error(`cannot set nil to required property '{key}'`, 2)
-        elseif not (flags :: { FromInit: boolean }).FromInit then
-            if constructorContext ~= nil and flags[PROPERTY_FLAGS.Readonly] and not WithinFunction(environment, constructorContext) then
-                error(`cannot set readonly property '{key}'`, 2)
+        local fromInit = (flags :: { FromInit: boolean }).FromInit
+        local isOptional = flags[PROPERTY_FLAGS.Optional]
+        local isReadonly = flags[PROPERTY_FLAGS.Readonly]
+        if not isOptional and value == nil then
+            if not (isReadonly and fromInit) then
+                Log.REQUIRED_SET_NIL:throw(2, key)
+            end
+        elseif not fromInit and constructorContext ~= nil and isReadonly then
+            if not WithinFunction(environment, constructorContext) then
+                Log.READONLY_SET:throw(2, key)
             end
         end
     end
@@ -52,14 +76,13 @@ local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Sy
             cur = (Value.new(value, free) :: any) :: ValueTypes.InternalValue<any>
             if flags[PROPERTY_FLAGS.Constant] or (type(key) == "string" and match(key, "^[A-Z]+$") ~= nil) then
                 cur._CONSTANT_locked = true
-                cur._CONSTANT_error_msg = `cannot set constant property '{key}'`
             end
             ring[key] = cur
         else
             (cur :: ValueTypes.InternalValue<any>):set(value)
         end
     else
-        ring[key] = if value == nil then NULL_PLACEHOLDER else value
+        ring[key] = if value == nil then PLACEHOLDER else value
     end
 end
 
@@ -87,20 +110,21 @@ local function encapsulate(object: any, metatable: any, environment: Environment
     end
 
     function metatable:__index(key: any): any
+        if key == "Deleting" and environment.Deleting then return true end
         if environment.Deleting then
-            error(`{environment.Id} is currently being deleted!`, 2)
+            Log.DELETING_STATE:throw(2, environment.Id)
         end
         if PRODUCTION_MODE_ENABLED then
             local out = data[key]
             if reactiveMap[key] and out then out:evaluate() end
-            return if out == NULL_PLACEHOLDER then nil else out
+            return if out == PLACEHOLDER then nil else out
         end
 
         local info = specifierMap[key]
         if not info then
             local super = environment.SuperClass
             if super.object then return (super.object :: any)[key] end
-            error(`attempt to index missing property '{key}'`, 2)
+            Log.MISSING_PROP_INDEX:throw(2, key)
         end
         local static, specifier, reactive = info.static, info.specifier, reactiveMap[key]
         if specifier == "public" and not static and not reactive then
@@ -108,21 +132,21 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         elseif specifier ~= "public" then
             local included, protects = WithinScope(environment)
             if specifier == "private" and not included then
-                error(`attempt to access private property '{key}'`, 2)
+                Log.PRIVATE_ACCESS:throw(2, key)
             elseif specifier == "protected" and not (included or protects) then
-                error(`attempt to access protected property '{key}'`, 2)
+                Log.PROTECTED_ACCESS:throw(2, key)
             end
         end
 
         local ring = if static then staticproperties[specifier] else data[specifier]
         local out = ring[key]
         if reactive and out then out:evaluate() end
-        return if out == NULL_PLACEHOLDER then nil else out
+        return if out == PLACEHOLDER then nil else out
     end
 
     function metatable:__newindex(key: any, value: any)
         if environment.Deleting then
-            error(`{environment.Id} is currently being deleted!`, 2)
+            Log.DELETING_STATE:throw(2, environment.Id)
         end
         if PRODUCTION_MODE_ENABLED then
             upsert(data, key, value, {
@@ -139,16 +163,18 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         if not info then
             local super = environment.SuperClass
             if super.object then (super.object :: any)[key] = value; return end
-            error(`attempt to write missing property '{key}'`, 2)
+            Log.MISSING_PROP_WRITE:throw(2, key)
         end
         local static, specifier, reactive = info.static, info.specifier, reactiveMap[key]
         if specifier == "public" and not static and (environment.PropertyFlags[key] and not next(environment.PropertyFlags[key])) then
-            (data.public :: any)[key] = if value == nil then NULL_PLACEHOLDER else value
+            (data.public :: any)[key] = if value == nil then PLACEHOLDER else value
             return
         elseif specifier ~= "public" then
             local included, protects = WithinScope(environment)
-            if (specifier == "private" and not included) or (specifier == "protected" and not (included or protects)) then
-                error(`attempt to write {specifier} property '{key}' {if environment.Master then `(from {environment.Master.Interface.name})` else nil}`, 2)
+            if specifier == "private" and not included then
+                Log.PRIVATE_WRITE:throw(2, key)
+            elseif specifier == "protected" and not (included or protects) then
+                Log.PROTECTED_WRITE:throw(2, key)
             end
         end
 
@@ -162,6 +188,36 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         })
     end
 
+    -- create a template __iter
+    metatable.__iter = function()
+        if environment.Deleting then
+            Log.DELETING_STATE:throw(2, environment.Id)
+        end
+        
+        local keys = {}
+        if PRODUCTION_MODE_ENABLED then
+            for k, _ in pairs(data) do table.insert(keys, k) end
+        else
+            local included, protected = WithinScope(environment)
+            for k, _ in pairs(data.public) do table.insert(keys, k) end
+            if included or protected then
+                for k, _ in pairs(data.protected) do table.insert(keys, k) end
+            end
+            if included then
+                for k, _ in pairs(data.private) do table.insert(keys, k) end
+            end
+        end
+        local index = 0
+        local count = #keys
+        return function()
+            index += 1
+            if index <= count then
+                local key = keys[index]
+                return key, object[key]
+            end
+        end
+    end
+
     for _, op in ipairs(OPERATORS) do
         local impl = interface.closures[op]
         if not impl then continue end
@@ -171,14 +227,14 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         else
             metatable[op] = function(a, b)
                 if environment.Deleting then
-                    error(`{environment.Id} is currently being deleted!`, 2)
+                    Log.DELETING_STATE:throw(2, environment.Id)
                 end
                 local info = specifierMap[op]
                 local specifier = info.specifier or "public"
                 if info and specifier ~= "public" then
                     local inc, prot = WithinScope(environment)
                     if not (inc or (specifier == "protected" and prot)) then
-                        error(`Operator {op} access violation`, 2)
+                        Log.OPERATOR_VIOLATION:throw(2, op, specifier)
                     end
                 end
                 return (impl :: any)(a, b)

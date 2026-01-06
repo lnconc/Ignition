@@ -52,7 +52,7 @@ By categorizing members into these three scopes, you create a *"blackbox"* archi
     !!! note Matryoshka Access
         Child `classes` can read/write `protected` properties of their parents, however, parent `classes` themselves cannot view the `protected` or `private` members of their children themselves!
 
-        Access flows **up** the inheritance chain, never **down**.
+        Access flows **up** the inheritance chain, never **down.**
 
 
 **Summary of Permissions**

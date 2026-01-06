@@ -1,6 +1,7 @@
 --!strict
 -- State/Value.lua
 
+local Log = require("../Log")
 local Types = require("./Types")
 type Value<T> = Types.Value<T>
 type InternalValue<T> = Types.InternalValue<T>
@@ -13,7 +14,7 @@ end
 
 function ValueMetatable.set<T>(self: InternalValue<T>, value: T)
     if self._CONSTANT_locked then
-        error(if self._CONSTANT_error_msg then self._CONSTANT_error_msg else `cannot set constant from {typeof(self._DANGEROUS_value)} to {typeof(value)}`, 2)
+        Log.CONSTANT_SET:throw(2, typeof(self._DANGEROUS_value), typeof(value))
     end
     if self._DANGEROUS_value == value then return end
     self._DANGEROUS_value = value
@@ -45,7 +46,7 @@ function Value.new<T>(defaultValue: T, destructor: (obj: T) -> ()?): Value<T>
             type((defaultValue :: any).Destroy) ~= "function"
         ) and destructor == nil
     then
-        warn("Creating a Value wrapping an Instance without a destructor may lead to memory leaks. Consider providing a destructor to clean up the Instance when the Value is destroyed.")
+        Log.INST_WRAPPER_NO_DEST:warn()
     end
     local self = {}
     self._destructor = destructor

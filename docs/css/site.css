@@ -17,10 +17,6 @@
     max-width: 60rem;
 }
 
-.md-typeset table td:nth-child(n+2), .md-typeset table th:nth-child(n+2) {
-    text-align: center !important;
-}
-
 .md-main__inner {
     max-width: 60rem;
     margin-top: 1rem;
@@ -28,11 +24,6 @@
 
 .md-footer, .md-main, .md-footer__inner, .md-footer-meta {
     width: 100%
-}
-
-.__cloak {
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
 }
 
 .md-header__title {
@@ -93,4 +84,21 @@
     visibility: visible;
     text-transform: uppercase;
     letter-spacing: 0.725px;
+}
+
+.chip {
+    float: right;
+    font-weight: 300;
+    font-size: 0.45em;
+    padding: 8px 15px;
+    line-height: 0.75rem;
+    border-radius: 30px;
+    background-color: rgba(255, 106, 0, 0.2);
+    color: rgba(255, 106, 0);
+    margin-left: 10px;
+}
+
+.chip.chip-version {
+    background-color: rgba(200, 200, 200, 0.2);
+    color: rgba(200, 200, 200);
 }

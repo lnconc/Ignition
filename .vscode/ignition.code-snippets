@@ -133,22 +133,22 @@
 		"prefix": "impl",
 		"body": [
 			"--!strict",
-			"-- ${2:$TM_FILENAME_BASE}.lua",
+			"-- ${TM_FILENAME_BASE}.lua",
 			"",
 			"local ReplicatedStorage = game:GetService(\"ReplicatedStorage\")",
 			"local Ignition = require(ReplicatedStorage.Ignition)",
 			"",
 			"local import, ref, free = Ignition.import, Ignition.ref, Ignition.free",
 			"",
-			"local ${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Header = require(\"./${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}.${1:definition}\")",
-			"local ${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}} = import(${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Header)",
-			"type ${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Instance = typeof(${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}})",
+			"local ${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Header = require(\"./${1}.${2:definition}\")",
+			"local ${1} = import(${1}Header)",
+			"type ${1}Instance = typeof(${1})",
 			"",
-			"${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}(function(self)",
+			"${1}(function(self: ${1}Instance)",
 			"\t$0",
 			"end)",
 			"",
-			"return true"
+			"return ${1}:__complete__()"
 		],
 		"description": "Create a Class implementation template"
 	},
@@ -156,23 +156,23 @@
 		"prefix": "impl-super",
 		"body": [
 			"--!strict",
-			"-- ${1:$TM_FILENAME_BASE}.lua",
+			"-- ${TM_FILENAME_BASE}.lua",
 			"",
 			"local ReplicatedStorage = game:GetService(\"ReplicatedStorage\")",
 			"local Ignition = require(ReplicatedStorage.Ignition)",
 			"",
 			"local import, super = Ignition.import, Ignition.super",
 			"",
-			"local ${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Header = require(\"./${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}.${2:definition}\")",
-			"local ${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}} = import(${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Header)",
-			"type ${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Instance = typeof(${2:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}})",
+			"local ${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}Header = require(\"./${1}.${2:definition}\")",
+			"local ${1} = import(${1}Header)",
+			"type ${1}Instance = typeof(${1})",
 			"",
-			"${1:${TM_FILENAME_BASE/^(.+?)\\.(definition|implementation|d|h|header)$/$1/}}(function(self)",
+			"${1}(function(self: ${1}Instance)",
 			"\tsuper()",
 			"\t$0",
 			"end)",
 			"",
-			"return true"
+			"return ${1}:__complete__()"
 		],
 		"description": "Create a Class implementation with super()"
 	}

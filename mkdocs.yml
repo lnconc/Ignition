@@ -1,8 +1,9 @@
 site_name: Ignition
+site_url: https://lnconc.github.io/Ignition/
+repo_url: https://github.com/lnconc/Ignition/
+repo_name: lnconc/Ignition
 theme:
   name: material
-  repo_url: https://github.com/lnconc/Ignition
-  repo_name: lnconc/Ignition
   logo: img/logo.svg
   favicon: img/logo.svg
   palette:

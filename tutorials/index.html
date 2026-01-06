@@ -1,0 +1,2893 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="basics/Classes%20and%20Objects/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../img/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Getting Started - Ignition</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+  
+  
+  
+  
+  <style>:root{--md-annotation-icon:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M6%2013v-2h8l-3.5-3.5%201.42-1.42L17.84%2012l-5.92%205.92-1.42-1.42L14%2013zm16-1a10%2010%200%200%201-10%2010A10%2010%200%200%201%202%2012%2010%2010%200%200%201%2012%202a10%2010%200%200%201%2010%2010m-2%200a8%208%200%200%200-8-8%208%208%200%200%200-8%208%208%208%200%200%200%208%208%208%208%200%200%200%208-8%22/%3E%3C/svg%3E');}</style>
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/theme.css">
+    
+      <link rel="stylesheet" href="../css/site.css">
+    
+      <link rel="stylesheet" href="../css/code-theme.css">
+    
+      <link rel="stylesheet" href="../css/pills.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#getting-started" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Ignition" class="md-header__button md-logo" aria-label="Ignition" data-md-component="logo">
+      
+  <img src="../img/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Ignition
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Getting Started
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api-reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Ignition" class="md-nav__button md-logo" aria-label="Ignition" data-md-component="logo">
+      
+  <img src="../img/logo.svg" alt="logo">
+
+    </a>
+    Ignition
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="./" class="md-nav__link md-nav__link--active">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link md-nav__link--active" for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basics
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Basics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="basics/Classes%20and%20Objects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes &amp; Objects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="basics/Access%20Specifiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Access Specifiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="basics/Class%20Importation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Class Importation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="basics/Class%20Functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Class Functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="basics/Class%20Properties/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Class Properties
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced/Friends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Friends &amp; Mutual Trust
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced/Memory%20Management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory &amp; Context Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced/Function%20Overloading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function Overloading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced/Operator%20Overloading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operator Overloading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced/Class%20Modifiers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Class Modifiers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced/Inheritance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inheritance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced/Compositions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compositions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="advanced/Optimizations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimizations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../api-reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Error/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Class API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Class API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/class/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    class
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/dumpsize/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    dumpsize
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_3" id="__nav_3_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/new/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    new
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/import/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    import
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/extends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    extends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/super/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    super
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/mixin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    mixin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_4" id="__nav_3_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schematics
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Schematics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/property/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    property
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/func/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    func
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/nullable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nullable
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/union/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    union
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_5" id="__nav_3_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Memory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/ref/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ref
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/anon/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    anon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/delete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    delete
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/free/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    free
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3_6" id="__nav_3_3_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modifiers & Visibility
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modifiers & Visibility
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/abstract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    abstract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/final/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    final
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/reactive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    reactive
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/friend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    friend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/mutual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    mutual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/Constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Class/Types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    State API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/State/Value/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Value
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/State/Property/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Property
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/State/Observe/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observe
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Libraries
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Libraries
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Unyieldable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Unyieldable
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/Symbol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Symbol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-need-to-know" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What You Need To Know
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wally-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wally (Recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roblox-model-rbxm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roblox Model (.rbxm)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creator-store-toolbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creator Store (Toolbox)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-project-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Project Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-creating-a-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Creating a class
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-system-configuration-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. System Configuration (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-igniting-the-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Igniting the Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Pitfalls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#under-the-hood-the-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Under the Hood: The Registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href=".." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="./" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Tutorials
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="getting-started"><strong>Getting Started</strong><a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
+<p>Welcome to Ignition's tutorial section! Here, you'll learn how to architect code strictly and intuitively with Ignition.</p>
+<div class="admonition failure">
+<p class="admonition-title">But wait, heed before you proceed...</p>
+<p><strong>Ignition is not your friend; it is your supervisor.</strong></p>
+<p>If you are looking for a <em>"plug-and-play"</em> utility library to sprinkle into an existing project, <strong>turn back now.</strong> Ignition is a strict architectural framework that physically enforces the boundaries of your code.  </p>
+<p>By proceeding, you must be aware that:</p>
+<ul>
+<li>
+<p><strong>The Spider is Watching:</strong> The <code>StackSpider</code> will crash your thread if you attempt to <em>"cheat"</em> your way into private members from the wrong scope.</p>
+</li>
+<li>
+<p><strong>Header-First or Fail:</strong> You cannot <em>"duct-tape"</em> logic together. You must define your interface in a <code>.definition</code> file before you are allowed to write a single line of implementation.</p>
+</li>
+<li>
+<p><strong>No "Metatable Soup":</strong> Ignition kills the <em>"pinky-promise"</em> style of OOP. There are <strong><u>no</u></strong> underscores here; there are only hard access violations and strict type-matching.</p>
+</li>
+<li>
+<p><strong>The <code>ref()</code> Tax.. and others..:</strong> You must manually wrap callbacks in <code>ref()</code> when crossing engine boundaries, or the security system will treat your own code as an intruder.</p>
+</li>
+</ul>
+<p>This rigidity is a feature, not a bug.
+Ignition is designed for large-scale, high-integrity systems where "moving fast and breaking things" is replaced by <strong>"designing once and running forever."</strong></p>
+<p>If you aren't 100% willing to let a framework dictate your file structure and access patterns for the sake of absolute memory safety and zero-overhead production speed, Ignition is not for you.</p>
+</div>
+<hr />
+<h2 id="what-you-need-to-know"><strong>What You Need To Know</strong><a class="headerlink" href="#what-you-need-to-know" title="Permanent link">&para;</a></h2>
+<p>These tutorials assume:</p>
+<ul>
+<li>You are comfortable with Roblox and the Luau scripting language.<ul>
+<li>By extension, you are familiar with C++ or Java coding paradigms.</li>
+</ul>
+</li>
+<li>You have basic understanding on the concepts of Object Oriented Programming.</li>
+<li>You are ready with choosing between eager or lazy linking.<ul>
+<li>You are comfortable with losing intellisense when you use lazy linking</li>
+</ul>
+</li>
+<li>
+<p class="annotate">You are comfortable with wrapping engine level callbacks in <code>ref()</code>. (1)</p>
+<ol>
+<li>You must use <code>ref()</code> whenever a function is called from a non-scripting thread (like <code>RunService</code> or <code>task.delay</code>) to prevent <code>StackSpider</code> access violations.</li>
+</ol>
+</li>
+</ul>
+<p>Of course, depending on your background, some concepts may feel more alien than others. Ignition is built for professional endurance; the initial friction you feel is simply the framework ensuring your architecture is bulletproof, so don't be discouraged.</p>
+<h2 id="installation"><strong>Installation</strong><a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<p>You can deploy Ignition into your project using one of the following strategies.</p>
+<h3 id="wally-recommended"><strong>Wally (Recommended)</strong><a class="headerlink" href="#wally-recommended" title="Permanent link">&para;</a></h3>
+<p>Wally is the standard package manager for professional Luau development.</p>
+<ol>
+<li>Copy <code>Ignition = "lnconcinnity/ignition@latest"</code> for the latest release.</li>
+<li>Paste the string under the <code>[dependencies]</code> section of your <code>wally.toml</code>.</li>
+<li>Run <code>wally install</code> in your command line.</li>
+</ol>
+<h3 id="source-code"><strong>Source Code</strong><a class="headerlink" href="#source-code" title="Permanent link">&para;</a></h3>
+<p>Use this method if you synchronize external files into Roblox Studio via Rojo.</p>
+<ol>
+<li>Download the source code ZIP from the <a href="https://github.com/lnconc/Ignition/releases/latest">latest release</a>.</li>
+<li>Copy the <code>src</code> folder from the ZIP archive.</li>
+<li>Paste the folder into your project's <code>shared</code> or <code>lib</code> directory.</li>
+<li>Rename the folder to <code>Ignition</code>.</li>
+</ol>
+<h3 id="roblox-model-rbxm"><strong>Roblox Model (.rbxm)</strong><a class="headerlink" href="#roblox-model-rbxm" title="Permanent link">&para;</a></h3>
+<p>This is the fastest method for developers working exclusively inside Roblox Studio.</p>
+<ol>
+<li>Download the <code>Ignition.rbxm</code> file from the <a href="https://github.com/lnconc/Ignition/releases/latest">latest release</a>.</li>
+<li>Drag and drop the file directly into the Roblox Studio Explorer.</li>
+<li>Place the folder into <code>ReplicatedStorage</code> for shared access.</li>
+</ol>
+<h3 id="creator-store-toolbox"><strong>Creator Store (Toolbox)</strong><a class="headerlink" href="#creator-store-toolbox" title="Permanent link">&para;</a></h3>
+<p>You can add Ignition to your inventory through the Roblox Creator Store.</p>
+<ol>
+<li>Open the <strong>Toolbox</strong> in Roblox Studio.</li>
+<li>Search for <code>Ignition</code>, with <strong>lnconcinnity</strong> filtered as creator, under the Models tab.</li>
+<li>Click the model to insert it into your current place.</li>
+</ol>
+<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<p>Ignition is a <strong>Dependency Injection (DI)</strong> framework. Your primary concern is no longer <em>"where the script goes,"</em> but how you structure your <code>Solutions</code>.</p>
+<h3 id="1-project-structure">1. Project Structure<a class="headerlink" href="#1-project-structure" title="Permanent link">&para;</a></h3>
+<p>Ignition crawls your environment to find folders suffixed with Solution. It then automatically links every module inside them.
+<div class="highlight"><pre><span></span><code>Root (ServerScriptService / StarterPlayerScripts)
+ └── GameSolution
+     └── Player
+         ├── Player.definition     &lt;-- The &quot;Interface&quot; (Header)
+         └── Player                &lt;-- The &quot;Logic&quot; (Source)
+</code></pre></div></p>
+<h3 id="2-creating-a-class">2. Creating a <code>class</code><a class="headerlink" href="#2-creating-a-class" title="Permanent link">&para;</a></h3>
+<p>Ignition enforces a strict separation between <em>what</em> a class <strong>is</strong> and <em>what</em> a class <strong>does.</strong></p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">BaseRemote.definition</label><label for="__tabbed_1_2">BaseRemote</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>This is an example of a <code>.definition</code> file and how it's structured, this is your <strong>contract.</strong> It defines public and protected members.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">--!strict</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">ReplicatedStorage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">game</span><span class="p">:</span><span class="nc">GetService</span><span class="p">(</span><span class="s2">&quot;ReplicatedStorage&quot;</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">Ignition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">require</span><span class="p">(</span><span class="nv">ReplicatedStorage</span><span class="p">.</span><span class="nv">Ignition</span><span class="p">)</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">class</span><span class="p">,</span><span class="w"> </span><span class="nv">property</span><span class="p">,</span><span class="w"> </span><span class="nv">abstract</span><span class="p">,</span><span class="w"> </span><span class="nv">func</span><span class="p">,</span><span class="w"> </span><span class="nv">FLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
+<span class="w">    </span><span class="nv">Ignition</span><span class="p">.</span><span class="nv">class</span><span class="p">,</span><span class="w"> </span><span class="nv">Ignition</span><span class="p">.</span><span class="nv">property</span><span class="p">,</span><span class="w"> </span><span class="nv">Ignition</span><span class="p">.</span><span class="nv">abstract</span><span class="p">,</span><span class="w"> </span><span class="nv">Ignition</span><span class="p">.</span><span class="nv">func</span><span class="p">,</span><span class="w"> </span><span class="nv">Ignition</span><span class="p">.</span><span class="nv">FLAGS</span>
+
+<span class="kr">return</span><span class="w"> </span><span class="nf">abstract</span><span class="w"> </span><span class="p">(</span><span class="nf">class</span><span class="w"> </span><span class="s2">&quot;BaseRemote&quot;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">public</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nv">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">property</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nv">exposure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;shared&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nv">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">FLAGS</span><span class="p">.</span><span class="nv">Readonly</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="nv">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nv">protected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nv">Send</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">func</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nv">exposure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;shared&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nv">dummy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kc">nil</span><span class="w"> </span><span class="p">::</span><span class="w"> </span><span class="nc">any</span><span class="p">)</span><span class="w"> </span><span class="p">::</span><span class="w"> </span><span class="p">(</span><span class="nc">self</span><span class="p">:</span><span class="w"> </span><span class="nc">any</span><span class="p">,</span><span class="w"> </span><span class="nc">options</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nc">targets</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nc">Player</span><span class="w"> </span><span class="p">},</span>
+<span class="w">                </span><span class="nc">unreliable</span><span class="p">:</span><span class="w"> </span><span class="nc">boolean</span><span class="p">,</span>
+<span class="w">                </span><span class="nc">args</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="nc">number</span><span class="p">]:</span><span class="w"> </span><span class="nc">any</span><span class="p">,</span><span class="w"> </span><span class="nc">n</span><span class="p">:</span><span class="w"> </span><span class="nc">number</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">})</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="p">(),</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="p">})</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>The implementation file is your <strong>source.</strong> You use <code>import()</code> to bind your logic to the definition.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">--!strict</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">ReplicatedStorage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">game</span><span class="p">:</span><span class="nc">GetService</span><span class="p">(</span><span class="s2">&quot;ReplicatedStorage&quot;</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">Ignition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">require</span><span class="p">(</span><span class="nv">ReplicatedStorage</span><span class="p">.</span><span class="nv">Ignition</span><span class="p">)</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">import</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Ignition</span><span class="p">.</span><span class="nv">import</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">BaseRemoteHeader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">require</span><span class="p">(</span><span class="nv">script</span><span class="p">.</span><span class="nv">Parent</span><span class="p">[</span><span class="s2">&quot;BaseRemote.definition&quot;</span><span class="p">])</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">BaseRemote</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">import</span><span class="p">(</span><span class="nv">BaseRemoteHeader</span><span class="p">)</span>
+<span class="kr">type</span><span class="w"> </span><span class="nc">BaseRemoteInstance</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nb">typeof(</span><span class="nv">BaseRemote</span><span class="p">)</span>
+
+<span class="kr">function</span><span class="w"> </span><span class="nc">BaseRemote</span><span class="p">:</span><span class="nf">Send</span><span class="p">(</span><span class="nv">options</span><span class="p">)</span>
+<span class="w">    </span><span class="c1">-- Logic for sending data</span>
+<span class="kr">end</span>
+
+<span class="c1">-- The Constructor</span>
+<span class="nf">BaseRemote</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="nv">self</span><span class="p">:</span><span class="w"> </span><span class="nc">BaseRemoteInstance</span><span class="p">,</span><span class="w"> </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="nc">string</span><span class="p">)</span>
+<span class="w">    </span><span class="nv">self</span><span class="p">.</span><span class="nv">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">name</span>
+<span class="kr">end</span><span class="p">)</span>
+
+<span class="kr">return</span><span class="w"> </span><span class="nv">BaseRemote</span><span class="p">:</span><span class="nc">__complete__</span><span class="p">()</span><span class="w"> </span><span class="c1">-- mark it as complete</span>
+</code></pre></div>
+<div class="admonition danger">
+<p class="admonition-title">Type Integrity Warning</p>
+<p>This example <strong>eagerly loads</strong> the interface by directly requiring the header (which allows the type solver to properly infer the <code>class</code> object thanks to traceability). While Ignition allows <strong>lazy loading</strong> by leaving <code>import()</code> empty, doing so causes you to <u>lose</u> <strong>ALL</strong> type    inferences (<code>Types</code> will return <code>any</code> instead). </p>
+<p><strong>Design your architecture accordingly.</strong></p>
+</div>
+</div>
+</div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Skip the hassle of having to manually define either both of your <em>header/source</em> files by using these <a href="https://raw.githubusercontent.com/lnconc/Ignition/refs/heads/master/.vscode/ignition.code-snippets">QoL snippets for VSCode</a>!</p>
+<p>Do note that the snippet for <strong>implementation/source files</strong> are on <strong>EAGER</strong>, which risks circular dependencies, <em>but who in their right mind would circularly reference the header and source files?</em></p>
+</div>
+<h3 id="3-system-configuration-optional">3. System Configuration <em>(Optional)</em><a class="headerlink" href="#3-system-configuration-optional" title="Permanent link">&para;</a></h3>
+<p>Before the system is live, you can modify the <code>Configuration</code> file within the Ignition core. This defines where the framework looks for code and what it ignores.
+<div class="highlight"><pre><span></span><code><span class="c1">-- Ignition/Configuration</span>
+<span class="kr">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">VERSION</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">version</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">-- Defines where Ignition starts crawling for Solutions</span>
+<span class="w">    </span><span class="nv">ROOT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kr">if</span><span class="w"> </span><span class="nv">game</span><span class="p">:</span><span class="nc">GetService</span><span class="p">(</span><span class="s2">&quot;RunService&quot;</span><span class="p">):</span><span class="nc">IsServer</span><span class="p">()</span><span class="w"> </span>
+<span class="w">        </span><span class="kr">then</span><span class="w"> </span><span class="nv">game</span><span class="p">:</span><span class="nc">GetService</span><span class="p">(</span><span class="s2">&quot;ServerScriptService&quot;</span><span class="p">)</span><span class="w"> </span>
+<span class="w">        </span><span class="kr">else</span><span class="w"> </span><span class="nv">game</span><span class="p">:</span><span class="nc">GetService</span><span class="p">(</span><span class="s2">&quot;Players&quot;</span><span class="p">).</span><span class="nv">LocalPlayer</span><span class="p">:</span><span class="nc">WaitForChild</span><span class="p">(</span><span class="s2">&quot;PlayerScripts&quot;</span><span class="p">),</span>
+
+<span class="w">    </span><span class="nv">SHARED_ROOT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">game</span><span class="p">:</span><span class="nc">GetService</span><span class="p">(</span><span class="s2">&quot;ReplicatedStorage&quot;</span><span class="p">),</span>
+
+<span class="w">    </span><span class="c1">-- Names that Ignition will never crawl</span>
+<span class="w">    </span><span class="nv">EXCLUDES</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="s2">&quot;assets&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;templates&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;prefabs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;temp&quot;</span><span class="p">),</span>
+
+<span class="w">    </span><span class="c1">-- The suffix required for a folder to be treated as a Solution</span>
+<span class="w">    </span><span class="nv">SOLUTIONS_KEY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Solution&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Modifying the <code>ROOT</code> allows you to restrict Ignition to specific sub-folders, reducing the crawling overhead in massive projects.</p>
+</div>
+<h3 id="4-igniting-the-engine">4. Igniting the Engine<a class="headerlink" href="#4-igniting-the-engine" title="Permanent link">&para;</a></h3>
+<p>The final step is the initialization. This is done by <code>require</code>-ing the Ignition module and calling it as a function.</p>
+<h4 id="override-definition-extensions">Override Definition Extensions<a class="headerlink" href="#override-definition-extensions" title="Permanent link">&para;</a></h4>
+<p>By default, Ignition looks for <code>.definition</code> files. However, you can pass a string argument during initialization to override the expected file extension (e.g., if you prefer <code>.interface</code> or <code>.header</code>, or more efficiently: <code>.d</code>).
+<div class="highlight"><pre><span></span><code><span class="c1">-- main.server.lua</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">ReplicatedStorage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">game</span><span class="p">:</span><span class="nc">GetService</span><span class="p">(</span><span class="s2">&quot;ReplicatedStorage&quot;</span><span class="p">)</span>
+
+<span class="c1">-- 1. Initialize with an optional extension override</span>
+<span class="c1">-- 2. This begins the Linker sequence across ROOTS and SHARED_ROOT</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">Ignition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">require</span><span class="p">(</span><span class="nv">ReplicatedStorage</span><span class="p">.</span><span class="nv">Ignition</span><span class="p">)(</span><span class="s2">&quot;.d&quot;</span><span class="p">)</span><span class="w"> </span>
+
+<span class="c1">-- And that&#39;s it!</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">new</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Ignition</span><span class="p">.</span><span class="nv">new</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">baseRemote</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">new</span><span class="w"> </span><span class="s2">&quot;BaseRemote&quot;</span><span class="p">(</span><span class="s2">&quot;Message&quot;</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="nv">baseRemote</span><span class="p">.</span><span class="nv">Name</span><span class="p">)</span><span class="w"> </span><span class="c1">-- Message</span>
+<span class="nv">baseRemote</span><span class="p">.</span><span class="nv">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;SendMessage&quot;</span><span class="w"> </span><span class="c1">-- ERRORS (Since it&#39;s a readonly property, you cannot set it once outside the constructor!)</span>
+</code></pre></div></p>
+<p>If no errors were raised, the system is now operational. Any class defined in your solutions is now globally accessible and architecturally enforced.</p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<div class="admonition question">
+<p class="admonition-title">Why can't I instantiate a class with new?</p>
+<p>The most common reason for this is that your <em>header/source</em> files were not indexed by Ignition. Verify that:</p>
+<ul>
+<li>Your files are placed inside a folder with the <code>Solution</code> keyword at the end (e.g., <code>GameSolution</code>).</li>
+<li>Your files are <strong>not</strong> located within folders defined in <code>Configuration.EXCLUDES</code>.</li>
+<li>You have called the Ignition module as a function <code>require(Ignition)()</code> to start the crawl.</li>
+</ul>
+</div>
+<h3 id="common-pitfalls">Common Pitfalls<a class="headerlink" href="#common-pitfalls" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Incorrect Extension Overrides</strong></p>
+<p>If you passed an override to the Ignition constructor (e.g., <code>require(Ignition)(".d")</code>), but your files are named <code>.definition</code>, Ignition will ignore them. <strong>Ensure your file extensions match your configuration exactly.</strong></p>
+</li>
+<li>
+<p><strong>Implementation Errors vs. Definition Validity</strong>
+    Because Ignition separates the two, an error in your <strong>implementation</strong> file (syntax error, logic crash) will not prevent the <strong>definition</strong> from being registered.</p>
+<ul>
+<li>The Result: You can still call <code>new(targetClass)(...)</code> on the class, but the logic will fail or appear <em>"empty"</em> because the implementation <strong>never successfully bound itself to the header</strong> via <code>import()</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Lazy Loading Deadlocks</strong>
+    Ignition supports <em>lazy loading</em> by passing a string to <code>new</code> instead of the actual <code>Interface</code> object. While flexible, this can lead to silent failures:</p>
+<ul>
+<li>If the class name is misspelled or the file hasn't been crawled yet, the <code>Registry</code> will yield the thread while it waits for that class to exist.<ul>
+<li><em>Though on later versions of Ignition now has <code>Registry</code> with an internal timeout handler, it is best advised to look into your code structure as this may very well be a code smell.</em></li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="under-the-hood-the-registry">Under the Hood: The <code>Registry</code><a class="headerlink" href="#under-the-hood-the-registry" title="Permanent link">&para;</a></h3>
+<p>The <code>Registry</code> is the source of truth for all active interfaces. It uses <code>coroutine.yield()</code> to manage dependencies, ensuring that one class doesn't attempt to inherit from or link to another class that isn't ready.</p>
+<p>The <code>Registry</code> also handles the cold-loading deep inheritance chains (e.g., <code>Child</code> propagates upward to <code>Grandparent</code> first, then descends back from <code>Grandparent</code> to <code>Child</code>).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The <code>Registry</code> strictly forbids calls from scripts outside the Class scope to prevent developers from <em>"manually"</em> injecting fake classes into the framework. Thus, the <code>Registry</code> is architecturally a blackbox.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Home">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Home
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="basics/Classes%20and%20Objects/" class="md-footer__link md-footer__link--next" aria-label="Next: Classes &amp;amp; Objects">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Classes &amp; Objects
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      &copy; 2025 <a href="https://github.com/lnconcinnity"  target="_blank" rel="noopener">lnconcinnity</a>
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "navigation.footer", "navigation.path", "navigation.indexes", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotate", "content.tooltips", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -3,7 +3,8 @@
 
 local env = require("../../Internal/env")
 local getCaller = require("../../Internal/getCaller")
-local Symbol = require("../../Modules/Symbol")
+local Log = require("../../Log")
+local Symbol = require("../../Symbol")
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 local Registry = require("../Utility/Registry")
@@ -28,7 +29,7 @@ local toString = tostring
 local PLACEHOLDER = Configuration.PLACEHOLDER
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 if not PRODUCTION_MODE_ENABLED then
-    warn("class library is on development mode, set FORCE_PRODUCTION_MODE to true to disable")
+    Log.RAISE_DEV_MODE:warn()
 end
 
 local function buildClassObject(name: string, interface: Interface): (any, Environment)
@@ -96,12 +97,14 @@ local function createInterface(name: string): Interface
         staticproperties = { public = {}, protected = {}, private = {} },
         properties = { public = {}, protected = {}, private = {} },
         virtuals = {},
-        instantiate = function(self: any, fromDerivedClass: boolean, ...: any): (any, any)
+        instantiate = function(self: any, fromDerivedClass: boolean, fromInit: boolean, ...: any): (any, any)
             if self.flags.ClassAbstracted and not fromDerivedClass then
-                error(`Cannot instantiate abstract class {self.name}`, 3)
+                Log.CLASS_ABSTRACTED:throw(2, name)
             end
             
             local object, environment = buildClassObject(name, self)
+            Registry.SaveEnvironment(object, environment)
+            if fromInit then return object end
             local constructorData: OverloadRecord = self.constructor.callback
             local fn: OverloadFunction = if type(constructorData) == "table" and constructorData.isOverloaded 
                 then getOverloadedFunction(`Constructor<{tostring(object)}>`, constructorData) 
@@ -134,8 +137,6 @@ local function createInterface(name: string): Interface
                     current = current.SuperClass.environment
                 end
             end
-
-            Registry.SaveEnvironment(object, environment)
             return object, environment
         end
     }, { __metatable = "This metatable is locked!" })
@@ -146,11 +147,11 @@ local function createClassInterface(name: string): <I>(fields: PropertiesFields 
     local script, fn = getCaller(1)
     local headerExt = Configuration.HEADER_EXTENSION
     if not match(script.Name, `{headerExt}$`) then
-        error(`Class interface '{name}' must be defined in a '.{headerExt}' file (got '{script.Name}')`, 2)
+        Log.WRONG_FILE_EXT:throw(2, name, headerExt, script.Name)
     end
     
     if Registry.InterfaceExists(name) then
-        error(`Class interface '{name}' already exists`, 2)
+        Log.CLASS_EXISTS:throw(2, name)
     end
     
     local interface: Interface = createInterface(name)
@@ -170,7 +171,7 @@ local function createClassInterface(name: string): <I>(fields: PropertiesFields 
                 end
                 
                 if not is_virtual then
-                    error(`Cannot override non-virtual property '{key}' inherited from {super.name}`, 2)
+                    Log.OVERRIDE_NON_VIRTUAL:throw(2, key, super.name)
                 end
             end
         end

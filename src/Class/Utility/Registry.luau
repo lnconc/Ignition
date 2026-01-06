@@ -2,6 +2,7 @@
 -- Class/Utility/Registry.lua
 
 local getCaller = require("../../Internal/getCaller")
+local Log = require("../../Log")
 local Types = require("../Types")
 
 type Interface = Types.Interface
@@ -18,13 +19,19 @@ local ObjectDatas: { [any]: any } = setmetatable({}, { __mode = "k" })
 
 -- restrict access only within the Class folder; not necessarily an anti-cheat, just to prevent misuse
 -- ex. if you call SaveInterface without using the `class` module found in the private folder, this will error
-local function assertCallingScript(callerName: string?)
+local function assertCallingScript(...: string?)
     local caller = getCaller(2)
-    if not caller:IsDescendantOf(ANCESTOR) then
-        error(`attempt to call Registry-related functions outside of Class scope (current caller: {caller.Name})`, 2)
-    end
-    if callerName and callerName ~= caller.Name then
-        error(`attempt to illegally call Registry-related functions out of caller scope`)
+    if not caller:IsDescendantOf(ANCESTOR) and caller ~= ANCESTOR then
+        Log.OUT_OF_SCOPE:throw(2, caller.Name)
+    else
+        local names = table.pack(...)
+        if names.n > 0 then
+            for _, name in ipairs(names) do
+                if name ~= caller.Name then
+                    Log.ILLEGAL_REGISTRY_CALL:throw(2)
+                end
+            end
+        end
     end
 end
 
@@ -45,7 +52,7 @@ function Registry.WaitForInterface(name: string): Interface
 
         local result = coroutine.yield()
         if not result then
-            error(`Infinite yield for WaitForInterface whilst waiting for Class "{name}"`)
+            Log.WAIT_INTERFACE_TIMEOUT:throw(2, name)
         else
             task.cancel(delay)
         end
@@ -56,7 +63,9 @@ end
 
 function Registry.SaveInterface(interface: Interface, name: string)
     assertCallingScript("class")
-    assert((Interfaces[name] :: any | nil) == nil, `class {name} already exists`)
+    if Registry.InterfaceExists(name) then
+        Log.CLASS_EXISTS:throw(2, name)
+    end
     Interfaces[name] = interface
     if InterfaceYields[name] then
         for t in pairs(InterfaceYields[name]) do
@@ -103,17 +112,30 @@ function Registry.InterfaceExists(name: string): boolean
 end
 
 function Registry.SaveEnvironment(object: any, environment: Types.Environment)
-    assertCallingScript("delete")
+    assertCallingScript("class")
     ObjectEnvironments[object] = environment
 end
 
 function Registry.GetEnvironment(object: any): Types.Environment
-    assertCallingScript("delete")
+    assertCallingScript("delete", "friend")
     local env = ObjectEnvironments[object]
     if not env then
-        error("Attempt to access environment of a non-Ignition object or deleted instance", 2)
+        Log.OBJECT_NOT_FOUND:throw(2)
     end
     return env
+end
+
+function Registry.HasInterface(interface: any): boolean
+    assertCallingScript()
+    for _, i in pairs(Interfaces) do
+        if i == interface then return true end
+    end
+    return false
+end
+
+function Registry.HasObject(object: any): boolean
+    assertCallingScript("friend", "xtypeof")
+    return ObjectEnvironments[object] ~= nil
 end
 
 function Registry.LinkData(object: any, data: any)
@@ -122,10 +144,10 @@ function Registry.LinkData(object: any, data: any)
 end
 
 function Registry.GetData(object: any): any
-    assertCallingScript("delete")
+    assertCallingScript("delete", "friend")
     local data = ObjectDatas[object]
     if not data then
-        error("Attempt to access data of a non-Ignition object or deleted instance", 2)
+        Log.OBJECT_NOT_FOUND:throw(2)
     end
     return data
 end

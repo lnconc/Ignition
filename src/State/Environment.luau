@@ -4,14 +4,14 @@
 local Value = require("./Value")
 local Types = require("./Types")
 local is = require("./is")
-local env = require("../Internal/env")
+local Log = require("../Log")
 
 type Effect<T> = Types.Effect<T>
 type Property<T> = Types.Property<T>
 type CanBe<T> = Types.CanBe<T>
 type InternalValue<T> = Types.InternalValue<T>
-type Dependencies = Types.Dependencies
-type PropertyFactory = <T>(effect: Effect<T>, dependencies: Dependencies?) -> Property<T>
+type Data = Types.Data
+type PropertyFactory = <T>(effect: Effect<T>, data: Data?) -> Property<T>
 type table = typeof({})
 
 local ValueMetatable: any = getmetatable(Value.new("something"))
@@ -42,11 +42,10 @@ local function createIterator<T>(self: InternalValue<T>)
 end
 
 return {
-    InjectDependencies = function<T>(dependencies: Dependencies, effect: Effect<T>)
-        env.set(effect :: any, dependencies :: { [string]: any })
-    end,
     ExposeProperty = function(factory: PropertyFactory)
-        assert(not areMetamethodsApplied, `ExposeProperty can only be called once (Value metamethods initialization)`)
+        if areMetamethodsApplied then
+            Log.EXPOSE_CALLED_TWICE:throw(2)
+        end
         areMetamethodsApplied = true
         Property = factory
         ValueMetatable.__eq = createBinaryOperator(function(a, b) return a == b

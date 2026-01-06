@@ -2,6 +2,7 @@
 -- Class/Libs/delete.lua
 
 local env = require("../../Internal/env")
+local Log = require("../../Log")
 local Configuration = require("../Utility/Configuration")
 local Registry = require("../Utility/Registry")
 local StackSpider = require("../Utility/StackSpider") :: any
@@ -25,7 +26,7 @@ local function delete(object: any)
     
     if (object :: any).Destroy then
         xpcall(function() (object :: any):Destroy() end, function(err) 
-            warn(`an error occured while destroying an object via delete()\n{err}`)
+            Log.DESTROYING_ERROR:warn(err)
         end)
     end
     
@@ -35,14 +36,20 @@ local function delete(object: any)
     local data = Registry.GetData(object)
     if PRODUCTION_MODE_ENABLED then
         for key, value in pairs(data) do
-            free(value)
+            local isFunction = type(value) == "function"
+            if not isFunction or (isFunction and env.get(value) == nil) then
+                free(value)
+            end
             data[key] = nil
         end
     else
         for _, ring in pairs(data) do
             if type(ring) ~= "table" then continue end
             for key, value in pairs(ring) do
-                free(value)
+                local isFunction = type(value) == "function"
+                if not isFunction or (isFunction and env.get(value :: any) == nil) then
+                    free(value)
+                end
                 ring[key] = nil
             end
         end
@@ -51,7 +58,7 @@ local function delete(object: any)
     -- delete metamethods (so that stack spider won't do anything)
     for _, method in METAMETHODS do
         environment.Metatable[method] = function()
-            error(`attempt to perform operation "{method}" on a destroyed object`, 2)
+            Log.DESTROYED_OP:throw(2, method)
         end
     end
 

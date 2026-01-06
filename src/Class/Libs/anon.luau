@@ -1,6 +1,7 @@
 --!strict
 -- Class/Libs/anon.lua
 local getCaller = require("../../Internal/getCaller")
+local Log = require("../../Log")
 local Configuration = require("../Utility/Configuration")
 local Types = require("../Types")
 
@@ -41,11 +42,11 @@ local anon = setmetatable({
 
         local _, _, env = getCaller(2)
         if not env then
-            error("out of bounds (reached cclosures)", 2)
+            Log.THREAD_CONTEXT_REQUIRED:throw(2, "anon()")
         end
         local environment: Environment = env.environment
         if not environment then
-            error("cannot find source environment", 2)
+            Log.CLASS_ENVIRONMENT_REQUIRED:throw(2, "anon()")
         end
 
         local wrapped = function(...)

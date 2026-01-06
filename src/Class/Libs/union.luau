@@ -1,5 +1,5 @@
 --!strict
--- CLass/Libs/union.lua
+-- Class/Libs/union.lua
 
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")

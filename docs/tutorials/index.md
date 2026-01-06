@@ -1,10 +1,10 @@
-## **Get Started**
+# **Getting Started**
 Welcome to Ignition's tutorial section! Here, you'll learn how to architect code strictly and intuitively with Ignition.
 
 !!! failure "But wait, heed before you proceed..."
     **Ignition is not your friend; it is your supervisor.**
 
-    If you are looking for a *"plug-and-play"* utility library to sprinkle into an existing project, **turn back now**. Ignition is a strict architectural framework that physically enforces the boundaries of your code.  
+    If you are looking for a *"plug-and-play"* utility library to sprinkle into an existing project, **turn back now.** Ignition is a strict architectural framework that physically enforces the boundaries of your code.  
 
     By proceeding, you must be aware that:
 
@@ -84,19 +84,18 @@ Root (ServerScriptService / StarterPlayerScripts)
 ```
 
 ### 2. Creating a `class`
-Ignition enforces a strict separation between *what* a class **is** and *what* a class **does**.
+Ignition enforces a strict separation between *what* a class **is** and *what* a class **does.**
 
 === "BaseRemote.definition"
-    This is an example of a `.definition` file and how it's structured, this is your **contract**. It defines public and protected members.
+    This is an example of a `.definition` file and how it's structured, this is your **contract.** It defines public and protected members.
 
     ``` luau
     --!strict
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Ignition = require(ReplicatedStorage.Ignition)
-    local Class = Ignition.Class
 
     local class, property, abstract, func, FLAGS = 
-        Class.class, Class.property, Class.abstract, Class.func, Class.FLAGS
+        Ignition.class, Ignition.property, Ignition.abstract, Ignition.func, Ignition.FLAGS
 
     return abstract (class "BaseRemote" {
         public = {
@@ -121,15 +120,14 @@ Ignition enforces a strict separation between *what* a class **is** and *what* a
     ```
 
 === "BaseRemote"
-    The implementation file is your **source**. You use `import()` to bind your logic to the definition.
+    The implementation file is your **source.** You use `import()` to bind your logic to the definition.
 
     ``` luau
     --!strict
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Ignition = require(ReplicatedStorage.Ignition)
-    local Class = Ignition.Class
 
-    local import = Class.import
+    local import = Ignition.import
     local BaseRemoteHeader = require(script.Parent["BaseRemote.definition"])
 
     local BaseRemote = import(BaseRemoteHeader)
@@ -144,7 +142,7 @@ Ignition enforces a strict separation between *what* a class **is** and *what* a
         self.Name = name
     end)
 
-    return {}
+    return BaseRemote:__complete__() -- mark it as complete
     ```
 
     !!! danger "Type Integrity Warning"
@@ -193,7 +191,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Ignition = require(ReplicatedStorage.Ignition)(".d") 
 
 -- And that's it!
-local new = Ignition.Class.new
+local new = Ignition.new
 
 local baseRemote = new "BaseRemote"("Message")
 print(baseRemote.Name) -- Message
@@ -202,7 +200,7 @@ baseRemote.Name = "SendMessage" -- ERRORS (Since it's a readonly property, you c
 
 If no errors were raised, the system is now operational. Any class defined in your solutions is now globally accessible and architecturally enforced.
 
-### Troubleshooting
+## Troubleshooting
 
 !!! question "Why can't I instantiate a class with new?"
     The most common reason for this is that your *header/source* files were not indexed by Ignition. Verify that:
@@ -211,7 +209,7 @@ If no errors were raised, the system is now operational. Any class defined in yo
     * Your files are **not** located within folders defined in `Configuration.EXCLUDES`.
     * You have called the Ignition module as a function `require(Ignition)()` to start the crawl.
 
-#### Common Pitfalls
+### Common Pitfalls
 1. **Incorrect Extension Overrides**
 
     If you passed an override to the Ignition constructor (e.g., `require(Ignition)(".d")`), but your files are named `.definition`, Ignition will ignore them. **Ensure your file extensions match your configuration exactly.**
@@ -227,17 +225,10 @@ If no errors were raised, the system is now operational. Any class defined in yo
     * If the class name is misspelled or the file hasn't been crawled yet, the `Registry` will yield the thread while it waits for that class to exist.
         * *Though on later versions of Ignition now has `Registry` with an internal timeout handler, it is best advised to look into your code structure as this may very well be a code smell.*
 
-``` luau
---!strict
--- This might yield forever if "MyClass" encountersPitfalls #1, #2,
--- or any of the items in the "Why can't I instantiate a class with new" block
-local instance = Ignition.Class.new "MyClass" ()
-```
-
-#### Under the Hood: The `Registry`
+### Under the Hood: The `Registry`
 The `Registry` is the source of truth for all active interfaces. It uses `coroutine.yield()` to manage dependencies, ensuring that one class doesn't attempt to inherit from or link to another class that isn't ready.
 
-The `Registry` also handles deep inheritance chains (e.g., `Child` propagates upward to `Grandparent` first, then descends back from `Grandparent` to `Child`).
+The `Registry` also handles the cold-loading deep inheritance chains (e.g., `Child` propagates upward to `Grandparent` first, then descends back from `Grandparent` to `Child`).
 
 !!! warning
     The `Registry` strictly forbids calls from scripts outside the Class scope to prevent developers from *"manually"* injecting fake classes into the framework. Thus, the `Registry` is architecturally a blackbox.

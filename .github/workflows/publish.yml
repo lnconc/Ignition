@@ -1,0 +1,61 @@
+name: CI / Publish
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+      - name: Install Aftman
+        uses: ok-nick/setup-aftman@v0.4.2
+      - name: Install Tools
+        run: aftman install
+      - name: Install libssl1.1
+        run: |
+          wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.24_amd64.deb
+          sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2.24_amd64.deb
+      - name: Get Version
+        id: wally_version
+        run: |
+          VERSION=$(grep '^version =' wally.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "V_NUMBER=$VERSION" >> $GITHUB_OUTPUT
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Wally Login
+        if: steps.wally_version.outputs.exists == 'false'
+        run: |
+          mkdir -p ~/.wally
+          echo "[tokens]" > ~/.wally/auth.toml
+          echo "\"https://api.wally.run/\" = \"${{ secrets.WALLY_AUTH_TOKEN }}\"" >> ~/.wally/auth.toml
+      - name: Build Model
+        run: rojo build -o Ignition.rbxm default.project.json
+      - name: Wally Publish
+        if: steps.wally_version.outputs.exists == 'false'
+        run: wally publish
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Ignition.rbxm
+          tag_name: v${{ steps.wally_version.outputs.V_NUMBER }}
+          name: Release v${{ steps.wally_version.outputs.V_NUMBER }}
+          body: "Automated release for version ${{ steps.wally_version.outputs.V_NUMBER }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy Docs
+        run: |
+          pip install mkdocs-material 
+          mkdocs gh-deploy --force

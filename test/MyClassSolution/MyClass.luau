@@ -36,4 +36,4 @@ function MyClass:RunAnonTest()
     print("Deduplication Test: ", tostring(wrapperA) == tostring(wrapperB))
 end
 
-return true
+return MyClass:__complete__()

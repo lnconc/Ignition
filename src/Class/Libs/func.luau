@@ -1,13 +1,12 @@
 --!strict
--- CLass/Libs/func.lua
+-- Class/Libs/func.lua
 
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 
 type Symbol<T> = Types.Symbol<T>
-type FinalProperty<D> = Types.FinalProperty<nil, ForceSingleton<"function">, D>
+type FinalProperty<D> = Types.FinalProperty<nil, "function", D>
 type PropertyExposure = Types.PropertyExposure
-type ForceSingleton<S> = Types.ForceSingleton<S>
 
 type FuncOptions<D> = { exposure: PropertyExposure?, flags: { Symbol<string> }?, dummy: D }
 

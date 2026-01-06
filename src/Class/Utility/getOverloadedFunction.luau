@@ -1,6 +1,7 @@
 --!strict
 -- Class/Utility/getOverloadedFunction.lua
 
+local Log = require("../../Log")
 local Configuration = require("./Configuration")
 local Types = require("../Types")
 
@@ -24,10 +25,32 @@ local function matchSignature(arg: any, expected: any): boolean
     return argType == expected
 end
 
+local function is_type_helper(x: any): boolean
+    return type(x) == "table" and type(x._signature) == "string" and (x.type ~= nil or x.types ~= nil)
+end
+
+local function normalizeSignature(x: any): string
+    local sig = { x.type }
+    if x.types then
+        for t in pairs(x.types :: { [any]: boolean }) do
+            if is_type_helper(t) then
+                t = normalizeSignature(t)
+            end
+            table.insert(sig, t)
+        end
+    end
+    return `{x._signature:sub(2)}({table.concat(sig, ",")})`
+end
+
 local function getSignature(args: { any }, count: number): string
-    local sig = {}
+    local sig: {string} = {}
     for i = 1, count do
-        table.insert(sig, typeof(args[i]))
+        local arg = args[i]
+        local t: string = typeof(arg)
+        if is_type_helper(arg) then
+            t = normalizeSignature(arg)
+        end
+        table.insert(sig, t)
     end
     return table.concat(sig, ",")
 end
@@ -55,6 +78,14 @@ local function getOverloadedFunction(name: string, record: OverloadRecord): AnyF
             local sigKey = table.concat(sigParts, ",")
             exactMatches[sigKey] = entry.callback
         end
+    end
+
+    local matchesDebug = {}
+    for match in pairs(exactMatches) do
+        table.insert(matchesDebug, match)
+    end
+    for _, entry in ipairs(complexMatches) do
+        table.insert(matchesDebug, normalizeSignature(entry.expects))
     end
 
     return function<A, R...>(...: A): R...
@@ -86,7 +117,7 @@ local function getOverloadedFunction(name: string, record: OverloadRecord): AnyF
         if fallback then
             return (fallback :: any)(...)
         end
-        error(`No overload for method '{name}' matches the provided arguments`, 3)
+        Log.NO_OVERLOAD_MATCH:throw(2, name, matchesDebug, sigKey)
     end
 end
 

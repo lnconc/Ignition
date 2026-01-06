@@ -11,6 +11,11 @@ export type FinalProperty<V, T, D> = {
     _signature: string,
 }
 
+export type Type<V> = {
+    match: (value: V) -> boolean,
+    expects: string?,
+} | string
+
 export type PropertyField = { [string]: any }
 export type PropertiesFields = {
     public: PropertyField,
@@ -28,7 +33,7 @@ export type Symbol<T> = setmetatable<{}, {
 export type Nullable<T> = setmetatable<{ type: T }, { __metatable: string }>
 export type Union<T> = setmetatable<{ types: { [T]: boolean } }, { __metatable: string }>
 
-export type Expects = { string | Nullable<any> | Union<any> }
+export type Expects = { string | Nullable<string | Union<string>> | Union<string> }
 export type Function = <A..., R...>(A...) -> R... | () -> ()
 export type ClassFunction = <A..., R...>(self: any, A...) -> R...
 export type AnyFunction = ClassFunction | Function
@@ -79,15 +84,8 @@ export type Interface = setmetatable<{
     },
     virtuals: { [string]: boolean },
     superclass: Interface?,
-    instantiate: <A...>(self: Interface, fromDerivedClass: boolean, A...) -> (any, Environment),
+    instantiate: <A...>(self: Interface, fromDerivedClass: boolean, fromInit: boolean, A...) -> (any, Environment),
 }, { __metatable: string }>
-
-export type function ForceSingleton(s: type): type
-    if not s:is("singleton") then
-        error("not a singleton")
-    end
-    return types.singleton(s:value())
-end
 
 export type function GetClassObject(interface: type, accessLevel: type): type
     if interface:is("string") or interface:is("singleton") or interface:is("any") or interface:is("never") or interface:is("unknown") then
@@ -283,6 +281,31 @@ export type function GetClassObject(interface: type, accessLevel: type): type
     return prototype
 end
 
+export type function StaticClassObject(getClassObject: type): type
+    local staticInstance = types.newtable({}, { index = types.string, readresult = types.any, writeresult = types.any })
+    local statics = getClassObject:readproperty(types.singleton("__statics__"))
+    local props = getClassObject:readproperty(types.singleton("__props__"))
+    local funcs = getClassObject:readproperty(types.singleton("__functions__"))
+
+    local function map_statics(source: type)
+        if not source then return end
+        if not statics then return end
+        for k, v in source:properties() do
+            if not k then continue end
+            local isStaticFlag = statics:readproperty(k)
+            if isStaticFlag and isStaticFlag:value() == true then
+                staticInstance:setproperty(k, v.read)
+            end
+        end
+    end
+
+    if props then map_statics(props) end
+    if props then map_statics(funcs :: type) end
+
+    staticInstance:setproperty(types.singleton("__interface__"), getClassObject:readproperty(types.singleton("__interface__"))) -- getClassObject has "Private", we have to expose this so that the next GetClassObject is forced to "Public"
+    return staticInstance
+end
+
 export type function ImportedClassObject(getClassObject: type): type
     if getClassObject:readproperty(types.singleton("__lazy__")) then
         local lazyInstance = types.newtable({}, { 
@@ -343,6 +366,13 @@ export type function ImportedClassObject(getClassObject: type): type
             end
         end
     end
+
+    local completeFunc = types.newfunction({
+        head = { instance }
+    }, { 
+        head = { StaticClassObject(getClassObject) } 
+    })
+    instance:setproperty(types.singleton("__complete__"), completeFunc)
     local constructorFunc = types.newfunction({ head = { types.any }, tail = types.any }, { tail = types.any })
     local dslCall = types.newfunction({
         head = { types.any, constructorFunc }
@@ -392,6 +422,7 @@ export type function InheritFields(superInterface: type, subFields: type): type
    
     return mergedFields
 end
+
 export type function MergeInterfaces(interfaceList: type): type
     local result = types.newtable({})
     
@@ -419,6 +450,78 @@ export type function MergeInterfaces(interfaceList: type): type
     end
     
     return result
+end
+
+export type ClassDSL = (name: string) -> <I>(fields: PropertiesFields & I) -> I
+export type ImportDSL = <I>(interface: I | string) -> ImportedClassObject<GetClassObject<I, "Private">>
+export type NewDSL = <I>(interface: I | string) -> (...any) -> ResolveNew<I>
+export type ExtendsDSL = <I>(superInterface: I | string) -> <J>(fields: PropertiesFields & J) -> InheritFields<I, J>
+export type MixinDSL = (name: string) -> <I>(...I | string) -> (mixin_fields: PropertiesFields) -> MergeInterfaces<I>
+export type ClassLibrary = {
+    -- core
+    class: ClassDSL,
+    import: ImportDSL,
+    new: NewDSL,
+    extends: ExtendsDSL,
+    mixin: MixinDSL,
+    from: (...string) -> (...any),
+    super: (...any) -> (),
+
+    -- modifiers
+    abstract: <I>(target: I) -> I,
+    final: <I>(target: I) -> I,
+    reactive: <I>(target: I) -> I,
+    
+    -- member definitions
+    property: <V, T>(options: {
+        type: T,
+        value: V,
+        flags: { Symbol<string> } | { [Symbol<string>]: boolean },
+        exposure: PropertyExposure?,
+    }) -> FinalProperty<V, T, nil>?,
+    func: <D>(options: { 
+        exposure: PropertyExposure?,
+        flags: { Symbol<string> }?, 
+        dummy: D 
+    }) -> FinalProperty<nil, "function", D>,
+    nullable: (type: string | Union<string>) -> Nullable<string | Union<string>>,
+    union: (...string) -> Union<string>,
+    
+    -- memory helpers
+    free: (item: any) -> (),
+    delete: (object: any) -> (),
+    ref: <T>(callback: T) -> T,
+    anon: <T>(callback: T) -> T,
+
+    --  visibility helpers
+    friend: (subject: any, guest: any, methodName: string?) -> (),
+    mutual: (objectA: any, objectB: any) -> (),
+
+    -- debug helpers
+    dumpsize: () -> string,
+
+    -- constants
+    METADATA: Symbol<string>,
+    PLACEHOLDER: Symbol<string>,
+    FLAGS: {
+        Optional: Symbol<string>,
+        Static: Symbol<string>,
+        Constant: Symbol<string>,
+        Virtual: Symbol<string>,
+        Readonly: Symbol<string>,
+        Reactive: Symbol<string>,
+    },
+}
+
+export type function ResolveNew(input: type): type
+    if input:is("string") or input:is("singleton") then
+        return types.any
+    end
+    local rawInterface = input:readproperty(types.singleton("__interface__"))
+    if rawInterface then
+        return GetClassObject(rawInterface, types.singleton("Public"))
+    end
+    return GetClassObject(input, types.singleton("Public"))
 end
 
 return {}

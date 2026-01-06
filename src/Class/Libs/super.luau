@@ -2,39 +2,38 @@
 -- Class/Libs/super.lua
 
 local getCaller = require("../../Internal/getCaller")
+local Log = require("../../Log")
 local Configuration = require("../Utility/Configuration")
 local bloodline = require("../Utility/bloodline")
 local Types = require("../Types")
 
+type Interface = Types.Interface
 type Environment = Types.Environment
 
 local DEVELOPMENT_MODE_ENABLED = not Configuration.PRODUCTION_MODE_ENABLED
-
-local traceback = debug.traceback
 
 local function super(...: any)
     local _, _, callEnv = getCaller(2)
     
     if not callEnv then
-        error("'super' must be called within a class constructor", 2)
+        Log.THREAD_CONTEXT_REQUIRED:throw(2, "super()")
     end
     
     local environment: Environment = callEnv.environment
     if not environment then
-        error("Could not resolve source environment for 'super' call", 2)
+        Log.CLASS_ENVIRONMENT_REQUIRED:throw(2, "super()")
     end
     
     if environment.SuperClass.object then
-        warn(`{environment.Id} already has an initialized superclass. Skipping.\n{traceback(nil, 1)}`)
-        return
+        Log.ALREADY_INHERITS:throw(2, environment.Id, environment.SuperClass.environment.Id)
     end
     
     local superClassInterface = environment.Interface.superclass
     if not superClassInterface then
-        error(`Class '{environment.Interface.name}' has no superclass defined. Did you forget to use 'extends'?`, 2)
+        Log.MISSING_SUPER:throw(2, environment.Interface.name)
     end
     
-    local superObject, superEnvironment = superClassInterface:instantiate(true, ...)
+    local superObject, superEnvironment = (superClassInterface :: Interface):instantiate(true, false, ...)
     environment.SuperClass = { 
         object = superObject, 
         environment = superEnvironment 

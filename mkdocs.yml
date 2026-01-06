@@ -18,6 +18,7 @@ theme:
     - content.code.annotate
     - content.tooltips
     - content.code.copy
+  custom_dir: docs/overrides
   icon:
     annotation: material/arrow-right-circle-outline
 markdown_extensions:
@@ -36,22 +37,71 @@ markdown_extensions:
   - pymdownx.mark
   - pymdownx.extra
   - attr_list
-  - md_in_html
-nav:
-  - Home: index.md
-  - Tutorials:
-    - Tutorials: tutorials/index.md
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 extra_css:
   - css/theme.css
   - css/site.css
-  - css/animation.css
-  - css/home.css
   - css/code-theme.css
-
-extra_javascript:
-  - https://cdn.tailwindcss.com
-  - javascripts/tailwind.config.js
 
 copyright: |
   &copy; 2025 <a href="https://github.com/lnconcinnity"  target="_blank" rel="noopener">lnconcinnity</a>
+
+nav:
+  - Home: index.md
+  - Tutorials:
+    - tutorials/index.md
+    - Basics:
+      - tutorials/basics/Classes and Objects.md
+      - tutorials/basics/Access Specifiers.md
+      - tutorials/basics/Class Importation.md
+      - tutorials/basics/Class Functions.md
+      - tutorials/basics/Class Properties.md
+    - Advanced:
+      - tutorials/advanced/Friends.md
+      - tutorials/advanced/Memory Management.md
+      - tutorials/advanced/Function Overloading.md
+      - tutorials/advanced/Operator Overloading.md
+      - tutorials/advanced/Class Modifiers.md
+      - tutorials/advanced/Inheritance.md
+      - tutorials/advanced/Compositions.md
+    - Optimizations: tutorials/advanced/Optimizations.md
+  - API Reference:
+    - api-reference/index.md
+    - Error: api-reference/Error.md
+    - Class API:
+      - class: api-reference/Class/class.md
+      - dumpsize: api-reference/Class/dumpsize.md
+      - Core:
+        - new: api-reference/Class/new.md
+        - import: api-reference/Class/import.md
+        - extends: api-reference/Class/extends.md
+        - super: api-reference/Class/super.md
+        - mixin: api-reference/Class/mixin.md
+      - Schematics:
+        - property: api-reference/Class/property.md
+        - func: api-reference/Class/func.md
+        - nullable: api-reference/Class/nullable.md
+        - union: api-reference/Class/union.md
+      - Memory:
+        - ref: api-reference/Class/ref.md
+        - anon: api-reference/Class/anon.md
+        - delete: api-reference/Class/delete.md
+        - free: api-reference/Class/free.md
+      - Modifiers & Visibility:
+        - abstract: api-reference/Class/abstract.md
+        - final: api-reference/Class/final.md
+        - reactive: api-reference/Class/reactive.md
+        - friend: api-reference/Class/friend.md
+        - mutual: api-reference/Class/mutual.md
+      - Constants: api-reference/Class/Constants.md
+      - Types: api-reference/Class/Types.md
+    - State API:
+      - Value: api-reference/State/Value.md
+      - Property: api-reference/State/Property.md
+      - Observe: api-reference/State/Observe.md
+    - Libraries:
+      - Unyieldable: api-reference/Unyieldable.md
+      - Symbol: api-reference/Symbol.md

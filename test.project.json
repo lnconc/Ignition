@@ -1,5 +1,5 @@
 {
-    "name": "Ignition",
+    "name": "ignition-test",
     "tree": {
         "$className": "DataModel",
         "ReplicatedStorage": {
@@ -10,8 +10,9 @@
         },
         "ServerScriptService": {
             "$className": "ServerScriptService",
-            "Server-Class": {
-                "$path": "test/Class/server"
+            "Server": {
+                "$className": "Folder",
+                "$path": "test"
             }
         }
     }

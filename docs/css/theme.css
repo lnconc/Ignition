@@ -59,6 +59,10 @@ b, i, strong, em {
     color: #D4D4D4 !important;
 }
 
+button.md-top {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 .md-tabs__link {
     color: #BCB8B8 !important;
     opacity: 0.7;

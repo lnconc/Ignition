@@ -3,31 +3,49 @@
 
 local Class = require("@self/Class")
 local Configuration = require("@self/Configuration")
-local Profiler = require("@self/Modules/Profiler")
-local Promise = require("@self/Modules/Promise")
-local Ser = require("@self/Modules/Ser")
-local Signal = require("@self/Modules/Signal")
-local Symbol = require("@self/Modules/Symbol")
-local Unyieldable = require("@self/Modules/Unyieldable")
 local Observe = require("@self/State/Observe")
 local Property = require("@self/State/Property")
 local Value = require("@self/State/Value")
 local ClassConfiguration = require("@self/Class/Utility/Configuration")
+local Registry = require("@self/Class/Utility/Registry")
+local Log = require("@self/Log")
+local Symbol = require("@self/Symbol")
+local Unyieldable = require("@self/Unyieldable")
 
 local loaded = false
 
 local Ignition = {
-    VERSION = Configuration.VERSION,
-    Class = Class,
-    Promise = Promise,
-    Profiler = Profiler,
-    Signal = Signal,
+    extends = Class.extends,
+    class = Class.class,
+    abstract = Class.abstract,
+    final = Class.final,
+    mixin = Class.mixin,
+    import = Class.import,
+    ref = Class.ref,
+    super = Class.super,
+    property = Class.property,
+    new = Class.new,
+    reactive = Class.reactive,
+    nullable = Class.nullable,
+    func = Class.func,
+    union = Class.union,
+    free = Class.free,
+    anon = Class.anon,
+    dumpsize = Class.dumpsize,
+    delete = Class.delete,
+    friend = Class.friend,
+    mutual = Class.mutual,
+    PLACEHOLDER = Class.PLACEHOLDER,
+    FLAGS = Class.FLAGS,
+    METADATA = Class.METADATA,
+
     Value = Value,
-    Ser = Ser,
     Property = Property,
-    Symbol = Symbol,
     Observe = Observe,
+
+    Symbol = Symbol,
     Unyieldable = Unyieldable,
+    Class = Class,
 }
 
 type IgnitionLinker = (_self: any, overrideDefinition: string?) -> _Ignition
@@ -39,7 +57,7 @@ local ExposedIgnition: Ignition = setmetatable({}, {
     __index = Ignition,
     __call = function(_, overrideDefinition: string?)
         if loaded then
-            error("Ignition has already loaded", 2)
+            Log.ALREADY_LOADED:throw(2)
         end
         loaded = true
 
@@ -47,6 +65,9 @@ local ExposedIgnition: Ignition = setmetatable({}, {
             ClassConfiguration.HEADER_EXTENSION = overrideDefinition
         end
 
+        local dependencies: { [string]: boolean } = {}
+
+        -- load all solutions
         local function loadSolutions(root: Instance, fromSolutions: boolean?)
             for _, item in root:GetChildren() do
                 if Configuration.EXCLUDES[item.Name:lower():gsub("%s+", "")] then continue end
@@ -64,6 +85,8 @@ local ExposedIgnition: Ignition = setmetatable({}, {
                                         warn(`Failed to load {module:GetFullName()}\n\n[Linker Error]:\n{err}`)
                                         return
                                     end
+                                    local name = module.Name:split(".")[1]
+                                    dependencies[name] = true
                                     print(`Loaded and linked {module:GetFullName()}`)
                                 end)
                             end
@@ -76,6 +99,14 @@ local ExposedIgnition: Ignition = setmetatable({}, {
 
         loadSolutions(Configuration.ROOT, false)
         loadSolutions(Configuration.SHARED_ROOT, false)
+
+        -- initialize dry-run classes to populate statics, warm up class-scoped registries and others concerned
+        for name in dependencies do
+            local interface = Registry.GetInterface(name)
+            local dummy = interface:instantiate(false, true) -- ignore constructors since we are a dummy
+            Class.delete(dummy) -- static fields are populated at this point
+        end
+
         return Ignition
     end
 })

@@ -38,8 +38,8 @@ export type Value<T> = Omit<InternalValue<T>, {
     Destroy: unknown,
 }>
 
-export type Effect<T> = (use: (value: CanBe<T>) -> T) -> T
-export type Dependencies = { [any]: any }?
+export type Effect<T> = (use: (value: CanBe<T>) -> T, ...any) -> T
+export type Data = { [any]: any }?
 
 export type Property<T> = Omit<Value<T>, {
     set: unknown,

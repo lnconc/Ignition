@@ -1,7 +1,6 @@
 --!strict
 -- Class.lua
 
-local LibaryTypes = require("@self/LibaryTypes")
 local abstract = require("@self/Libs/abstract")
 local anon = require("@self/Libs/anon")
 local class = require("@self/Libs/class")
@@ -10,6 +9,7 @@ local dumpsize = require("@self/Libs/dumpsize")
 local extends = require("@self/Libs/extends")
 local final = require("@self/Libs/final")
 local free = require("@self/Libs/free")
+local friend = require("@self/Libs/friend")
 local import = require("@self/Libs/import")
 local mixin = require("@self/Libs/mixin")
 local new = require("@self/Libs/new")
@@ -19,9 +19,13 @@ local reactive = require("@self/Libs/reactive")
 local ref = require("@self/Libs/ref")
 local super = require("@self/Libs/super")
 local func = require("@self/Libs/func")
-local once = require("@self/Libs/once")
+local mutual = require("@self/Libs/mutual")
 local union = require("@self/Libs/union")
+local Log = require("./Log")
 local Configuration = require("@self/Utility/Configuration")
+local Types = require("@self/Types")
+
+type ClassLibrary = Types.ClassLibrary
 
 local Class = {
     extends = extends,
@@ -38,16 +42,17 @@ local Class = {
     nullable = nullable,
     func = func,
     union = union,
-    once = once,
     free = free,
     anon = anon,
     dumpsize = dumpsize,
     delete = delete,
+    friend = friend,
+    mutual = mutual,
     PLACEHOLDER = Configuration.PLACEHOLDER,
     FLAGS = table.freeze(Configuration.PROPERTY_FLAGS),
     PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED,
     METADATA = Configuration.METADATA,
-} :: LibaryTypes.ClassLibrary
+} :: ClassLibrary
 
 function Class.from(...: string): ...any
     local retrieved = table.pack(...)
@@ -55,7 +60,7 @@ function Class.from(...: string): ...any
         local k = retrieved[i]
         local r = (Class :: any)[k]
         if not r then
-            error(`unable to retrieve '{k}'`, 2)
+            Log.CANNOT_FIND_FROM:throw(2, k)
         end
         retrieved[i] = r
     end

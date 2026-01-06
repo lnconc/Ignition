@@ -3,7 +3,7 @@
 
 local env = require("../../Internal/env")
 local getCaller = require("../../Internal/getCaller")
-local Symbol = require("../Utility/Symbol")
+local Symbol = require("../../Modules/Symbol")
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 local Registry = require("../Utility/Registry")
@@ -25,6 +25,7 @@ local find = table.find
 local match = string.match
 local toString = tostring
 
+local PLACEHOLDER = Configuration.PLACEHOLDER
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 if not PRODUCTION_MODE_ENABLED then
     warn("class library is on development mode, set FORCE_PRODUCTION_MODE to true to disable")
@@ -40,7 +41,7 @@ local function buildClassObject(name: string, interface: Interface): (any, Envir
         Master = nil,
         Context = if PRODUCTION_MODE_ENABLED then nil :: any else {
             Includes = {},
-            Refs = setmetatable({} :: { [string]: any }, { __mode = "k" }),
+            Refs = setmetatable({} :: { [typeof(function() end)]: any }, { __mode = "k" }),
             Friends = {},
             Family = {},
             Constructor = "",
@@ -48,14 +49,20 @@ local function buildClassObject(name: string, interface: Interface): (any, Envir
         PropertyFlags = {},
         PropertyTypes = {},
         Closures = {},
+        Deleting = false,
     }
     
     for _, field in pairs(interface.properties) do
         for key, property in pairs(field :: { [string]: any }) do
-            environment.PropertyTypes[key] = (property :: FinalProperty).type
-            local flags = (property :: FinalProperty).flags
-            if flags then
-                environment.PropertyFlags[key] = flags :: { [Symbol<string>]: boolean }
+            local isprop = is_property(property)
+            if isprop then
+                environment.PropertyTypes[key] = (property :: FinalProperty).type
+                local flags = (property :: FinalProperty).flags
+                if flags then
+                    environment.PropertyFlags[key] = flags :: { [Symbol<string>]: boolean }
+                end
+            else
+                environment.PropertyTypes[key] = typeof(property)
             end
         end
     end
@@ -65,8 +72,9 @@ local function buildClassObject(name: string, interface: Interface): (any, Envir
     metatable.__tostring = function()
         return toString(id)
     end
+    environment.Metatable = metatable
     
-    encapsulate(object, metatable, environment, interface.properties)
+    encapsulate(object, metatable, environment)
     return object, environment
 end
 
@@ -98,27 +106,25 @@ local function createInterface(name: string): Interface
             local fn: OverloadFunction = if type(constructorData) == "table" and constructorData.isOverloaded 
                 then getOverloadedFunction(`Constructor<{tostring(object)}>`, constructorData) 
                 else constructorData
-            fn = fn or function() end
             if fn then
-                local wrapper = function(...) 
-                    (fn :: (...any) -> ())(object, ...)
+                local wrapper = function(...)
+                    (fn :: any)(...)
                 end
                 
                 local build_context = toString(wrapper)
                 if PRODUCTION_MODE_ENABLED then
-                    env.set(wrapper, { environment = environment })
-                    wrapper(object, ...)
+                    env.set(wrapper :: any, { environment = environment })
                 else
-                    env.set(wrapper, { environment = environment, current_context = build_context })
+                    env.set(wrapper :: any, { environment = environment, current_context = build_context })
                     local family = environment.Context.Family[name] or {}
                     family[build_context] = true
                     environment.Context.Family[name] = family
                     
                     environment.Context.Constructor = build_context
                     environment.Context.Includes[build_context] = true
-
-                    wrapper(...)
+                    table.insert(environment.Closures, wrapper)
                 end
+                wrapper(object, ...)
             end
             if not fromDerivedClass then
                 environment.Master = object
@@ -128,7 +134,8 @@ local function createInterface(name: string): Interface
                     current = current.SuperClass.environment
                 end
             end
-            
+
+            Registry.SaveEnvironment(object, environment)
             return object, environment
         end
     }, { __metatable = "This metatable is locked!" })
@@ -136,9 +143,9 @@ local function createInterface(name: string): Interface
 end
 
 local function createClassInterface(name: string): <I>(fields: PropertiesFields & I) -> I
-    local script, fn = getCaller(2)
+    local script, fn = getCaller(1)
     local headerExt = Configuration.HEADER_EXTENSION
-    if not match(script.Name, `%.{headerExt}$`) then
+    if not match(script.Name, `{headerExt}$`) then
         error(`Class interface '{name}' must be defined in a '.{headerExt}' file (got '{script.Name}')`, 2)
     end
     
@@ -147,7 +154,6 @@ local function createClassInterface(name: string): <I>(fields: PropertiesFields 
     end
     
     local interface: Interface = createInterface(name)
-    Registry.FlushTasks(2, interface)
     env.set(fn, { interface = interface })
     return function<I>(fields: PropertiesFields & I): I
         local propertyFlags = Configuration.PROPERTY_FLAGS
@@ -188,7 +194,8 @@ local function createClassInterface(name: string): <I>(fields: PropertiesFields 
             local is_field_group = is_specifier and type(v) == "table" and not is_property(v)
             if is_field_group then
                 for subKey, subValue in pairs(v :: { [string]: any }) do
-                    if not subKey or not subValue then continue end
+                    subValue = if subValue == nil then PLACEHOLDER else subValue
+                    if not subKey then continue end
                     handleVirtuals(k, subKey);
                     interface.properties[k][subKey] = normalizeProperty(subValue)
                 end

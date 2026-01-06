@@ -1,10 +1,8 @@
 --!strict
 -- Class/Libs/reactive.lua
 
-local fetchInterface = require("../Utility/fetchInterface")
-
 local function reactive(interface: any): any
-    fetchInterface().flags.AllowReactivity = true
+    interface.flags.AllowReactivity = true
     return interface
 end
 

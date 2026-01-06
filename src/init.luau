@@ -58,6 +58,7 @@ local ExposedIgnition: Ignition = setmetatable({}, {
                         for _, module in item:GetChildren() do
                             if module:IsA("ModuleScript") then
                                 task.spawn(function()
+                                    print(`Loading and linking {module:GetFullName()}`)
                                     local success, err = pcall(require, module)
                                     if not success then
                                         warn(`Failed to load {module:GetFullName()}\n\n[Linker Error]:\n{err}`)

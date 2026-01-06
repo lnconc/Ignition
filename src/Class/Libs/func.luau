@@ -13,7 +13,7 @@ type FuncOptions<D> = { exposure: PropertyExposure?, flags: { Symbol<string> }?,
 
 local IS_SERVER = game:GetService("RunService"):IsServer()
 
-local function func<D>(options: FuncOptions<D>): FinalProperty<D & (...any) -> ...any>?
+local function func<D>(options: FuncOptions<D>): FinalProperty<D>?
     local exposure = options.exposure
     if (exposure and exposure ~= "shared") and
         ((IS_SERVER and exposure ~= "server") or (not IS_SERVER and exposure ~= "client"))

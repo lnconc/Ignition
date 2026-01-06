@@ -1,0 +1,57 @@
+site_name: Ignition
+theme:
+  name: material
+  logo: img/logo.svg
+  favicon: img/logo.svg
+  palette:
+    scheme: slate
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.path
+    - navigation.indexes 
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotate
+    - content.tooltips
+    - content.code.copy
+  icon:
+    annotation: material/arrow-right-circle-outline
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - footnotes
+  - pymdownx.details
+  - pymdownx.betterem 
+  - pymdownx.mark
+  - pymdownx.extra
+  - attr_list
+  - md_in_html
+nav:
+  - Home: index.md
+  - Tutorials:
+    - Tutorials: tutorials/index.md
+
+extra_css:
+  - css/theme.css
+  - css/site.css
+  - css/animation.css
+  - css/home.css
+  - css/code-theme.css
+
+extra_javascript:
+  - https://cdn.tailwindcss.com
+  - javascripts/tailwind.config.js
+
+copyright: |
+  &copy; 2025 <a href="https://github.com/lnconcinnity"  target="_blank" rel="noopener">lnconcinnity</a>

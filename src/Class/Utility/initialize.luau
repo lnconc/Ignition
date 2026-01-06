@@ -60,24 +60,31 @@ local function initialize(
                 end
 
                 if not PRODUCTION_MODE_ENABLED then
-                    env.set(wrapper, { environment = environment })
+                    env.set(wrapper :: any, { environment = environment })
                     local id = tostring(wrapper)
                     environment.Context.Includes[id] = true
                     local family = environment.Context.Family[interface.name] or {}
                     family[id] = true
                     environment.Context.Family[interface.name] = family
+                    table.insert(environment.Closures, wrapper)
                 end
                 destinationField[key] = wrapper
             -- standard props
             else
                 local value = if isProp then templateOrValue.value else templateOrValue
                 local source = if is_static then interface.staticproperties[specifier] else destinationField
+                local tempFlags = { FromInit = true }
+                if flags then
+                    for flag in flags do
+                        tempFlags[flag] = true
+                    end
+                end
                 upsert(source, key, value, {
-                    flags = flags or {},
+                    flags = tempFlags,
                     reactive = interface.flags.AllowReactivity or (flags and flags[PROPERTY_FLAGS.Reactive]) or false,
                     environment = environment,
                     type = propertyTypes[key],
-                    constructorContext = environment.Context.Constructor,
+                    constructorContext = if environment.Context then environment.Context.Constructor else nil,
                 })
             end
         end

@@ -3,7 +3,10 @@
 
 local LibaryTypes = require("@self/LibaryTypes")
 local abstract = require("@self/Libs/abstract")
+local anon = require("@self/Libs/anon")
 local class = require("@self/Libs/class")
+local delete = require("@self/Libs/delete")
+local dumpsize = require("@self/Libs/dumpsize")
 local extends = require("@self/Libs/extends")
 local final = require("@self/Libs/final")
 local free = require("@self/Libs/free")
@@ -37,6 +40,9 @@ local Class = {
     union = union,
     once = once,
     free = free,
+    anon = anon,
+    dumpsize = dumpsize,
+    delete = delete,
     PLACEHOLDER = Configuration.PLACEHOLDER,
     FLAGS = table.freeze(Configuration.PROPERTY_FLAGS),
     PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED,
@@ -47,7 +53,7 @@ function Class.from(...: string): ...any
     local retrieved = table.pack(...)
     for i = 1, retrieved.n do
         local k = retrieved[i]
-        local r = Class[k]
+        local r = (Class :: any)[k]
         if not r then
             error(`unable to retrieve '{k}'`, 2)
         end

@@ -4,7 +4,7 @@
 local Types = require("../Types")
 
 type PropertiesField = Types.PropertiesFields
-type Environment = Types.Environment<PropertiesField>
+type Environment = Types.Environment
 
 local function bloodline(childEnv: Environment, superEnv: Environment)
     local childFamily = childEnv.Context.Family

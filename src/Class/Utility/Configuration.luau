@@ -1,7 +1,7 @@
 --!nocheck
 -- Class/Utility/Configuration.lua
 
-local Symbol = require("./Symbol")
+local Symbol = require("../../Modules/Symbol")
 local function symbol<T>(id: T): Symbol.Symbol<T>
     return Symbol(`class_symbol<{id}>`)
 end
@@ -11,7 +11,7 @@ local FORCE_PRODUCTION_MODE = false
 return {
     PRODUCTION_MODE_ENABLED = not game:GetService("RunService"):IsStudio() or FORCE_PRODUCTION_MODE,
     MAX_STACK_DEPTH = 10,
-    HEADER_EXTENSION = "definition",
+    HEADER_EXTENSION = ".definition",
     PROPERTY_SIGNATURE = "$property",
     NULLABLE_SIGNATURE = "$nullable",
     UNION_SIGNATURE = "$union",

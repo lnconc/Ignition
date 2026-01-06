@@ -11,12 +11,12 @@ export type FinalProperty<V, T, D> = {
     _signature: string,
 }
 
-export type PropertyField = { [string]: FinalProperty<any, "any", any> | any }
+export type PropertyField = { [string]: any }
 export type PropertiesFields = {
     public: PropertyField,
     protected: PropertyField,
     private: PropertyField,
-    [string]: FinalProperty<any, "any", any> | any | PropertyField,
+    [string]: any,
 }
 
 export type Symbol<T> = setmetatable<{}, {
@@ -43,7 +43,7 @@ export type OverloadFunction = OverloadRecord | AnyFunction
 export type Environment = {
     Context: {
         Includes: { [string]: boolean },
-        Refs: setmetatable<{ [string]: boolean }, { __mode: string }>,
+        Refs: setmetatable<{ [typeof(function() end)]: boolean }, { __mode: string }>,
         Friends: { [string]: boolean },
         Family: { [string]: { [string]: boolean } },
         Constructor: string,
@@ -52,6 +52,9 @@ export type Environment = {
     PropertyFlags: { [string]: { [Symbol<string>]: boolean } },
     Id: Symbol<string>,
     Interface: Interface,
+    Closures: { any },
+    Deleting: boolean,
+    Metatable: any,
     Master: any?,
     SuperClass: {
         object: any?,
@@ -168,7 +171,7 @@ export type function GetClassObject(interface: type, accessLevel: type): type
                 end
             end
         end
-        if not asTable and member:metatable() then asTable = member end
+        if not asTable and member:is("table") and member:metatable() then asTable = member end
         if asTable then
             local static = is_static(asTable)
             statics:setproperty(types.singleton(key), types.singleton(static))
@@ -236,6 +239,9 @@ export type function GetClassObject(interface: type, accessLevel: type): type
                 props:setproperty(types.singleton(key), member)
                 prototype:setproperty(types.singleton(key), member) -- raw primitive
             end
+        else
+            props:setproperty(types.singleton(key), member)
+            prototype:setproperty(types.singleton(key), member) -- raw primitive
         end
     end
 

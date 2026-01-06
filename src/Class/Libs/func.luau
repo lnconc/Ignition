@@ -1,21 +1,19 @@
 --!strict
--- CLass/Libs/property.lua
+-- CLass/Libs/func.lua
 
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 
 type Symbol<T> = Types.Symbol<T>
-type Property<V, T> = {
-    type: T,
-    value: V,
-    flags: { Symbol<string> } | { [Symbol<string>]: boolean },
-}
-type FinalProperty<V, T> = Types.FinalProperty<V, T, nil>
+type FinalProperty<D> = Types.FinalProperty<nil, ForceSingleton<"function">, D>
 type PropertyExposure = Types.PropertyExposure
+type ForceSingleton<S> = Types.ForceSingleton<S>
+
+type FuncOptions<D> = { exposure: PropertyExposure?, flags: { Symbol<string> }?, dummy: D }
 
 local IS_SERVER = game:GetService("RunService"):IsServer()
 
-local function property<V, T>(options: Property<V, T> & { exposure: PropertyExposure }): FinalProperty<V, T>?
+local function func<D>(options: FuncOptions<D>): FinalProperty<D & (...any) -> ...any>?
     local exposure = options.exposure
     if (exposure and exposure ~= "shared") and
         ((IS_SERVER and exposure ~= "server") or (not IS_SERVER and exposure ~= "client"))
@@ -24,13 +22,13 @@ local function property<V, T>(options: Property<V, T> & { exposure: PropertyExpo
     end
     local result = { 
         _signature = Configuration.PROPERTY_SIGNATURE, 
-        value = options.value,
-        type = options.type,
+        value = nil, 
+        type = "function",
         flags = options.flags or {}, 
-        dummy = nil
+        dummy = options.dummy 
     }
     
     return result :: any
 end
 
-return property
+return func

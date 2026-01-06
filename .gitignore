@@ -1,10 +1,5 @@
-# Project place file
-/Ignition-Refactored.rbxlx
+/sourcemap.json
+/roblox.yml
 
-# Roblox Studio lock files
-/*.rbxlx.lock
-/*.rbxl.lock
-
-sourcemap.json
-.vscode
-roblox.yml
+/plugin
+/plugin.project.json

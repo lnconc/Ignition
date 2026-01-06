@@ -6,9 +6,13 @@ local Types = require("../Types")
 local Registry = require("../Utility/Registry")
 
 type Interface = Types.Interface
+type PropertiesFields = Types.PropertiesFields
 
-local function extends(superName: string): (...any) -> ...any
-    local superInterface = Registry.WaitForLink(superName)
+local function extends<I>(targetOrSuperInterface: string | I): (...any) -> ...any
+    local superInterface: Interface = targetOrSuperInterface :: I
+    if type(superInterface) == "string" then
+        superInterface = Registry.WaitForLink(targetOrSuperInterface)
+    end
     local _, _, env = getCaller(2)
     if not env then
         error("Extension must be called from a Luau thread context", 2)
@@ -21,15 +25,15 @@ local function extends(superName: string): (...any) -> ...any
     
     if interface.superclass then
         error(`'{interface.name}' already inherits from '{interface.superclass.name}'`, 2)
-    elseif superInterface.flags.ClassFinalized then
-        error(`Cannot inherit from finalized class '{superName}'`, 2)
-    elseif superInterface.name == interface.name then
+    elseif (superInterface :: Interface).flags.ClassFinalized then
+        error(`Cannot inherit from finalized class '{(superInterface :: Interface).name}'`, 2)
+    elseif (superInterface :: Interface).name == interface.name then
         error(`Class '{interface.name}' cannot inherit from itself`, 2)
     end
     
     interface.superclass = superInterface
-    return function(...)
-        return ...
+    return function(fields: PropertiesFields): PropertiesFields
+        return fields
     end
 end
 

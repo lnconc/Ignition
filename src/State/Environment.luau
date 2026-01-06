@@ -1,4 +1,4 @@
---!nocheck
+--!strict
 -- State/Environment.lua
 
 local Value = require("./Value")
@@ -6,18 +6,19 @@ local Types = require("./Types")
 local is = require("./is")
 local env = require("../Internal/env")
 
-type PropertyDependencies<E> = Types.PropertyDependencies<E>
-type PropertyEffect<T, E> = Types.PropertyEffect<T, E>
+type Effect<T> = Types.Effect<T>
 type Property<T> = Types.Property<T>
 type CanBe<T> = Types.CanBe<T>
-type ValueInternal<T> = Types.ValueInternal<T>
-type PropertyFactory = <T, E>(effect: PropertyEffect<T, E>, dependencies: PropertyDependencies<E>) -> Property<T>
+type InternalValue<T> = Types.InternalValue<T>
+type Dependencies = Types.Dependencies
+type PropertyFactory = <T>(effect: Effect<T>, dependencies: Dependencies?) -> Property<T>
+type table = typeof({})
 
-local ValueMetatable = getmetatable(Value.new(nil))
+local ValueMetatable: any = getmetatable(Value.new("something"))
 local Property: PropertyFactory
 local areMetamethodsApplied = false
 
-local function createBinaryOperator<T>(operator: (a: T, b: T) -> T): () -> Property<T>
+local function createBinaryOperator<T>(operator: (a: T, b: T) -> T): (a: CanBe<T>, b: CanBe<T>) -> Property<T>
     return function(a: CanBe<T>, b: CanBe<T>): Property<T>
         local is_a, is_b = is(a), is(b)
         return Property(function(use)
@@ -27,22 +28,22 @@ local function createBinaryOperator<T>(operator: (a: T, b: T) -> T): () -> Prope
     end
 end
 
-local function createUnaryOperator<T>(operator: (a: T) -> T)
-    return function(self: ValueInternal<T>): ValueInternal<T>
+local function createUnaryOperator<T>(operator: (a: T) -> T): (self: Property<T>) -> Property<T>
+    return function(self: Property<T>): Property<T>
         return Property(function(use)
             return operator(use(self))
         end)
     end
 end
-local function createIterator<T>(self: ValueInternal<T>)
+local function createIterator<T>(self: InternalValue<T>)
     local iterable = self._DANGEROUS_value
     assert(type(iterable) == "table", `attempt to iterate a {typeof(iterable)}`)
     return next, iterable, nil
 end
 
 return {
-    InjectDependencies = function<E>(dependencies: PropertyDependencies<E>, effect: PropertyEffect<any, any>)
-        env.set(effect, dependencies)
+    InjectDependencies = function<T>(dependencies: Dependencies, effect: Effect<T>)
+        env.set(effect :: any, dependencies :: { [string]: any })
     end,
     ExposeProperty = function(factory: PropertyFactory)
         assert(not areMetamethodsApplied, `ExposeProperty can only be called once (Value metamethods initialization)`)
@@ -50,9 +51,9 @@ return {
         Property = factory
         ValueMetatable.__eq = createBinaryOperator(function(a, b) return a == b
         end)
-        ValueMetatable.__le = createBinaryOperator(function(a, b) return a <= b
+        ValueMetatable.__le = createBinaryOperator(function(a, b) return (a :: number) <= (b :: number)
         end)
-        ValueMetatable.__lt = createBinaryOperator(function(a, b) return a < b
+        ValueMetatable.__lt = createBinaryOperator(function(a, b) return (a :: number) < (b :: number)
         end)
         ValueMetatable.__add = createBinaryOperator(function(a, b) return a + b
         end)
@@ -72,7 +73,7 @@ return {
         end)
         ValueMetatable.__concat = createBinaryOperator(function(a, b) return a .. b
         end)
-        ValueMetatable.__len = createUnaryOperator(function(a) return #a
+        ValueMetatable.__len = createUnaryOperator(function(a) return #(a :: table)
         end)
         ValueMetatable.__iter = createIterator
     end

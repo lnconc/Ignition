@@ -3,7 +3,7 @@
 
 local env = require("../../Internal/env")
 local getCaller = require("../../Internal/getCaller")
-local Symbol = require("../../Modules/Symbol")
+local Symbol = require("../Utility/Symbol")
 local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 local Registry = require("../Utility/Registry")
@@ -11,16 +11,15 @@ local encapsulate = require("../Utility/encapsulate")
 local getOverloadedFunction = require("../Utility/getOverloadedFunction")
 local is_property = require("../Utility/is_property")
 
-type Curry<T> = Types.Curry<T>
-type Flags = Types.Flags
-type Set<T> = Types.Set<T>
-type Map<K, V> = Types.Map<K, V>
-type Options = Types.Options
-type Interface = Types.Interface
-type Properties = Types.Properties
-type Function = Types.Function
-type BaseObject = Types.BaseObject<Properties>
 type Environment = Types.Environment
+type Interface = Types.Interface
+type GetClassObject<P, A> = Types.GetClassObject<P, A>
+type PropertiesFields = Types.PropertiesFields
+type AnyFunction = Types.AnyFunction
+type OverloadRecord = Types.OverloadRecord
+type FinalProperty = Types.FinalProperty<any, "any", any>
+type OverloadFunction = Types.OverloadFunction
+type Symbol<T> = Types.Symbol<T>
 
 local find = table.find
 local match = string.match
@@ -31,52 +30,47 @@ if not PRODUCTION_MODE_ENABLED then
     warn("class library is on development mode, set FORCE_PRODUCTION_MODE to true to disable")
 end
 
-local function buildClassObject(options): (BaseObject, Environment)
-    local id = Symbol(`{options.IdentifierName}({string.format("%08X", math.random(0, 0x7FFFFFFF))})`)
+local function buildClassObject(name: string, interface: Interface): (any, Environment)
+    local id = Symbol(`{name}({string.format("%08X", math.random(0, 0x7FFFFFFF))})`)
     
     local environment: Environment = {
         Id = id,
-        Interface = Registry.GetInterface(options.IdentifierName),
+        Interface = interface,
         SuperClass = { object = nil, environment = nil },
         Master = nil,
-        Context = if PRODUCTION_MODE_ENABLED then {
-            Constructor = "<C>",
-        } :: any else {
-            Includes = {} :: Set<string>,
-            Refs = setmetatable({}, { __mode = "k" }) :: Set<string>,
-            Friends = {} :: Set<string>,
+        Context = if PRODUCTION_MODE_ENABLED then nil :: any else {
+            Includes = {},
+            Refs = setmetatable({} :: { [string]: any }, { __mode = "k" }),
+            Friends = {},
             Family = {},
-            Constructor = "<C>",
-        },
-        Flags = {
-            AllowReactivity = options.AllowReactivity,
+            Constructor = "",
         },
         PropertyFlags = {},
         PropertyTypes = {},
         Closures = {},
     }
     
+    for _, field in pairs(interface.properties) do
+        for key, property in pairs(field :: { [string]: any }) do
+            environment.PropertyTypes[key] = (property :: FinalProperty).type
+            local flags = (property :: FinalProperty).flags
+            if flags then
+                environment.PropertyFlags[key] = flags :: { [Symbol<string>]: boolean }
+            end
+        end
+    end
+
     local object = newproxy(true)
     local metatable = getmetatable(object)
     metatable.__tostring = function()
         return toString(id)
     end
     
-    encapsulate(object, metatable, environment, options.PropertyFields)
+    encapsulate(object, metatable, environment, interface.properties)
     return object, environment
 end
 
-local function createClassInterface(name: string): (fields: Properties) -> ()
-    local script, fn = getCaller(2)
-    local headerExt = Configuration.HEADER_EXTENSION
-    if not match(script.Name, `%.{headerExt}$`) then
-        error(`Class interface '{name}' must be defined in a '.{headerExt}' file (got '{script.Name}')`, 2)
-    end
-    
-    if Registry.InterfaceExists(name) then
-        error(`Class interface '{name}' already exists`, 2)
-    end
-    
+local function createInterface(name: string): Interface
     local interface = setmetatable({
         name = name,
         flags = {
@@ -84,34 +78,30 @@ local function createClassInterface(name: string): (fields: Properties) -> ()
             ClassFinalized = false,
             ClassAbstracted = false,
             InheritanceLinked = false,
-        } :: Flags,
-        constructor = { callback = nil, defined = false },
-        superclass = nil,
-        closures = {},
-        globals = { public = {}, protected = {}, private = {} },
-        properties_fields = { public = {}, protected = {}, private = {} },
-        
-        instantiate = function(self: Interface, fromDerivedClass: boolean, ...: any)
+        },
+        constructor = { 
+            callback = nil :: OverloadFunction?, 
+            defined = false 
+        },
+        superclass = nil :: Interface?,
+        closures = {} :: { [string]: OverloadFunction? },
+        staticproperties = { public = {}, protected = {}, private = {} },
+        properties = { public = {}, protected = {}, private = {} },
+        virtuals = {},
+        instantiate = function(self: any, fromDerivedClass: boolean, ...: any): (any, any)
             if self.flags.ClassAbstracted and not fromDerivedClass then
                 error(`Cannot instantiate abstract class {self.name}`, 3)
             end
-            local options = {
-                AllowReactivity = self.flags.AllowReactivity,
-                ClassAbstracted = self.flags.ClassAbstracted,
-                ClassFinalized = self.flags.ClassFinalized,
-                IdentifierName = name,
-                PropertyFields = self.properties_fields,
-            }
             
-            local object, environment = buildClassObject(options)
-            local constructorData = self.constructor.callback
-            local fn = if type(constructorData) == "table" and constructorData.isOverloaded 
+            local object, environment = buildClassObject(name, self)
+            local constructorData: OverloadRecord = self.constructor.callback
+            local fn: OverloadFunction = if type(constructorData) == "table" and constructorData.isOverloaded 
                 then getOverloadedFunction(`Constructor<{tostring(object)}>`, constructorData) 
                 else constructorData
             fn = fn or function() end
             if fn then
                 local wrapper = function(...) 
-                    (fn :: Function)(object, ...)
+                    (fn :: (...any) -> ())(object, ...)
                 end
                 
                 local build_context = toString(wrapper)
@@ -130,7 +120,6 @@ local function createClassInterface(name: string): (fields: Properties) -> ()
                     wrapper(...)
                 end
             end
-            
             if not fromDerivedClass then
                 environment.Master = object
                 local current = environment
@@ -143,22 +132,35 @@ local function createClassInterface(name: string): (fields: Properties) -> ()
             return object, environment
         end
     }, { __metatable = "This metatable is locked!" })
+    return interface :: Interface
+end
+
+local function createClassInterface(name: string): <I>(fields: PropertiesFields & I) -> I
+    local script, fn = getCaller(2)
+    local headerExt = Configuration.HEADER_EXTENSION
+    if not match(script.Name, `%.{headerExt}$`) then
+        error(`Class interface '{name}' must be defined in a '.{headerExt}' file (got '{script.Name}')`, 2)
+    end
     
+    if Registry.InterfaceExists(name) then
+        error(`Class interface '{name}' already exists`, 2)
+    end
+    
+    local interface: Interface = createInterface(name)
     Registry.FlushTasks(2, interface)
     env.set(fn, { interface = interface })
-    return function(fields: Properties)
+    return function<I>(fields: PropertiesFields & I): I
         local propertyFlags = Configuration.PROPERTY_FLAGS
-        
         local function handleVirtuals(specifier: string, key: string)
             local super = interface.superclass
             if not super then return end
             
-            local parent_fields = super.properties_fields[specifier]
-            local existing = parent_fields[key]
+            local parent_fields = super.properties[specifier]
+            local existing: any = parent_fields[key]
             if existing then
                 local is_virtual = false
                 if type(existing) == "table" and existing.flags then
-                    is_virtual = find(existing.flags, propertyFlags.Virtual) ~= nil
+                    is_virtual = find(existing.flags :: {any}, propertyFlags.Virtual) ~= nil
                 end
                 
                 if not is_virtual then
@@ -166,18 +168,33 @@ local function createClassInterface(name: string): (fields: Properties) -> ()
                 end
             end
         end
+
+        local function normalizeProperty(property: FinalProperty): FinalProperty
+            if is_property(property) then
+                local flags = property.flags
+                if flags then
+                    local map: { [Symbol<string>]: boolean } = {}
+                    for _, value in ipairs(flags :: { Symbol<string> }) do
+                        map[value] = true
+                    end
+                    property.flags = map
+                end
+            end
+            return property
+        end
         
         for k, v in pairs(fields) do
             local is_specifier = (k == 'public' or k == 'private' or k == 'protected') 
             local is_field_group = is_specifier and type(v) == "table" and not is_property(v)
             if is_field_group then
-                for subKey, subValue in pairs(v :: any) do
-                    handleVirtuals(k, subKey)
-                    interface.properties_fields[k][subKey] = subValue
+                for subKey, subValue in pairs(v :: { [string]: any }) do
+                    if not subKey or not subValue then continue end
+                    handleVirtuals(k, subKey);
+                    interface.properties[k][subKey] = normalizeProperty(subValue)
                 end
             else
                 handleVirtuals("public", k)
-                interface.properties_fields.public[k] = v
+                interface.properties.public[k] = normalizeProperty(v :: FinalProperty)
             end
         end
         
@@ -186,6 +203,8 @@ local function createClassInterface(name: string): (fields: Properties) -> ()
             Registry.SaveInterface(interface :: any, name)
         end
         Registry.SignalLink(name, interface :: any)
+
+        return (interface :: any) :: I
     end
 end
 

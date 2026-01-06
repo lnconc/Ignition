@@ -4,23 +4,15 @@
 
 local Configuration = require("./Configuration")
 local Symbol = require("../../Modules/Symbol")
-local Unyieldable = require("../../Modules/Unyieldable")
 local Value = require("../../State/Value")
 local Types = require("../Types")
 local StackSpider = require("./StackSpider")
 local initialize = require("./initialize")
 local ValueTypes = require("../../State/Types")
 local free = require("../Libs/free")
-local is_property = require("./is_property")
 
-type Properties = Types.Properties
-type PropertyRaw<P> = Types.PropertyRaw<P>
+type Symbol<T> = Types.Symbol<T>
 type Environment = Types.Environment
-type TypeCheck = string | <V>(value: V) -> boolean
-type SerializedProperties = Types.SerializedProperties
-type InternalObject = Types.InternalObject<Properties>
-type BaseObject = Types.BaseObject<Properties>
-type Function = Types.Function
 
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 local NULL_PLACEHOLDER = Symbol("null")
@@ -35,83 +27,79 @@ local match = string.match
 local WithinScope = StackSpider.WithinScope
 local WithinFunction = StackSpider.WithinFunction
 
-local function run_enforced_typecheck<V>(value: V, typeCheck: TypeCheck?): boolean
-    if type(typeCheck) == "string" then
-        return typeof(value) == typeCheck
-    elseif type(typeCheck) == "function" then
-        return Unyieldable(typeCheck, value)
-    end
-    return true
-end
-
-local function upsert<K, V>(ring: any, key: K, value: V, flags: any, enforcedTypeOrPredicate: TypeCheck?, build_context: string?, environment: Environment?)
+local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: string?, constructorContext: string? })
     local cur = ring[key]
-    if (flags.allowReactivity and cur and cur._DANGEROUS_value == value) or cur == value then 
+    local reactive, environment, flags, type_, constructorContext = options.reactive, options.environment, options.flags, options.type, options.constructorContext
+    if (reactive and cur and cur._DANGEROUS_value == value) or cur == value then 
         return 
     end
     
     if not PRODUCTION_MODE_ENABLED then
-        if enforcedTypeOrPredicate ~= nil and not run_enforced_typecheck(value, enforcedTypeOrPredicate) then
+        if type_ and typeof(value) ~= type_ then
             error(`change of property '{key}' failed to pass type check test`, 2)
         end
         if not flags[PROPERTY_FLAGS.Optional] and value == nil then
             error(`cannot set nil to required property '{key}'`, 2)
-        elseif build_context ~= nil and environment and flags[PROPERTY_FLAGS.Readonly] and not WithinFunction(environment, build_context) then
+        elseif constructorContext ~= nil and flags[PROPERTY_FLAGS.Readonly] and not WithinFunction(environment, constructorContext) then
             error(`cannot set readonly property '{key}'`, 2)
         end
     end
 
-    if flags.allowReactivity or flags[PROPERTY_FLAGS.Reactive] then
+    if reactive then
         if not cur then
-            cur = (Value.new(value, free) :: any) :: ValueTypes.ValueFull<any>
+            cur = (Value.new(value, free) :: any) :: ValueTypes.InternalValue<any>
             if flags[PROPERTY_FLAGS.Constant] or (type(key) == "string" and match(key, "^[A-Z]+$") ~= nil) then
                 cur._CONSTANT_locked = true
                 cur._CONSTANT_error_msg = `cannot set constant property '{key}'`
             end
             ring[key] = cur
         else
-            cur:set(value)
+            (cur :: ValueTypes.InternalValue<any>):set(value)
         end
     else
         ring[key] = if value == nil then NULL_PLACEHOLDER else value
     end
 end
 
-local function encapsulate(object: any, metatable: any, environment: Environment, properties: Properties)
+local function encapsulate(object: any, metatable: any, environment: Environment)
     local interface = environment.Interface
-    local globals = interface.globals
-    local allowReactivity = environment.Flags.AllowReactivity
-    local allowReactivityHash = { allowReactivity = allowReactivity }
+    local staticproperties = interface.staticproperties
 
     local data = if PRODUCTION_MODE_ENABLED then {} else { public = {}, private = {}, protected = {} }
-    initialize(object, environment, data, properties, upsert)
+    initialize(object, environment, data, upsert)
 
-    local specifierMap = {}
-    if not PRODUCTION_MODE_ENABLED then
-        for specifier, field in pairs(properties) do
-            for key, property in pairs(field) do
-                local isStatic = if is_property(property) then property.flags and property.flags[PROPERTY_FLAGS.Static] else false
-                specifierMap[key] = { specifier = specifier, static = isStatic }
+    local reactiveMap: { [string]: boolean } = {}
+    local specifierMap: { [string]: { specifier: string, static: boolean } } = {}
+    local function isReactive(key: string): boolean
+        local flags = environment.PropertyFlags[key]
+        return (flags and flags[PROPERTY_FLAGS.Reactive]) or interface.flags.AllowReactivity
+    end
+
+    for specifier, field in pairs(interface.properties) do
+        for key in pairs(field :: { [string]: any }) do
+             if not PRODUCTION_MODE_ENABLED then
+                specifierMap[key] = { specifier = specifier, static = (environment.PropertyFlags[key] and environment.PropertyFlags[key][PROPERTY_FLAGS.Static] ~= nil) }
             end
+            reactiveMap[key] = isReactive(key)
         end
     end
 
     function metatable:__index(key: any): any
         if PRODUCTION_MODE_ENABLED then
             local out = data[key]
-            if allowReactivity and out then out:evaluate() end
+            if reactiveMap[key] and out then out:evaluate() end
             return if out == NULL_PLACEHOLDER then nil else out
         end
 
         local info = specifierMap[key]
         if not info then
             local super = environment.SuperClass
-            if super.object then return super.object[key] end
+            if super.object then return (super.object :: any)[key] end
             error(`attempt to index missing property '{key}'`, 2)
         end
-        local static, specifier = info.static, info.specifier
-        if specifier == "public" and not static and not allowReactivity then
-            return data.public[key]
+        local static, specifier, reactive = info.static, info.specifier, reactiveMap[key]
+        if specifier == "public" and not static and not reactive then
+            return (data.public :: any)[key]
         elseif specifier ~= "public" then
             local included, protects = WithinScope(environment)
             if specifier == "private" and not included then
@@ -121,28 +109,33 @@ local function encapsulate(object: any, metatable: any, environment: Environment
             end
         end
 
-        local ring = if static then globals[specifier] else data[specifier]
+        local ring = if static then staticproperties[specifier] else data[specifier]
         local out = ring[key]
-        local flags = environment.PropertyFlags[key]
-        if (allowReactivity or flags[PROPERTY_FLAGS.Reactive]) and out then out:evaluate() end
+        if reactive and out then out:evaluate() end
         return if out == NULL_PLACEHOLDER then nil else out
     end
 
     function metatable:__newindex(key: any, value: any)
         if PRODUCTION_MODE_ENABLED then
-            upsert(data, key, value, allowReactivityHash)
+            upsert(data, key, value, {
+                flags = environment.PropertyFlags[key] or {},
+                reactive = reactiveMap[key],
+                environment = environment,
+                type = environment.PropertyTypes[key],
+                constructorContext = environment.Context and environment.Context.Constructor or nil,
+            })
             return
         end
 
         local info = specifierMap[key]
         if not info then
             local super = environment.SuperClass
-            if super.object then super.object[key] = value; return end
+            if super.object then (super.object :: any)[key] = value; return end
             error(`attempt to write missing property '{key}'`, 2)
         end
-        local static, specifier = info.static, info.specifier
-        if specifier == "public" and not static and not allowReactivity then
-            data.public[key] = if value == nil then NULL_PLACEHOLDER else value
+        local static, specifier, reactive = info.static, info.specifier, reactiveMap[key]
+        if specifier == "public" and not static and not reactive then
+            (data.public :: any)[key] = if value == nil then NULL_PLACEHOLDER else value
             return
         elseif specifier ~= "public" then
             local included, protects = WithinScope(environment)
@@ -151,8 +144,14 @@ local function encapsulate(object: any, metatable: any, environment: Environment
             end
         end
 
-        local ring = if static then globals[specifier] else data[specifier]
-        upsert(ring, key, value, environment.PropertyFlags[key], environment.PropertyTypes[key], environment.Context.Constructor, environment)
+        local ring = if static then staticproperties[specifier] else data[specifier]
+        upsert(ring, key, value, {
+            flags = environment.PropertyFlags[key],
+            reactive = reactive,
+            environment = environment,
+            type = environment.PropertyTypes[key],
+            constructorContext = environment.Context and environment.Context.Constructor or nil,
+        })
     end
 
     for _, op in ipairs(OPERATORS) do
@@ -171,7 +170,7 @@ local function encapsulate(object: any, metatable: any, environment: Environment
                         error(`Operator {op} access violation`, 2)
                     end
                 end
-                return (impl :: Function)(a, b)
+                return (impl :: any)(a, b)
             end
         end
     end

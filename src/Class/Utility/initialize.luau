@@ -8,75 +8,35 @@ local Types = require("../Types")
 local getOverloadedFunction = require("./getOverloadedFunction")
 local is_property = require("./is_property")
 
-type FieldsOption = Types.FieldsOption
-type FieldOptions = Types.FieldOptions
-type SerializedProperties = Types.SerializedProperties
-type Properties = Types.Properties
 type Environment = Types.Environment
-type PropertyRaw<P> = Types.PropertyRaw<P>
-type InternalObject = Types.InternalObject<Properties>
-type Function = Types.Function
+type PropertyField = Types.PropertyField
+type GetClassObject<P, A> = Types.GetClassObject<P, A>
+type Symbol<T> = Types.Symbol<T>
 
 local PROPERTY_FLAGS = Configuration.PROPERTY_FLAGS
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 
-local function normalize_flags_once(container: any, key: string): (any?, any)
-    local item = container[key]
-    if type(item) ~= "table" then return nil, item end
-    
-    local field_flags = item.flags
-    if field_flags and #field_flags > 0 then 
-        local map = {}
-        for _, value in ipairs(field_flags) do
-            map[value] = true
-        end
-        field_flags = map
-        item.flags = field_flags
-    end
-    
-    return field_flags, item
-end
-
-local function shadow_map_from_array(target: { [any]: any }, source: { [any]: any }?)
-    if not source then return target end
-    for k, v in pairs(source) do
-        if type(k) ~= "number" then
-            target[k] = v
-        end
-    end
-    return target
-end
-
 local function initialize(
-    object: InternalObject, 
+    object: any, 
     environment: Environment,
-    lookup: any, 
-    properties: Properties, 
-    upsert: any
+    data: { [any]: any }, 
+    upsert: <K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: string?, constructorContext: string? }) -> ()
 )
-    local allowReactivity = environment.Flags.AllowReactivity
     local interface = environment.Interface
-    local closures = interface.closures
+    local properties, closures = interface.properties, interface.closures
     local propertyFlags, propertyTypes = environment.PropertyFlags, environment.PropertyTypes
     local reactiveStatesBatch: { [any]: any } = {}
 
-    local iterationSource = if PRODUCTION_MODE_ENABLED then properties else lookup
+    local iterationSource = if PRODUCTION_MODE_ENABLED then interface.properties else data
     for specifier, fieldOrRing in iterationSource do
-        local propertyRing: FieldOptions = if PRODUCTION_MODE_ENABLED then fieldOrRing else properties[specifier]
-        local destinationField = if PRODUCTION_MODE_ENABLED then lookup else fieldOrRing
+        local propertyRing: PropertyField = if PRODUCTION_MODE_ENABLED then fieldOrRing else properties[specifier]
+        local destinationField: { [any]: any } = if PRODUCTION_MODE_ENABLED then data else fieldOrRing
         if not propertyRing then continue end
         if fieldOrRing == Configuration.METADATA then continue end
-        for key, templateOrValue in pairs(propertyRing) do
+        for key, templateOrValue in pairs(propertyRing :: { [any]: any }) do
             if templateOrValue == Configuration.METADATA then continue end
-            local field_flags, raw = normalize_flags_once(propertyRing, key)
-            local flags = shadow_map_from_array({ allowReactivity = allowReactivity }, field_flags)
-            propertyFlags[key] = flags
-            local t = if type(raw) == "table" then raw.type else nil
-            if t then
-                propertyTypes[key] = t
-            end
-
-            local is_static = field_flags and field_flags[PROPERTY_FLAGS.Static]
+            local flags = propertyFlags[key]
+            local is_static = flags and flags[PROPERTY_FLAGS.Static]
             local isProp = is_property(templateOrValue)
             -- reactive props
             if isProp and type(templateOrValue.effect) == "function" and reactiveStatesBatch then
@@ -90,13 +50,13 @@ local function initialize(
                 fn = fn or function() error(`method {key} is unimplemented in {interface.name}`, 2) end
 
                 local wrapper = function(...: any): any
-                    if is_static then return (fn :: Function)(...) end
+                    if is_static then return (fn :: any)(...) end
                     local first_arg = ...
                     local masterObject = (environment.Master :: any) or object
                     if first_arg ~= masterObject then
                         error(`invalid call signature: {key} must be called with ':' on {interface.name}`, 2)
                     end
-                    return (fn :: Function)(masterObject, select(2, ...))
+                    return (fn :: any)(masterObject, select(2, ...))
                 end
 
                 if not PRODUCTION_MODE_ENABLED then
@@ -108,12 +68,17 @@ local function initialize(
                     environment.Context.Family[interface.name] = family
                 end
                 destinationField[key] = wrapper
-
             -- standard props
             else
                 local value = if isProp then templateOrValue.value else templateOrValue
-                local source = if is_static then interface.globals[specifier] else destinationField
-                upsert(source, key, value, flags, t, environment.Context.Constructor, environment)
+                local source = if is_static then interface.staticproperties[specifier] else destinationField
+                upsert(source, key, value, {
+                    flags = flags or {},
+                    reactive = interface.flags.AllowReactivity or (flags and flags[PROPERTY_FLAGS.Reactive]) or false,
+                    environment = environment,
+                    type = propertyTypes[key],
+                    constructorContext = environment.Context.Constructor,
+                })
             end
         end
     end

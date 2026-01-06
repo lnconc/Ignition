@@ -3,15 +3,15 @@
 
 local Types = require("./Types")
 type Value<T> = Types.Value<T>
-type ValueFull<T> = Types.ValueFull<T>
+type InternalValue<T> = Types.InternalValue<T>
 
 local ValueMetatable = {}
 ValueMetatable.__index = ValueMetatable
-ValueMetatable.__tostring = function(self: ValueFull<any>)
+ValueMetatable.__tostring = function(self: InternalValue<any>)
     return `Value<{self._DANGEROUS_value}>`
 end
 
-function ValueMetatable.set<T>(self: ValueFull<T>, value: T)
+function ValueMetatable.set<T>(self: InternalValue<T>, value: T)
     if self._CONSTANT_locked then
         error(if self._CONSTANT_error_msg then self._CONSTANT_error_msg else `cannot set constant from {typeof(self._DANGEROUS_value)} to {typeof(value)}`, 2)
     end
@@ -22,11 +22,11 @@ function ValueMetatable.set<T>(self: ValueFull<T>, value: T)
     end
 end
 
-function ValueMetatable.evaluate<T>(_self: ValueFull<T>): boolean
+function ValueMetatable.evaluate<T>(_self: InternalValue<T>): boolean
     return true
 end
 
-function ValueMetatable.Destroy<T>(self: ValueFull<T>)
+function ValueMetatable.Destroy<T>(self: InternalValue<T>)
     if self._destructor then
         self._destructor(self._DANGEROUS_value)
     end

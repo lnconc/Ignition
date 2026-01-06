@@ -10,13 +10,14 @@ local Environment = require("./Environment")
 type Property<T> = Types.Property<T>
 type GraphObject<T> = Types.GraphObject<T>
 type Effect<T> = Types.Effect<T>
-type ValueFull<T> = Types.ValueFull<T>
+type InternalValue<T> = Types.InternalValue<T>
 type GraphDependencies = Types.GraphDependencies
+type Dependencies = Types.Dependencies
 
-local function Property<T>(effect: Effect<T>, dependencies: { [string]: any }): Property<T>
-    local property = (Value.new(nil) :: any) :: ValueFull<T>
+local function Property<T>(effect: Effect<T>, dependencies: Dependencies?): Property<T>
+    local property = (Value.new(nil) :: any) :: InternalValue<T>
     local latestDependencies: GraphDependencies = {}
-    function property.evaluate<T>(self: ValueFull<T>): boolean
+    function property.evaluate<T>(self: InternalValue<T>): boolean
         local currentDependencies: GraphDependencies = {}
         local okay, newValueOrError = xpcall(effect, function(error: string)
             warn(`an error happened while attempting to evaluate state reactivity (error below)\n\n{error}`)

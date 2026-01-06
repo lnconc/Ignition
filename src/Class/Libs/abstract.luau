@@ -3,8 +3,9 @@
 
 local fetchInterface = require("../Utility/fetchInterface")
 
-local function abstract(_)
+local function abstract(interface: any): any
     fetchInterface().flags.ClassAbstracted = true
+    return interface
 end
 
 return abstract

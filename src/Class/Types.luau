@@ -1,173 +1,418 @@
 --!strict
 -- Class/Types.lua
 
-local Generics = require("../Generics")
-local Symbol = require("../Modules/Symbol")
-local ValueTypes = require("../State/Types")
+export type PropertyExposure = "shared" | "client" | "server"
 
-type Symbol<T> = Symbol.Symbol<T>
-type ValueFull<T> = ValueTypes.ValueFull<T>
-type PropertyEffect<T> = ValueTypes.PropertyEffect<T>
-type CanBe<T> = ValueTypes.CanBe<T>
-export type Curry<T> = Generics.Curry<T>
+export type FinalProperty<V, T, D> = {
+    type: T,
+    value: V,
+    dummy: D,
+    flags: { Symbol<string> } | { [Symbol<string>]: boolean },
+    _signature: string,
+}
 
-export type Set<T> = Generics.Set<T>
-export type Array<V> = Generics.Array<V>
-export type Map<K, V> = Generics.Map<K, V>
+export type PropertyField = { [string]: FinalProperty<any, "any", any> | any }
+export type PropertiesFields = {
+    public: PropertyField,
+    protected: PropertyField,
+    private: PropertyField,
+    [string]: FinalProperty<any, "any", any> | any | PropertyField,
+}
 
-export type Flags = Generics.Required<{
-    AllowReactivity: boolean?,
-    ClassAbstracted: boolean?,
-    ClassFinalized: boolean?,
-    InheritanceLinked: boolean?,
+export type Symbol<T> = setmetatable<{}, {
+    __tostring: () -> string,
+    __metatable: T,
+    __call: () -> (),
 }>
 
-export type Nullable<T> = typeof(setmetatable({} :: { type: T }, {} :: { __metatable: string }))
-export type Union<T> = typeof(setmetatable({} :: { types: T }, {} :: { __metatable: string }))
+export type Nullable<T> = setmetatable<{ type: T }, { __metatable: string }>
+export type Union<T> = setmetatable<{ types: { [T]: boolean } }, { __metatable: string }>
 
-export type PropertyRaw<P> = { 
-    type: string | (value: P) -> boolean, 
-    value: P?, 
-    flags: { Symbol<string> } | { [Symbol<string>]: boolean },
-} | { 
-    effect: PropertyEffect<P>, 
-    dependencies: any 
+export type Expects = { string | Nullable<any> | Union<any> }
+export type Function = <A..., R...>(A...) -> R... | () -> ()
+export type ClassFunction = <A..., R...>(self: any, A...) -> R...
+export type AnyFunction = ClassFunction | Function
+export type OverloadEntry = { callback: AnyFunction, expects: Expects }
+export type OverloadRecord = {
+    isOverloaded: boolean,
+    overloads: { OverloadEntry },
+    fallback: AnyFunction
 }
-
-export type Property<P> = typeof(setmetatable(
-    {} :: PropertyRaw<P>, 
-    {} :: { __metatable: string }
-))
-
-export type Function = (...any) -> ...any
-
-type Field = Map<string, CanBe<any>>
-export type FieldOptions = Map<any, Property<any> | any>
-
-export type FieldsOption = Generics.Partial<{ 
-    public: FieldOptions, 
-    private: FieldOptions, 
-    protected: FieldOptions 
-}> & FieldOptions
-
-export type Properties = {
-    public: FieldOptions,
-    private: FieldOptions,
-    protected: FieldOptions,
-    [string]: any,
-}
-
-export type SerializedProperties = { 
-    public: Field, 
-    private: Field,
-    protected: Field,
-    [string]: CanBe<any>, 
-}
-
-export type Options = {
-    IdentifierName: string,
-    StaticRoot: Interface,
-    PropertyFields: Properties,
-} & Flags
-
-export type Expects = Array<string | Array<string>>
-export type OverloadEntry = { callback: Function, expects: Expects }
-export type OverloadRecord = { 
-    fallback: Function?, 
-    isOverloaded: boolean, 
-    overloads: Array<OverloadEntry>
-}
-
-type InterfaceRaw = {
-    name: string,
-    instantiate: (self: Interface, fromDerivedClass: boolean, ...any) -> any,
-    flags: Flags,
-    constructor: { callback: (Function | OverloadRecord)?, defined: boolean },
-    closures: { [string]: Function | OverloadRecord },
-    globals: Map<unknown, CanBe<unknown>>,
-    properties_fields: Properties,
-    virtuals: Map<string, boolean>,
-    superclass: any,
-}
-export type Interface =  typeof(setmetatable(
-    {} :: InterfaceRaw, 
-    {} :: { __metatable: string }
-))
+export type OverloadFunction = OverloadRecord | AnyFunction
 
 export type Environment = {
-    Id: string,
-    Interface: Interface,
-    SuperClass: { object: any, environment: any },
     Context: {
-        Includes: Set<string>,
-        Refs: Set<string>,
-        Friends: Set<string>,
-        Family: Map<string, Set<string>>,
+        Includes: { [string]: boolean },
+        Refs: setmetatable<{ [string]: boolean }, { __mode: string }>,
+        Friends: { [string]: boolean },
+        Family: { [string]: { [string]: boolean } },
         Constructor: string,
     },
-    Closures: { any },
-    Flags: {
-        AllowReactivity: boolean,
+    PropertyTypes: { [string]: string },
+    PropertyFlags: { [string]: { [Symbol<string>]: boolean } },
+    Id: Symbol<string>,
+    Interface: Interface,
+    Master: any?,
+    SuperClass: {
+        object: any?,
+        environment: any?,
     },
-    Master: any,
-    Self: any,
-    PropertyFlags: Map<string, any>,
-    PropertyTypes: Map<string, any>,
 }
 
-type OverloadSequence = (string) -> ((...any) -> (...any)) -> ()
-export type ReflectedClass<P> = {
-    [string]: (self: InternalObject<P>, ...any) -> ...any,
-    __call: (self: any, targetOrSignature: Function, _signature: Expects?) -> any
-}
+export type Interface = setmetatable<{
+    name: string,
+    staticproperties: PropertiesFields,
+    properties: PropertiesFields,
+    flags: {
+        AllowReactivity: boolean,
+        ClassFinalized: boolean,
+        ClassAbstracted: boolean,
+        InheritanceLinked: boolean,
+    },
+    closures: { [string]: OverloadFunction? },
+    constructor: {
+        defined: boolean,
+        callback: OverloadFunction?,
+    },
+    virtuals: { [string]: boolean },
+    superclass: Interface?,
+    instantiate: <A...>(self: Interface, fromDerivedClass: boolean, A...) -> (any, Environment),
+}, { __metatable: string }>
 
-export type function TransformProperties(Props: type, level: "0" | "1" | "2")
-    local result = types.newtable()
-    
-    local function merge_ring(ring_name: string)
-        local ring = Props:readproperty(types.singleton(ring_name))
-        if not ring or not ring:is("table") then return end
-        
-        for k, v in ring:properties() do
-            local member_type = v.read :: type
-            if member_type:is("table") and member_type:readproperty(types.singleton("value")) then
-                local actual_val = member_type:readproperty(types.singleton("value"))
-                result:setproperty(k, actual_val)
+export type function ForceSingleton(s: type): type
+    if not s:is("singleton") then
+        error("not a singleton")
+    end
+    return types.singleton(s:value())
+end
+
+export type function GetClassObject(interface: type, accessLevel: type): type
+    if interface:is("string") or interface:is("singleton") or interface:is("any") or interface:is("never") or interface:is("unknown") then
+        local prototype = types.newtable({})
+        prototype:setindexer(types.string, types.any)
+        prototype:setreadproperty(types.singleton("__lazy__"), types.singleton(true))
+        return prototype
+    end
+
+    local level = accessLevel:value()
+    local allowedScopes = { "public" }
+    if level == "Protected" then table.insert(allowedScopes, "protected") end
+    if level == "Private" then
+        table.insert(allowedScopes, "protected")
+        table.insert(allowedScopes, "private")
+    end
+    local prototype = types.newtable({})
+    prototype:setindexer(types.string, types.any)
+
+    local PRIMITIVES = {
+        any = types.any,
+        unknown = types.unknown,
+        boolean = types.boolean,
+        number = types.number,
+        string = types.string,
+        thread = types.thread,
+        buffer = types.buffer,
+        ["nil"] = types.never,
+        -- "table" is a special case we handle below
+    }
+
+    local funcs = types.newtable({}) -- store function types here to be modified later by ImportedClassObject
+    local statics = types.newtable({})
+    local props = types.newtable({})
+
+    local function get_literal(t: type): string?
+        if not t then return nil end
+        if t:is("singleton") then
+            local val = t:value()
+            return if typeof(val) == "string" then val else nil
+        end
+        if t:is("union") then
+            for _, comp in t:components() do
+                if comp:is("singleton") then return comp:value() :: string? end
+            end
+        end
+        if t:is("string") then return "string" end
+        if t:is("number") then return "number" end
+        if t:is("boolean") then return "boolean" end
+        if t:is("unknown") then return "unknown" end
+        if t:is("buffer") then return "buffer" end
+        if t:is("thread") then return "thread" end
+        if t:is("nil") then return "never" end
+        return nil
+    end
+
+    local function is_static(member: type): boolean
+        if not member:is("table") then return false end
+        local flags = member:readproperty(types.singleton("flags"))
+        if flags and flags:is("table") then
+            for _, entry in flags:properties() do
+                local flag = entry.read
+                if flag and flag:is("table") then
+                    local mt = flag:metatable()
+                    if mt and mt:is("singleton") and mt:value() == "static" then return true end
+                end
+            end
+        end
+        return false
+    end
+
+    local function process_member(key: string, member: type)
+        if not member or member:is("nil") then return end
+        local asTable: type = nil :: any -- fix intersections causing us unable to read `type`, `value`, and `flags`
+        if member:is("table") then asTable = member
+        elseif member:is("union") then
+            for _, component in member:components() do
+                if component:is("table") then
+                    asTable = component
+                    break
+                end
+            end
+        end
+        if not asTable and member:metatable() then asTable = member end
+        if asTable then
+            local static = is_static(asTable)
+            statics:setproperty(types.singleton(key), types.singleton(static))
+
+            local sig = asTable:readproperty(types.singleton("_signature"))
+            local propType = asTable:readproperty(types.singleton("type"))
+            local innerValue = asTable:readproperty(types.singleton("value"))
+
+            local typeLiteral = if propType then get_literal(propType) else nil
+            local isLibrary = (sig ~= nil) or (typeLiteral ~= nil) or (innerValue ~= nil)
+            if isLibrary then
+                if typeLiteral == "function" then
+                    local dummy = asTable:readproperty(types.singleton("dummy"))
+                    local finalDummy: type? = nil
+
+                    local function prepare_func(rawFunc: type): type
+                        local params = rawFunc:parameters()
+                        local returns = rawFunc:returns()
+                        local head = if params.head then table.clone(params.head) else {}
+                        
+                        if not static then
+                            if #head > 0 then head[1] = prototype else table.insert(head, 1, prototype) end
+                        end
+                        
+                        return types.newfunction({
+                            head = head,
+                            tail = params.tail or types.any
+                        }, returns)
+                    end
+                    if dummy then
+                        if dummy:is("function") then
+                            finalDummy = prepare_func(dummy)
+                        elseif dummy:is("table") then
+                            local combined: type? = nil
+                            for _, entry in dummy:properties() do
+                                local callback = entry.read
+                                if not callback or not callback:is("function") then continue end
+                                local transformed = prepare_func(callback)
+                                combined = if combined then types.intersectionof(combined, transformed) else transformed
+                            end
+                            finalDummy = combined
+                        end
+                    end
+
+                    if not finalDummy then
+                        local params = { head = {}, tail = types.any }
+                        if not static then table.insert(params.head, prototype) end
+                        finalDummy = types.newfunction(params :: { head: {type}?, tail: type? }, { head = {}, tail = types.any })
+                    end
+
+                    funcs:setproperty(types.singleton(key), finalDummy)
+                    prototype:setproperty(types.singleton(key), finalDummy)
+                else
+                    local resolvedType: type? = PRIMITIVES[typeLiteral] or nil
+                    if typeLiteral == "table" then
+                        local t = types.newtable({})
+                        t:setindexer(types.any, types.any)
+                        resolvedType = t
+                    end
+                    local finalType = resolvedType or innerValue or types.any
+                    props:setproperty(types.singleton(key), finalType)
+                    prototype:setproperty(types.singleton(key), finalType)
+                end
             else
-                result:setproperty(k, member_type)
+                props:setproperty(types.singleton(key), member)
+                prototype:setproperty(types.singleton(key), member) -- raw primitive
             end
         end
     end
 
-    merge_ring("public")
-    if level == "0" then
-        merge_ring("protected")
-        merge_ring("private")
-    elseif level == "1" then
-        merge_ring("protected")
+    local propsRoot = interface:readproperty(types.singleton("properties"))
+    local closuresRoot = interface:readproperty(types.singleton("closures"))
+    if propsRoot and closuresRoot then
+        for _, scopeName in allowedScopes do
+            local scope = propsRoot:readproperty(types.singleton(scopeName))
+            if scope and scope:is("table") then
+                for k, v in scope:properties() do
+                    process_member(k:value() :: string, v.read :: type)
+                end
+            end
+        end
+        for k, v in closuresRoot:properties() do
+            process_member(k:value() :: string, v.read :: type)
+        end
+    else
+        for _, scopeName in allowedScopes do
+            local scope = interface:readproperty(types.singleton(scopeName))
+            if scope and scope:is("table") then
+                for k, v in scope:properties() do
+                    process_member(k:value() :: string, v.read :: type)
+                end
+            end
+        end
+        for k, v in interface:properties() do
+            local keyName = k:value() :: string
+            if keyName ~= "public" and keyName ~= "protected" and keyName ~= "private" then
+                process_member(keyName, v.read :: type)
+            end
+        end
     end
 
-    return result
+    prototype:setreadproperty(types.singleton("__functions__"), funcs)
+    prototype:setreadproperty(types.singleton("__statics__"), statics)
+    prototype:setreadproperty(types.singleton("__props__"), props)
+    prototype:setreadproperty(types.singleton("__interface__"), interface)
+    return prototype
 end
 
-export type function Inherit(SubProps: type, SuperProps: type)
-    local result = types.newtable()
+export type function ImportedClassObject(getClassObject: type): type
+    if getClassObject:readproperty(types.singleton("__lazy__")) then
+        local lazyInstance = types.newtable({}, { 
+            index = types.string, 
+            readresult = types.any, 
+            writeresult = types.any 
+        })
+        
+        local dslCall = types.newfunction({
+            head = { types.any, types.any }
+        }, { head = { types.any } })
+        
+        lazyInstance:setmetatable(types.newtable({
+            [types.singleton("__call")] = dslCall,
+        }))
+        
+        return lazyInstance
+    end
 
-    local superView = TransformProperties(SuperProps, "1")
-    for k, v in superView:properties() do
-        result:setproperty(k, v.read)
+    local instance = types.newtable({}, { 
+        index = types.string, 
+        readresult = types.any, 
+        writeresult = types.any 
+    })
+    
+    local funcs = getClassObject:readproperty(types.singleton("__functions__"))
+    local statics = getClassObject:readproperty(types.singleton("__statics__"))
+    local props = getClassObject:readproperty(types.singleton("__props__"))
+
+    if props then
+        for k, v in props:properties() do
+            instance:setproperty(k, v.read)
+        end
+    end
+
+    if funcs and statics then
+        for key, fn in funcs:properties() do
+            local func = fn.read
+            if not func then continue end
+            local isStatic = false
+            
+            local staticFlag = statics:readproperty(key)
+            if staticFlag and staticFlag:is("singleton") then
+                isStatic = staticFlag:value() == true
+            end
+
+            if isStatic then
+                instance:setproperty(key, func)
+            else
+                local params = func:parameters()
+                local head = params.head or {}
+                if #head > 0 then head[1] = instance else table.insert(head, 1, instance) end
+                local reboundHeader = types.newfunction({
+                    head = head,
+                    tail = params.tail or types.any
+                }, func:returns())
+                instance:setproperty(key, reboundHeader)
+            end
+        end
+    end
+    local constructorFunc = types.newfunction({ head = { types.any }, tail = types.any }, { tail = types.any })
+    local dslCall = types.newfunction({
+        head = { types.any, constructorFunc }
+    }, { head = { types.any } })
+    local mt = types.newtable({
+        [types.singleton("__call")] = dslCall,
+    })
+    instance:setmetatable(mt)
+    return instance
+end
+
+export type function InheritFields(superInterface: type, subFields: type): type
+    if superInterface:is("string") or superInterface:is("singleton") or superInterface:is("any") or superInterface:is("never") or superInterface:is("unknown") then
+        local prototype = types.newtable({})
+        prototype:setindexer(types.string, types.any)
+        prototype:setreadproperty(types.singleton("__lazy__"), types.singleton(true))
+        return prototype
+    end
+
+    local mergedFields = types.newtable({})
+    local scopes = { "public", "protected" }
+    
+    for _, scopeName in scopes do
+        local scopeKey = types.singleton(scopeName)
+        local newScope = types.newtable({})
+        
+        local superPropsRoot = superInterface:readproperty(types.singleton("properties"))
+        if superPropsRoot then
+            local superScope = superPropsRoot:readproperty(scopeKey)
+            if superScope then
+                for k, v in superScope:properties() do
+                    newScope:setproperty(k, v.read)
+                end
+            end
+        end
+        
+        local subScope = subFields:readproperty(scopeKey)
+        if subScope then
+            for k, v in subScope:properties() do
+                newScope:setproperty(k, v.read)
+            end
+        end
+        
+        mergedFields:setproperty(scopeKey, newScope)
     end
     
-    local subView = TransformProperties(SubProps, "0")
-    for k, v in subView:properties() do
-        result:setproperty(k, v.read)
+   
+    return mergedFields
+end
+export type function MergeInterfaces(interfaceList: type): type
+    local result = types.newtable({})
+    
+    local propsRoot = types.newtable({})
+    propsRoot:setproperty(types.singleton("public"), types.newtable({}))
+    propsRoot:setproperty(types.singleton("protected"), types.newtable({}))
+    propsRoot:setproperty(types.singleton("private"), types.newtable({}))
+    result:setproperty(types.singleton("properties"), propsRoot)
+    for _, entry in interfaceList:properties() do
+        local comp = entry.read
+        if not comp then continue end
+        local compProps = comp:readproperty(types.singleton("properties"))
+        if not compProps then continue end
+        
+        for _, scopeName in { "public", "protected", "private" } do
+            local srcScope = compProps:readproperty(types.singleton(scopeName))
+            local destScope = propsRoot:readproperty(types.singleton(scopeName))
+            
+            if srcScope and destScope then
+                for k, v in srcScope:properties() do
+                    destScope:setproperty(k, v.read)
+                end
+            end
+        end
     end
-
+    
     return result
 end
-
-export type BaseObject<P> = TransformProperties<P, "2">
-export type DerivedObject<P, S> = Inherit<P, S>
-export type InternalObject<P> = TransformProperties<P, "0">
 
 return {}

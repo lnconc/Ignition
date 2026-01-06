@@ -20,6 +20,7 @@
     * [🏛️ abstract, reactive, and final Classes](#️-abstract-reactive-and-final-classes)
     * [🧬 Inheritance with extends and super](#-inheritance-with-extends-and-super)
     * [🧩 Composition with mixin](#-composition-with-mixin)
+9. 🎹 Type Checking (#-type-checking)
 
 ## 🚀 Quick Start
 Ignition utilizes a **Functional DSL** to define class interfaces and a **Decoupled Linker** for implementations. This structure eliminates circular dependencies and enforces strict memory safety.
@@ -27,10 +28,9 @@ Ignition utilizes a **Functional DSL** to define class interfaces and a **Decoup
 ### 1. The Header (`MyClass.definition.luau`)
 ```lua
 local Class = require(game.ReplicatedStorage.Ignition).Class
-local class, property, once, final = Class.from("class", "property", "once", "final")
-if once() then return false end -- #pragma once
+local class, property, final = Class.class, Class.property, Class.final
 
-final (class "MyClass" { 
+return final (class "MyClass" { 
     public = {
         Health = property { type = "number", value = 100 },
         Hello = "World!"
@@ -39,15 +39,14 @@ final (class "MyClass" {
         Secret = "Encapsulated!"
     }
 })
-
-return true
 ```
 ### 2. The Source (`MyClass.implementation.luau`)
 ```lua
 local Class = require(game.ReplicatedStorage.Ignition).Class
-local import = Class.from("import")
+local import = Class.import
 
-local MyClass = import() -- Implementation is write-only
+local MyClassHeader = require(script.Parent["MyClass"])
+local MyClass = import(MyClassHeader) -- Implementation is write-only
 
 -- The constructor
 MyClass(function(self) 
@@ -61,13 +60,15 @@ return true
 ### 3. Usage (`main.server.luau`)
 ```lua
 local new = require(game.ReplicatedStorage.Ignition).new
+local MyClass = require(script.Parent["MyClass"])
 -- Ignition loads everything in folders with the word "Solution" upon requiring.
 
-local instance = new "MyClass"()
+local instance = new (MyClass)()
 print(instance.Hello)  -- "World!"
 instance.Health = 50
 print(instance.Secret) -- ERROR (attempt to access private member)
 ```
+**The provided code above is on `
 
 ## 🧠 Why Ignition?
 Most OOP libraries are **monolithic:** both definition and implementation living at the same table, making circular dependencies a *constant threat and eventual hassle* on large-scale projects (calling out poor file structure organizers like me). Ignition introduces a **Decoupled Lifecycle** inspired by C++ environments.
@@ -83,19 +84,19 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
 
 * **Lazy Linking vs. Eager Requiring:** Ignition registers a `class` interface inside a `Registry`, meaning, it pre-emptively exposes *what* should exists. By utilizing `coroutine.yield()`, Ignition allows classes to reference or extend one another before they are even loaded. While standard `require` trees crash on circular references, Ignition simply waits for the *"handshake"* to complete, allowing for a truly flat and interconnected dependency graph.
 
-* **Encapsulation vs. Types Bandaid:** Many developers use *"Types as a Bandaid,"* they just omit `_secret` properties from their exported types so they don't show up in Autocomplete. This is a promise, not a lock.
+* **Encapsulation vs. Types Bandaid:** Many developers use *"types as a bandaid,"* they just omit `_secret` properties from their exported types so they don't show up in Autocomplete. This is a promise, not a lock.
     * **The Bandaid:** The property is still there; any script can accidentally (or maliciously) change `object._secret`.
     * **The Ignition Lock:** By using Hard Encapsulation, the data is physically walled off. If a script tries to access a private member, Ignition's `encapsulate.luau` detects the unauthorized call and stops it. It doesn't matter what your Luau types say; the runtime is the one enforcing the law.
 
-* **Near-Zero Production Overhead:** Ignition is a *Bouncer* in Studio and a *Racer* in Production.
+* **Near-Zero Production Overhead:** Ignition is a *bouncer* in Studio and a *racer* in Production.
     * **Development:** `StackSpider`™ and other runtime checks are active, enforcing strict access rules and throwing errors on violations.
     * **Production:** By enabling `FORCE_PRODUCTION_MODE`, Ignition strips the proxies and security checks. You get the safety of a high-level language during dev, and the raw speed of Lua in your live game.
 
-* **Composition via Mixins:** Ignition allows for true horizontal composition. You can inject the properties and methods of multiple *"Component"* classes into a single class without creating a messy inheritance chain.
+* **Composition via Mixins:** Ignition allows for true horizontal composition. You can inject the properties and methods of multiple *"component"* classes into a single class without creating a messy inheritance chain.
 
     * **Collision Protection:** Ignition automatically detects if two mixins are trying to overwrite the same member. If they aren't marked as virtual, Ignition throws an error during the linking phase, preventing silent logic bugs.
 
-* **Explicit Inheritance & Virtuals:** Most Roblox OOP systems allow you to override anything, anytime, which is dangerous for large teams. Ignition introduces **Virtual Overrides**:
+* **Explicit Inheritance & Virtuals:** Most Roblox OOP systems allow you to override anything, anytime, which is dangerous for large teams. Ignition introduces **virtual overrides**:
 
     * You cannot override a property or method unless the parent explicitly marked it with the `FLAGS.Virtual` flag.
     * This prevents *"Accidental Shadowing,"* where a child class unknowingly breaks a base-class internal function.
@@ -105,7 +106,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
 
 2. ***"Why the two-file system?"*** It's about **scale**. Standard one-file classes crash when they reference each other (Circular Dependencies). Ignition's split system allows the Registry to map out your game before the logic ever runs, making it impossible to "break" your requirements.
 
-3. ***"Wait, how is this fast if it's crawling the stack?"*** Ignition uses a high-performance reflection engine called `StackSpider`. While stack crawling is usually expensive, Ignition utilizes three specific optimizations to keep it "Near-Zero":
+3. ***"Wait, how is this fast if it's crawling the stack?"*** Ignition uses a high-performance reflection engine called `StackSpider`. While stack crawling is usually expensive, Ignition utilizes three specific optimizations to keep it "near-zero":
     * **Memoization (Double Caching):** Ignition caches the results of every security check (via `accessCache` and `resolutionCache`). Once a function is verified, the next time it calls a private member, the *"Bouncer"* checks a high-speed Hash Map instead of re-crawling the stack.
     * **Native Luau Execution:** By using the `--!native` attribute, the core logic of the `StackSpider` is compiled into machine code, making the reflection logic significantly faster than standard interpreted Luau.
     * **The "Racer" Bypass:** In Production, these checks are **stripped entirely**. You get the security during development without paying for it in your live game.
@@ -132,7 +133,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
     * **Why?** Luau's engine signals run on a separate stack. Without `ref()`, the **StackSpider**™ won't recognize the caller and will throw an access violation.
     * `ref(self.MyMethod)` creates a secure tunnel for that specific function, allowing it to use that specific `class`'s `private` and `protected` fields.
     ```lua
-    local ref = Class.from("ref")
+    local ref = Class.ref
 
     MyClass(function(self)
         task.spawn(function()
@@ -148,7 +149,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
 
 
 4. **Overriding with `FLAGS.Virtual`**\
-    Ignition enforces strict inheritance. You cannot override a property or method in a child class unless it was marked as a virtual in the parent. This prevents *"Accidental Shadowing"* where a subclass unknowingly breaks a parent's core logic.
+    Ignition enforces strict inheritance. You cannot override a property or method in a child class unless it was marked as a virtual in the parent. This prevents *"accidential shadowing"* where a subclass unknowingly breaks a parent's core logic.
 
 5. **Managing the Engine**
     * **The Configuration Module:** Found under `Class/Utility`, this is your control center. You can adjust `MAX_STACK_DEPTH` (for `StackSpider` tuning), `FLAGS`, special signatures, and even on how your `definition` files should be named (by default, it expects a `.definition`).
@@ -158,7 +159,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
 6. **Constructors**\
     The returned object from `import()` has a `__call` method, this callback serves as your primary way of creating constructors as it provides the necessary wrapping and measures internally required by `Class`.
     ```lua
-    local import = Class.from("import")
+    local import = Class.import
     local MyClass = import() -- returns a write-only implementation with a __call method
     MyClass(function(self)
         print(`{tostring(self)} created.`)
@@ -166,7 +167,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
     ```
 
 7. **Explicit `super()` calls**\
-    In the constructor, `super()` must be called if the class extends another. If you forget, Ignition will warn you in Development Mode. This ensures that the entire *"Bloodline"* is properly initialized and the `StackSpider` can track the object's context correctly.
+    In the constructor, `super()` must be called if the class extends another. If you forget, Ignition will warn you in Development Mode. This ensures that the entire *"bloodline"* is properly initialized and the `StackSpider` can track the object's context correctly.
 
 8. **Explicit Property Definitions**\
     When you aren't using simple values, use the `property()` utility to define metadata-rich fields. This is what enables flags like `readonly`, `static`, or `reactive` behaviors.
@@ -176,8 +177,8 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
     -- Inside your definition
     public = {
         -- Uses the property utility to wrap value with flags and types
-        Health = property {
-            type = "number",
+        Name = property {
+            value = "Stewart",
             flags = { FLAGS.Readonly }
         }
     }
@@ -189,7 +190,9 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
     * **`union(...)`:** Allows the argument to be any type within the provided set.
     ```lua
     local Class = require(game.ReplicatedStorage.Ignition).Class
-    local nullable, union = Class.from("nullable", "union")
+    local import, nullable, union = Class.import, Class.nullable, Class.union
+
+    local MyClass = import()
 
     -- Overload with complex types
     MyClass { union( "string", "table" ) } "DataLog" (function(self, input)
@@ -203,7 +206,7 @@ Ignition offers a strictly controlled runtime environment that prioritizes struc
 > [!NOTE]
 > You can do `nullable(union(...))` but not `union(nullable("string"), ...)`
 
-### 🏷️ Using `METADATA` for Header Safety
+### 🏷️ Using `METADATA` and `PLACEHOLDER` for Header Safety
 Ignition allows you to define members in your Header that don't actually exist in the final object's data table. This is handled via the `METADATA` marker.
 
 **What is it?**\
@@ -218,7 +221,7 @@ A member marked as `METADATA` will be registered by the header but will not be i
 -- Vector.definition.luau
 local class, METADATA = Class.from("class", "METADATA")
 
-class "Vector" {
+return class "Vector" {
     private = {
         -- Tells initialize() "__mul is private," but doesn't create 
         -- a 'Vector.__mul' property in memory.
@@ -229,6 +232,13 @@ class "Vector" {
     }
 }
 ```
+
+Moreover, unlike `METADATA`, Ignition also provides `PLACEHOLDER`, which allows you to store actual values that cannot be created on the header, such as `Signals`, `Promises`, `Instances`, `Events`, and many more that has a `new()` or in general terms: **can be instantiated**.
+
+This is useful if you have members such as `self._update`, `self.Event`, `self.Thread`
+
+> [!NOTE]
+> Placeholders cannot get dynamically type-checked and will instead be replaced with `any`.
 
 ### 📂 Project Structure & Naming
 To ensure the **Solution Linker** (upon using `require(path.to.Ignition)`) and `import()` function work correctly, follow this standardized layout. Ignition's auto-loader specifically looks for the **"Solutions"** keyword.
@@ -255,13 +265,11 @@ Use the `free()` primitive for deep cleanup. Instead of just setting variables t
 3. **Recursively clear** tables and their keys; or,
 4. Call the function if you pass a closure (acting as a destructor).
 ```lua
-local free = Class.from("free")
+local free = Class.free
 
-MyClass(function(self)
-    self:OnDestroy(function()
-        free(self.ActiveTweens) -- Cleans the table and all its contents
-    end)
-end)
+function MyClass:Destroy()
+    free(self.ActiveTweens) -- Cleans the table and all its contents
+end
 ```
 
 > [!NOTE]
@@ -312,9 +320,9 @@ Ignition allows you to overload standard Lua operators (`__add`, `__sub`, `__mul
 1. **The Header (Vector.definition.luau)**\
     If an operator isn't defined in the header, it defaults to public. To restrict it, define it explicitly:
     ```lua
-    local class, METADATA = Class.from("class", "METADATA")
+    local class, METADATA = Class.class, Class.METADATA
 
-    class "Vector" {
+    return class "Vector" {
         public = {
             X = 0, Y = 0,
             __add = METADATA, -- Public by default, you don't have to put this, but this is for showcase
@@ -337,14 +345,16 @@ Ignition allows you to overload standard Lua operators (`__add`, `__sub`, `__mul
     function Vector:__mul(scalar)
         return new "Vector"(self.X * scalar, self.Y * scalar)
     end
+
+    return {}
     ```
 > [!NOTE]
 > This is powerful for internal engine math. You can prevent external scripts from performing certain operations on your objects while allowing your internal systems to do so freely, all enforced by the `StackSpider`.
 
 ### 🏛️ `abstract`, `reactive`, and `final` Classes
-Use these decorators to control the *"Life Cycle"* of your class hierarchy.
+Use these decorators to control the *"life cycle"* of your class hierarchy.
 ```lua
-local class, abstract, reactive, final = Class.from("class", "abstract", "reactive", "final")
+local class, abstract, reactive, final = Class.class, Class.abstract, Class.reactive, Class.final
 
 -- Reactive: All properties are creatted as a State object instead
 reactive( class "MainMenu" { ... } )
@@ -359,7 +369,7 @@ final( class "BossZombie" (extends "BaseEnemy" { ... }) )
 Ignition's `extends` is asynchronous. If the parent hasn't loaded yet, Ignition will yield until it is ready.
 ```lua
 -- BaseEntity.definition.lua
-local class, property = Class.from("class", "property")
+local class, property = Class.class, Class.property
 class "BaseEntity" {
     public = {
         name = "No Name",
@@ -368,13 +378,12 @@ class "BaseEntity" {
 }
 
 -- Fighter.definition.lua
-local class, extends = Class.from("class", "extends")
+local class, extends = Class.class, Class.extends
+
 class "Fighter" (extends "BaseEntity" { ... })
 ```
 ```lua
 -- Fighter.implementation.luau
-local import, super = Class.from("import", "super")
-
 local Fighter = import()
 Fighter(function(self, name: string)
     super(name) -- Initializes the 'BaseEntity' portion of this object
@@ -388,12 +397,94 @@ end
 When inheritance becomes too deep, use `mixin`s to inject functionality horizontally. Ignition performs a **Smart Merge** to ensure no two `mixin`s overwrite the same non-virtual member.
 ```lua
 local Class = require(game.ReplicatedStorage.Ignition).Class
-local mixin = Class.from("mixin")
+local mixin = Class.mixin
 
 -- Injects "Flyable" and "Damageable" logic directly into "Dragon"
-mixin "Dragon" ("Flyable", "Damageable") {
+local Flyable, Damageable = require(script.Parent["Flyable"]), require(script.Parent["Damageable"])
+return mixin "Dragon" ("Flyable", "Damageable") {
     public = {
         Health = 500
     }
 }
 ```
+
+## 🎹 Type Checking
+Ignition provides a *"best of both word"* approach to type safety. By utilizing **Type Functions**, Ignition can statically analyze your classes while allowing for flexible, decoupled loading.
+
+### 🔍 Eager vs. Lazy Loading
+Ignition gives you two ways to reference classes. Your choice determines how much help the Luau Autocomplete can provide.
+
+| Feature  | Eager Loading (`require`) | Lazy Loading (via `string`) |
+| --- | --- | --- |
+| **Method** | `extends (require(path.to.Header))` | `extends "ClassName"` |
+| **Traceability** | **Full autocomplete** and signature checks. | Flexible but **returns an `any` type; no autocomplete**. |
+| **Circular Safety** | Rather risky especially with `mixins` *(but who does that?)* | No risks as it waits until the `class` object completes loading |
+| **Use Case** | Best for core or complex systems with tight hierarchies where autocomplete and type safety are paramount. | Best for high-level logic, abstraction, and decoupled components. |
+
+### 🧠 The Librarian: `Types`
+While `LibraryTypes` provides the API surface, the heavy lifting occurs within `Types`. This module doesn't just analyze your code; it dynamically reconstructs your class prototypes at compile-time.
+
+1. **Dynamic Prototype Reconstruction (`GetClassObject`)**\
+    The `GetClassObject` function is the "heart" of the engine. It performs **Static Reflection** by crawling your header's `properties` and `closures` to build a Luau type table.
+
+    * **Primitive Mapping**: It maps string literals (like `"number"` or `"string"`) to internal Luau primitives (`types.number`, `types.string`).
+    * **Contextual `self` Binding**: For every non-static function found, the engine automatically injects the class prototype as the first argument (`head[1] = prototype`). This is why you get perfect `self` autocomplete inside your methods.
+    * **Static vs. Instance logic**: It reads your `FLAGS.Static` and determines whether a function should be rebound with `self` or left as a pure utility.
+
+2. **Advanced Overload Resolution**\
+    Ignition handles complex method signatures through **Intersection Types**. When the engine encounters a function with multiple signatures (via the `dummy` field):
+    * It iterates through the dummy table.
+    * It transforms each individual callback into a `self`-bound function.
+    * It merges them using `types.intersectionof()`.
+    * **Result:** The Luau solver presents these to the developer as a single overloaded method (e.g., `1 of 3` in the IDE).
+
+3. **The "Lazy" Fallback**\
+    Both `GetClassObject` and `InheritFields` contain a *"bold"* safety check. If the input is a `string`, `any`, or `unknown` (indicating a Lazy Load), the engine interjects:
+    ```lua
+    if interface:is("string") or interface:is("singleton") or ... then
+        local prototype = types.newtable({})
+        prototype:setindexer(types.string, types.any)
+        prototype:setreadproperty(types.singleton("__lazy__"), types.singleton(true))
+        return prototype
+    end
+    ```
+    This returns a *"flexible prototype"* that accepts any index. It's the bridge that allows you to bypass circular dependencies without crashing the type-checker.
+
+4. **Type-Level Inheritance Merging (`InheritFields`)**\
+    `InheritFields` acts as a compile-time linker. It performs a deep, broad table merge across different scopes (`public`, `protected`).
+    * It pulls the properties from the `superInterface`.
+    * It overlays the properties from the `subFields`.
+    * This ensures that child classes inherit all typed members of the parent while allowing for valid type-safe overrides.
+    * *Same implementation but slightly altered is also present for `MergeInterfaces`, which is for `mixins`*
+5. **Implementation Mapping (`ImportedClassObject`)**\
+    When you use `import()`, the engine calls `ImportedClassObject`. This function takes the raw `prototype` from `GetClassObject` and transforms it into a **write-only `Interface`** for your implementation file:
+
+    * It creates a table where all members are accessible for implementation.
+    * It injects the `__call` metamethod, allowing you to define your constructor as `MyClass(function(self) ... end)`.
+    * It ensures that the `self` provided to your implementation matches the strict prototype defined in the header.
+
+> [!IMPORTANT]
+> Because these functions run in the Luau Type Function VM, they are completely isolated from the Roblox game or Registry. They rely entirely on the static structure of your `.definition.luau` files to provide safety.
+
+### ⚠️ Constructor Type Blindness
+Due to Luau's inference limits, the `self` variable inside your Constructor (`MyClass(function(self) ... end)`) does not have automatic type checking. Because it is a callback passed into the class-builder, Luau sees it as any.
+
+**The Fix:** To restore IntelliSense and type safety inside the constructor, use the following pattern:
+
+```lua
+local MyClass = import(MyClassHeader)
+type MyClass = typeof(MyClass) -- Cast the type from the imported object
+
+MyClass(function(self: MyClass) -- Explicitly type self
+end)
+```
+
+### 📝 Read-Only vs. Write-Only UX
+To protect the integrity of your implementation, the `ImportedClassObject` (the table returned by `import`) behaves differently depending on how you use it:
+1. **For Type Inference:** It allows **reading**. This is what makes `type MyClass = typeof(MyClass)` work. The type engine can *"see"* the members to build the type definition.
+
+2. **At Runtime:** It is **write-only**.
+    * **Success:** `function MyClass:Grit() ... end` (Writing an implementation).
+    * **Failure:** `print(MyClass.Health)` (Reading a property from the implementation table).
+
+3. If you attempt to read from the implementation table at runtime, Ignition will throw: `'ClassName' implementation is write-only. Use the header for type info.`

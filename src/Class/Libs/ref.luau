@@ -2,7 +2,10 @@
 -- Class/Libs/ref.lua
 
 local getCaller = require("../../Internal/getCaller")
+local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
+
+type Environment = Types.Environment
 
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 
@@ -12,7 +15,7 @@ local function ref(callback: (...any) -> ()) -- made to bypass hitting cclosures
     if not env then
         error("out of bounds (reached cclosures)", 2)
     end
-    local environment = env.environment
+    local environment: Environment = env.environment
     if not environment then
         error("cannot find source environment", 2)
     end

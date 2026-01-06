@@ -7,36 +7,38 @@ local Registry = require("../Utility/Registry")
 local is_property = require("../Utility/is_property")
 local class = require("./class")
 
-type FieldOptions = Types.FieldOptions
-type Properties = Types.Properties
+type PropertyField = Types.PropertyField
+type PropertiesFields = Types.PropertiesFields
 type Interface = Types.Interface
+type Symbol<T> = Types.Symbol<T>
 
 local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
 
 local function mixin(name: string)
     local mixin_interface = class(name)
-    return function(...: string)
+    return function(...: string | Interface)
         -- retrieve other interfaces for field dumping
         local components: { Interface } = {}
-        for _, other_name in ipairs {...} do
-            local component = Registry.GetInterface(other_name)
-            if component.flags.ClassFinalized then
-                error(`Cannot mixin finalized class '{other_name}' into '{name}'`, 2)
+        for _, component in ipairs({ ... }) do
+            local interface: Interface = component :: Interface
+            if type(interface) == "string" then
+                interface = Registry.WaitForInterface(interface)
             end
-            table.insert(components, component)
+            if interface.flags.ClassFinalized then
+                error(`Cannot mixin finalized class '{interface.name}' into '{name}'`, 2)
+            end
+            table.insert(components, interface)
         end
-        return function(mixin_fields: Properties)
+        return function(mixin_fields: PropertiesFields)
             local final_fields = { public = {}, private = {}, protected = {} }
             local closures, virtuals = {}, {}
             local function explicit_copy(dst: any, k, v, fromName: string)
                 if is_property(v) then
-                    local flags = v.flags :: any
-                    local isVirtual = if type(flags) == "table" then table.find(flags, VIRTUAL_FLAG) ~= nil else flags[VIRTUAL_FLAG]
-                    
+                    local flags = v.flags :: { [Symbol<string>]: boolean }
+                    local isVirtual = flags[VIRTUAL_FLAG]
                     if dst[k] ~= nil then
-                        local existingFlags = dst[k].flags :: any
-                        local isExistingVirtual = if type(existingFlags) == "table" then table.find(existingFlags, VIRTUAL_FLAG) ~= nil else existingFlags[VIRTUAL_FLAG]
-                        if not isVirtual or not isExistingVirtual then
+                        local existingFlags = dst[k].flags :: { [Symbol<string>]: boolean }
+                        if not isVirtual or not existingFlags[VIRTUAL_FLAG] then
                             error(`Member '{k}' in '{name}' is defined in multiple components, and at least one is non-virtual. (Check component: {fromName})`, 3)
                         end
                     end
@@ -48,8 +50,8 @@ local function mixin(name: string)
             local function copy_fields_to(src: any, fromName: string)
                 for specifierOrKey, fieldOrProperty in pairs(src) do
                     if not is_property(fieldOrProperty) then
-                        for k, v in pairs(fieldOrProperty :: FieldOptions) do
-                            explicit_copy(final_fields[specifierOrKey], k, v, fromName)
+                        for k, v in pairs(fieldOrProperty :: PropertyField) do
+                            explicit_copy(final_fields[specifierOrKey], k, v :: any, fromName)
                         end
                     else
                         explicit_copy(final_fields.public, specifierOrKey, fieldOrProperty, fromName)
@@ -61,10 +63,10 @@ local function mixin(name: string)
                     if virtuals[key] then continue end
                     closures[key] = impl
                 end
-                copy_fields_to(component.properties_fields, component.name)
+                copy_fields_to(component.properties, component.name)
             end
             copy_fields_to(mixin_fields, name)
-            mixin_interface(final_fields :: Properties)
+            mixin_interface(final_fields :: PropertiesFields)
             local interface = Registry.GetInterface(name)
             interface.closures = closures
         end

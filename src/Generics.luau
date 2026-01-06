@@ -1,13 +1,6 @@
 --!strict
 -- Generics.lua
 
-export type Function = {}
-export type Set<T> = { [T]: true }
-export type Array<V> = { V }
-export type Map<K, V> = { [K]: V }
-export type Closure = (...any) -> ...any
-export type table = { unknown } | { [unknown]: unknown }
-
 type function filter_nil(t: type): type
     if not t:is("union") then
         return if t == types.singleton(nil) then types.never else t

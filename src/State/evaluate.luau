@@ -3,9 +3,9 @@
 
 local Types = require("./Types")
 type GraphDependencies = Types.GraphDependencies
-type GraphObjectInternal<T> = Types.GraphObjectInternal<T>
+type GraphObject<T> = Types.GraphObject<T>
 
-local function evaluate(self: GraphObjectInternal<any>, latestDependencies: GraphDependencies, oldDependencies: GraphDependencies)
+local function evaluate(self: GraphObject<any>, latestDependencies: GraphDependencies, oldDependencies: GraphDependencies)
     for dep in pairs(latestDependencies) do
         dep._dependencies[self] = true
     end

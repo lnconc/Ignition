@@ -4,13 +4,13 @@
 local Types = require("./Types")
 local is = require("./is")
 
-type GraphObjectInternal<T> = Types.GraphObjectInternal<T>
+type GraphObject<T> = Types.GraphObject<T>
 type GraphDependencies = Types.GraphDependencies
 
-local function createUse<T>(currentDependencies: any): (value: GraphObjectInternal<T>) -> T
-    local function use<A, B>(value: GraphObjectInternal<A>): B
+local function createUse<T>(currentDependencies: GraphDependencies): (value: GraphObject<T>) -> T
+    local function use<A, B>(value: GraphObject<A>): B
         if not is(value) then return value end
-        (currentDependencies :: { [any]: boolean })[value] = true
+        currentDependencies[value] = true
         return (value :: any)._DANGEROUS_value
     end
     return use

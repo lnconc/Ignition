@@ -1,7 +1,7 @@
---!nocheck
+--!strict
 -- Modules/Unyieldable.lua
 
-local function unyieldable<A..., R...>(fn: (A...) -> R..., ...: A...): (boolean, any)
+local function unyieldable<A, R>(fn: (...any) -> ...any, ...: A): (boolean, ...R)
     local thread = coroutine.create(fn)
     local results = {coroutine.resume(thread, ...)}
     local success = results[1]

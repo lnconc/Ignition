@@ -12,6 +12,7 @@ local Unyieldable = require("@self/Modules/Unyieldable")
 local Observe = require("@self/State/Observe")
 local Property = require("@self/State/Property")
 local Value = require("@self/State/Value")
+local ClassConfiguration = require("@self/Class/Utility/Configuration")
 
 local loaded = false
 
@@ -29,17 +30,23 @@ local Ignition = {
     Unyieldable = Unyieldable,
 }
 
-type IgnitionLinker = (_self: any) -> IgnitionFramework
-export type IgnitionFramework = typeof(Ignition)
-export type ExposedIgnitionFramework = typeof(setmetatable({}, {} :: { __index: IgnitionFramework, __call: IgnitionLinker }))
+type IgnitionLinker = (_self: any, overrideDefinition: string?) -> _Ignition
 
-local ExposedIgnition: ExposedIgnitionFramework = setmetatable({}, {
+type _Ignition = typeof(Ignition)
+export type Ignition = typeof(setmetatable({}, {} :: { __index: _Ignition, __call: IgnitionLinker }))
+
+local ExposedIgnition: Ignition = setmetatable({}, {
     __index = Ignition,
-    __call = function()
+    __call = function(_, overrideDefinition: string?)
         if loaded then
             error("Ignition has already loaded", 2)
         end
         loaded = true
+
+        if overrideDefinition then
+            ClassConfiguration.HEADER_EXTENSION = overrideDefinition
+        end
+
         local function loadSolutions(root: Instance, fromSolutions: boolean?)
             for _, item in root:GetChildren() do
                 if Configuration.EXCLUDES[item.Name:lower():gsub("%s+", "")] then continue end

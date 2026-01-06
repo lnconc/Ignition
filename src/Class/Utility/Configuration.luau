@@ -1,7 +1,7 @@
 --!nocheck
 -- Class/Utility/Configuration.lua
 
-local Symbol = require("../../Modules/Symbol")
+local Symbol = require("./Symbol")
 local function symbol<T>(id: T): Symbol.Symbol<T>
     return Symbol(`class_symbol<{id}>`)
 end
@@ -16,6 +16,7 @@ return {
     NULLABLE_SIGNATURE = "$nullable",
     UNION_SIGNATURE = "$union",
     METADATA = symbol("metadata"),
+    PLACEHOLDER = symbol("placeholder"),
     PROPERTY_FLAGS = {
         Optional = symbol("optional"),
         Static = symbol("static"),

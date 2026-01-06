@@ -1,11 +1,9 @@
 --!strict
--- Modules/Symbol.lua
+-- Utility/Symbol.lua
 
-export type Symbol<T> = setmetatable<{}, {
-    __tostring: () -> string,
-    __metatable: T,
-    __call: () -> (),
-}>
+local Types = require("../Types")
+
+export type Symbol<T> = Types.Symbol<T>
 
 local Symbol = {}
 function Symbol.new<T>(id: T): Symbol<T>

@@ -7,4 +7,5 @@ description = "A True OOP & Reactive State DI Framework for Roblox"
 license = "MIT"
 repository = "https://github.com/lnconc/Ignition"
 authors = ["lnconcinnity"]
+homepage = "https://lnconc.github.io/Ignition/"
 [dependencies]

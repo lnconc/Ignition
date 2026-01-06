@@ -15,8 +15,6 @@ local Unyieldable = require("@self/Unyieldable")
 local loaded = false
 
 local Ignition = {
-    VERSION = Configuration.VERSION,
-    
     extends = Class.extends,
     class = Class.class,
     abstract = Class.abstract,

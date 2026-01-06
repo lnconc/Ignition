@@ -1,23 +1,24 @@
 --!strict
 -- Class.lua
 
-local abstract = require(script.Private.abstract)
-local class = require(script.Private.class)
-local extends = require(script.Private.extends)
-local final = require(script.Private.final)
-local import = require(script.Private.import)
-local mixin = require(script.Private.mixin)
-local new = require(script.Private.new)
-local nullable = require(script.Private.nullable)
-local once = require(script.Private.once)
-local property = require(script.Private.property)
-local reactive = require(script.Private.reactive)
-local ref = require(script.Private.ref)
-local super = require(script.Private.super)
-local union = require(script.Private.union)
-local Configuration = require(script.Utility.Configuration)
+local abstract = require("@self/Libs/abstract")
+local class = require("@self/Libs/class")
+local extends = require("@self/Libs/extends")
+local final = require("@self/Libs/final")
+local free = require("@self/Libs/free")
+local import = require("@self/Libs/import")
+local mixin = require("@self/Libs/mixin")
+local new = require("@self/Libs/new")
+local nullable = require("@self/Libs/nullable")
+local once = require("@self/Libs/once")
+local property = require("@self/Libs/property")
+local reactive = require("@self/Libs/reactive")
+local ref = require("@self/Libs/ref")
+local super = require("@self/Libs/super")
+local union = require("@self/Libs/union")
+local Configuration = require("@self/Utility/Configuration")
 
-return {
+local Class = {
     extends = extends,
     class = class,
     abstract = abstract,
@@ -32,5 +33,23 @@ return {
     once = once,
     nullable = nullable,
     union = union,
-    FLAGS = table.freeze(Configuration.PROPERTY_FLAGS)
+    free = free,
+    FLAGS = table.freeze(Configuration.PROPERTY_FLAGS),
+    PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED,
+    METADATA = Configuration.METADATA,
 }
+
+function Class.from(...): ...any
+    local retrieved = table.pack(...)
+    for i = 1, retrieved.n do
+        local k = retrieved[i]
+        local r = Class[k]
+        if not r then
+            error(`unable to retrieve '{k}'`, 2)
+        end
+        retrieved[i] = r
+    end
+    return table.unpack(retrieved)
+end
+
+return Class

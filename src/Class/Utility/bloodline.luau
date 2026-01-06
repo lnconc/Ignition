@@ -1,7 +1,7 @@
 --!strict
 -- Class/Utility/bloodline.lua
 
-local Types = require(script.Parent.Parent.Types)
+local Types = require("../Types")
 type Environment = Types.Environment
 
 local function bloodline(childEnv: Environment, superEnv: Environment)

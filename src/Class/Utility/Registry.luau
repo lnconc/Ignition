@@ -1,9 +1,9 @@
 --!strict
 -- Class/Utility/Registry.lua
 
-local env = require(script.Parent.Parent.Parent.Internal.env)
-local getCaller = require(script.Parent.Parent.Parent.Internal.getCaller)
-local Types = require(script.Parent.Parent.Types)
+local env = require("../../Internal/env")
+local getCaller = require("../../Internal/getCaller")
+local Types = require("../Types")
 
 type Map<K, V> = Types.Map<K, V>
 type Set<T> = Types.Set<T>

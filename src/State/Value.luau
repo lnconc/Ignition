@@ -1,7 +1,7 @@
 --!strict
 -- State/Value.lua
 
-local Types = require(script.Parent.Types)
+local Types = require("./Types")
 type Value<T> = Types.Value<T>
 type ValueFull<T> = Types.ValueFull<T>
 
@@ -26,7 +26,10 @@ function ValueMetatable.evaluate<T>(_self: ValueFull<T>): boolean
     return true
 end
 
-function ValueMetatable.clean<T>(self: ValueFull<T>)
+function ValueMetatable.Destroy<T>(self: ValueFull<T>)
+    if self._destructor then
+        self._destructor(self._DANGEROUS_value)
+    end
     self._DANGEROUS_value = nil
     for dependent in pairs(self._dependents) do
         dependent._dependencies[self] = nil
@@ -36,8 +39,16 @@ function ValueMetatable.clean<T>(self: ValueFull<T>)
 end
 
 local Value = {}
-function Value.new<T>(defaultValue: T): Value<T>
+function Value.new<T>(defaultValue: T, destructor: (obj: T) -> ()?): Value<T>
+    if (typeof(defaultValue) == "Instance" or
+            (type(defaultValue) == "table" and getmetatable(defaultValue) ~= nil) and
+            type((defaultValue :: any).Destroy) ~= "function"
+        ) and destructor == nil
+    then
+        warn("Creating a Value wrapping an Instance without a destructor may lead to memory leaks. Consider providing a destructor to clean up the Instance when the Value is destroyed.")
+    end
     local self = {}
+    self._destructor = destructor
     self._DANGEROUS_value = defaultValue
     self._CONSTANT_locked = false
     self._CONSTANT_error_msg = nil

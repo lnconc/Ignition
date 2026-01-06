@@ -1,7 +1,7 @@
 --!nocheck
 -- Internal/env.lua
 
-local Types = require(script.Parent.Types)
+local Types = require("./Types")
 
 type Closure = Types.Closure
 type Environment<K, V> = Types.Environment<K, V>

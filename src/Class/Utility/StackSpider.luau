@@ -1,8 +1,10 @@
+--!native
 --!nocheck
 -- Class/Utility/StackSpider.lua
 
-local Configuration = require(script.Parent.Configuration)
-local Types = require(script.Parent.Parent.Types)
+local Configuration = require("./Configuration")
+local Types = require("../Types")
+
 
 type Environment = Types.Environment
 

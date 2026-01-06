@@ -1,7 +1,7 @@
 --!strict
 -- States/is.lua
 
-local Types = require(script.Parent.Types)
+local Types = require("./Types")
 
 type CanBe<T> = Types.CanBe<T>
 

@@ -9,7 +9,7 @@ export type FinalProperty<V, T, D, H> = {
     dummy: D,
     flags: { Symbol<string> } | { [Symbol<string>]: boolean },
     get: H?,
-    set: (<P>(value: P, this: V) -> P)?,
+    set: ((value: any, this: any) -> any)?,
 }
 
 export type Type<V> = {
@@ -494,15 +494,15 @@ export type ClassLibrary = {
     final: <I>(target: I) -> I,
     reactive: <I>(target: I) -> I,
     
-    -- member definitions
-    property: <V, T, H>(options: {
-        type: T,
-        value: V?,
-        flags: { Symbol<string> } | { [Symbol<string>]: boolean }?,
-        exposure: PropertyExposure?,
-        get: H?,
-        set: (<P>(value: P, this: V) -> P)?,
-    }) -> FinalProperty<V, T, nil, H>?,
+        -- member definitions
+        property: <V, T, H, A, Q, R>(options: {
+            type: T,
+            value: V?,
+            flags: { Symbol<string> } | { [Symbol<string>]: boolean }?,
+            exposure: PropertyExposure?,
+            get: H?,
+            set: ((value: A, this: Q) -> R)?,
+        }) -> FinalProperty<V, T, nil, H>?,
     func: <D>(options: { 
         exposure: PropertyExposure?,
         flags: { Symbol<string> }?, 

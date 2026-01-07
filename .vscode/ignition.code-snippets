@@ -17,9 +17,9 @@
 			"\texposure = \"shared\",",
 			"\tflags = { ${0:FLAGS.Optional} },",
 			"\ttype = \"${2:any}\" :: \"${2}\",",
-			"\tvalue = ${1:nil}",
-			"\tget = nil",
-			"\tset = nil",
+			"\tvalue = ${1:nil},",
+			"\tget = nil,",
+			"\tset = nil,",
 			"},"
 		],
 		"description": "Create a Class property template"

@@ -2553,11 +2553,13 @@
 
 <h1 id="property-since-v100descriptor"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m4.22 11.29 7.07-7.07a6.01 6.01 0 0 1 8.49 0c2.34 2.34 2.34 6.14 0 8.49l-7.07 7.07c-2.35 2.34-6.15 2.34-8.49 0a6.01 6.01 0 0 1 0-8.49m1.42 1.42a3.98 3.98 0 0 0-1.04 3.86l5.99-5.98 4.24 4.24 3.53-3.54a3.98 3.98 0 0 0 0-5.65 3.98 3.98 0 0 0-5.65 0z"/></svg></span> property <span class="chip chip-version">since v1.0.0</span><span class="chip">descriptor</span><a class="headerlink" href="#property-since-v100descriptor" title="Permanent link">&para;</a></h1>
 <p>Defines a stateful class member with strict metadata, including type definitions, default values, and environment exposure.
-<div class="highlight"><pre><span></span><code><span class="nv">property</span><span class="o">&lt;</span><span class="nv">V</span><span class="p">,</span><span class="w"> </span><span class="nv">T</span><span class="o">&gt;</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<div class="highlight"><pre><span></span><code><span class="nv">property</span><span class="o">&lt;</span><span class="nv">V</span><span class="p">,</span><span class="w"> </span><span class="nv">T</span><span class="p">,</span><span class="w"> </span><span class="nv">P</span><span class="o">&gt;</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nc">type</span><span class="p">:</span><span class="w"> </span><span class="nc">T</span><span class="p">,</span>
 <span class="w">    </span><span class="nc">value</span><span class="p">:</span><span class="w"> </span><span class="nc">V</span><span class="p">,</span>
 <span class="w">    </span><span class="nc">flags</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nc">Symbol</span><span class="w"> </span><span class="p">},</span>
 <span class="w">    </span><span class="nc">exposure</span><span class="p">:</span><span class="w"> </span><span class="nc">PropertyExposure</span><span class="err">?</span>
+<span class="w">    </span><span class="nc">get</span><span class="p">:</span><span class="w"> </span><span class="nc">P</span><span class="p">,</span>
+<span class="w">    </span><span class="nc">set</span><span class="p">:</span><span class="w"> </span><span class="p">&lt;</span><span class="nc">P</span><span class="p">&gt;(</span><span class="nc">value</span><span class="p">:</span><span class="w"> </span><span class="nc">P</span><span class="p">,</span><span class="w"> </span><span class="nc">this</span><span class="p">:</span><span class="w"> </span><span class="nc">V</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">P</span><span class="p">,</span>
 <span class="p">})</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nv">FinalProperty</span><span class="o">&lt;</span><span class="nv">V</span><span class="p">,</span><span class="w"> </span><span class="nv">T</span><span class="o">&gt;</span><span class="err">?</span>
 </code></pre></div></p>
 <h2 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h2>
@@ -2603,7 +2605,7 @@
 <tbody>
 <tr>
 <td><code>options</code></td>
-<td><code>{ exposure: "shared" | "server" | "client", flags: { Symbol }, type: string, value: any }</code></td>
+<td><code>{ exposure: "shared" | "server" | "client", flags: { Symbol }, type: string, value: any, get: (this: any) -&gt; any, set: (value: any, this: any) -&gt; () }</code></td>
 </tr>
 </tbody>
 </table>

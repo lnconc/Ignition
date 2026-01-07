@@ -723,6 +723,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#transformers-accessors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transformers (Accessors)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#static-members-via-import" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2510,6 +2521,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#transformers-accessors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transformers (Accessors)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#static-members-via-import" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2765,6 +2787,37 @@ A <code>PLACEHOLDER</code> property is added to the object's data field, but it 
 <span class="w">    </span><span class="p">})</span>
 <span class="p">}</span>
 </code></pre></div></p>
+<h2 id="transformers-accessors">Transformers (Accessors)<a class="headerlink" href="#transformers-accessors" title="Permanent link">&para;</a></h2>
+<p>Sometimes you want a property to look like a simple variable on the outside, but handle complex logic on the inside. Ignition allows you to define <code>get</code> and <code>set</code> transformers.
+* <strong><code>get</code>:</strong> Intercepts the property access and returns a <em>"presented"</em> value.
+* <strong><code>set</code>:</strong> Intercepts an assignment, transforms the input, and returns what should actually be stored.</p>
+<div class="admonition info">
+<p class="admonition-title">Constructor Immunity</p>
+<p>Transformers are ignored during the <code>constructor</code>. This allows you to initialize the raw internal value (like a <code>Stack</code>, <code>table</code>, or other complex structures) before the transformers start <em>"filtering"</em> the values for the rest of the game.</p>
+</div>
+<p><strong>Example: The Virtual Camera Subject</strong>
+<div class="highlight"><pre><span></span><code><span class="nv">public</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">-- Internally this is a Stack, but externally it looks like a single Instance</span>
+<span class="w">    </span><span class="nv">CameraSubject</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">property</span><span class="p">({</span>
+<span class="w">        </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Stack</span><span class="p">.</span><span class="nf">new</span><span class="p">(),</span><span class="w"> </span><span class="c1">-- Internal value</span>
+
+<span class="w">        </span><span class="c1">-- The user sees the top of the stack</span>
+<span class="w">        </span><span class="nv">get</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="nv">stack</span><span class="p">)</span>
+<span class="w">            </span><span class="kr">return</span><span class="w"> </span><span class="nv">stack</span><span class="p">:</span><span class="nc">last</span><span class="p">()</span>
+<span class="w">        </span><span class="kr">end</span><span class="p">,</span>
+
+<span class="w">        </span><span class="c1">-- Setting the property actually pushes to the stack</span>
+<span class="w">        </span><span class="nv">set</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="nv">newSubject</span><span class="p">,</span><span class="w"> </span><span class="nv">stack</span><span class="p">)</span>
+<span class="w">            </span><span class="nv">stack</span><span class="p">:</span><span class="nc">push</span><span class="p">(</span><span class="nv">newSubject</span><span class="p">)</span>
+<span class="w">            </span><span class="kr">return</span><span class="w"> </span><span class="nv">stack</span><span class="w"> </span><span class="c1">-- Return the internal storage to keep it in the ring</span>
+<span class="w">        </span><span class="kr">end</span>
+<span class="w">    </span><span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<div class="admonition warning">
+<p class="admonition-title">Type Safety and Transformers</p>
+<p>If a <code>set</code> transformer is provided, Ignition bypasses standard runtime type-checking for that assignment. This allows you to cast values (e.g., passing a <code>string</code> that the transformer converts to a <code>Color3</code>). You should handle any necessary validation inside your <code>set</code> function.</p>
+</div>
 <h2 id="static-members-via-import">Static Members via <code>import</code><a class="headerlink" href="#static-members-via-import" title="Permanent link">&para;</a></h2>
 <p>By providing <code>FLAGS.Static</code> to the <code>flags</code> field of the <code>property</code> helper, a <strong>Static Property</strong> beloning to the class, not object, is made.</p>
 <p>Adding to this, the <code>import</code> helper also provides access to the <code>static</code> side of your class via the <code>__complete__()</code> method. This is used when you need to initialize or modify static public properties from within your implementation file.

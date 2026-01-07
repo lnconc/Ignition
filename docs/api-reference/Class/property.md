@@ -4,11 +4,13 @@ title: "property"
 # :material-pill: property <span class="chip chip-version">since v1.0.0</span><span class="chip">descriptor</span>
 Defines a stateful class member with strict metadata, including type definitions, default values, and environment exposure.
 ```luau
-property<V, T>(options: {
+property<V, T, P>(options: {
     type: T,
     value: V,
     flags: { Symbol },
     exposure: PropertyExposure?
+    get: P,
+    set: <P>(value: P, this: V) -> P,
 }) -> FinalProperty<V, T>?
 ```
 
@@ -28,4 +30,4 @@ property<V, T>(options: {
 
 | Name | Type |
 | --- | --- |
-| `options` | `{ exposure: "shared" | "server" | "client", flags: { Symbol }, type: string, value: any }` |
+| `options` | `{ exposure: "shared" | "server" | "client", flags: { Symbol }, type: string, value: any, get: (this: any) -> any, set: (value: any, this: any) -> () }` |

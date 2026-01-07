@@ -9,9 +9,11 @@ local Types = require("../Types")
 local StackSpider = require("./StackSpider")
 local initialize = require("./initialize")
 local ValueTypes = require("../../State/Types")
+local peek = require("../../State/peek")
 local free = require("../Libs/free")
 local Registry = require("./Registry")
 local Unyieldable = require("../../Unyieldable")
+local is_property = require("./is_property")
 local xtypeof = require("./xtypeof")
 
 type Symbol<T> = Types.Symbol<T>
@@ -46,15 +48,15 @@ local function assessTypeMatching<K, V>(k: K, v: V, t: Type<V>)
     end
 end
 
-local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: Type<V>?, constructorContext: string? })
+local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: Type<V>?, constructorContext: string?, set: any? })
     local cur = ring[key]
-    local reactive, environment, flags, type_, constructorContext = options.reactive, options.environment, options.flags, options.type, options.constructorContext
+    local reactive, environment, flags, type_, constructorContext, set = options.reactive, options.environment, options.flags, options.type, options.constructorContext, options.set
     if (reactive and cur and cur._DANGEROUS_value == value) or cur == value then 
         return 
     end
-
+    local hasSetAccessor = set ~= nil
     if not PRODUCTION_MODE_ENABLED then
-        if type_ and type_ ~= "any" then
+        if not hasSetAccessor and type_ ~= nil and type_ ~= "any" then
             assessTypeMatching(key, value, type_)
         end
         local fromInit = (flags :: { FromInit: boolean }).FromInit
@@ -70,7 +72,14 @@ local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Sy
             end
         end
     end
-
+    if hasSetAccessor then
+        local isInsideConstructor = constructorContext ~= nil and WithinFunction(environment, constructorContext)
+        if not isInsideConstructor then
+            local _raw = peek(cur)
+            local raw = if _raw == PLACEHOLDER then nil else _raw
+            value = (set :: any)(value, raw)
+        end
+    end
     if reactive then
         if not cur then
             cur = (Value.new(value, free) :: any) :: ValueTypes.InternalValue<any>
@@ -93,19 +102,34 @@ local function encapsulate(object: any, metatable: any, environment: Environment
     local data = if PRODUCTION_MODE_ENABLED then {} else { public = {}, private = {}, protected = {} }
     initialize(object, environment, data, upsert)
 
+    local optionsCache = {}
+    local hasFlagsMap: { [string]: boolean } = {}
+    local accessorMap: { [string]: { get: any, set: any }} = {}
     local reactiveMap: { [string]: boolean } = {}
     local specifierMap: { [string]: { specifier: string, static: boolean } } = {}
-    local function isReactive(key: string): boolean
-        local flags = environment.PropertyFlags[key]
-        return (flags and flags[PROPERTY_FLAGS.Reactive]) or interface.flags.AllowReactivity
+
+    local function getOptions(key: string, defaultOptions: any)
+        if optionsCache[key] then return optionsCache[key] end
+        optionsCache[key] = defaultOptions
+        return defaultOptions
     end
 
     for specifier, field in pairs(interface.properties) do
-        for key in pairs(field :: { [string]: any }) do
-            if not PRODUCTION_MODE_ENABLED then
-                specifierMap[key] = { specifier = specifier, static = (environment.PropertyFlags[key] and environment.PropertyFlags[key][PROPERTY_FLAGS.Static] ~= nil) }
+        for key, value in pairs(field :: { [string]: any }) do
+            local flags = environment.PropertyFlags[key]
+            if is_property(value) then
+                accessorMap[key] = { get = value.get, set = value.set }
             end
-            reactiveMap[key] = isReactive(key)
+            if not flags then
+                specifierMap[key] = { specifier = specifier, static = false }
+                reactiveMap[key] = false
+                hasFlagsMap[key] = false    
+            continue end
+            if not PRODUCTION_MODE_ENABLED then
+                specifierMap[key] = { specifier = specifier, static = flags[PROPERTY_FLAGS.Static] ~= nil }
+            end
+            hasFlagsMap[key] = not next(flags)
+            reactiveMap[key] = flags[PROPERTY_FLAGS.Reactive] ~= nil or interface.flags.AllowReactivity
         end
     end
 
@@ -114,10 +138,13 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         if environment.Deleting then
             Log.DELETING_STATE:throw(2, environment.Id)
         end
+        local accessor = accessorMap[key]
         if PRODUCTION_MODE_ENABLED then
             local out = data[key]
             if reactiveMap[key] and out then out:evaluate() end
-            return if out == PLACEHOLDER then nil else out
+            out = if out == PLACEHOLDER then nil else out
+            if accessor and accessor.get then return (accessor.get :: any)(out) end
+            return out
         end
 
         local info = specifierMap[key]
@@ -141,21 +168,25 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         local ring = if static then staticproperties[specifier] else data[specifier]
         local out = ring[key]
         if reactive and out then out:evaluate() end
-        return if out == PLACEHOLDER then nil else out
+        out = if out == PLACEHOLDER then nil else out
+        if accessor and accessor.get then out = (accessor.get :: any)(out) end
+        return out
     end
 
     function metatable:__newindex(key: any, value: any)
         if environment.Deleting then
             Log.DELETING_STATE:throw(2, environment.Id)
         end
+        local accessor = accessorMap[key]
         if PRODUCTION_MODE_ENABLED then
-            upsert(data, key, value, {
+            upsert(data, key, value, getOptions(key, {
                 flags = environment.PropertyFlags[key] or {},
                 reactive = reactiveMap[key],
                 environment = environment,
                 type = environment.PropertyTypes[key],
                 constructorContext = environment.Context and environment.Context.Constructor or nil,
-            })
+                set = if accessor then accessor.set else nil,
+            }))
             return
         end
 
@@ -166,7 +197,7 @@ local function encapsulate(object: any, metatable: any, environment: Environment
             Log.MISSING_PROP_WRITE:throw(2, key)
         end
         local static, specifier, reactive = info.static, info.specifier, reactiveMap[key]
-        if specifier == "public" and not static and (environment.PropertyFlags[key] and not next(environment.PropertyFlags[key])) then
+        if specifier == "public" and not static and not hasFlagsMap[key] then
             (data.public :: any)[key] = if value == nil then PLACEHOLDER else value
             return
         elseif specifier ~= "public" then
@@ -179,13 +210,14 @@ local function encapsulate(object: any, metatable: any, environment: Environment
         end
 
         local ring = if static then staticproperties[specifier] else data[specifier]
-        upsert(ring, key, value, {
+        upsert(ring, key, value, getOptions(key, {
             flags = environment.PropertyFlags[key] or {},
             reactive = reactive,
             environment = environment,
             type = environment.PropertyTypes[key],
             constructorContext = if environment.Context then environment.Context.Constructor else nil,
-        })
+            set = if accessor then accessor.set else nil,
+        }))
     end
 
     -- create a template __iter
@@ -215,6 +247,7 @@ local function encapsulate(object: any, metatable: any, environment: Environment
                 local key = keys[index]
                 return key, object[key]
             end
+            return nil :: any, nil
         end
     end
 

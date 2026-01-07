@@ -24,7 +24,9 @@ local function func<D>(options: FuncOptions<D>): FinalProperty<D>?
         value = nil, 
         type = "function",
         flags = options.flags or {}, 
-        dummy = options.dummy 
+        dummy = options.dummy,
+        get = nil,
+        set = nil,
     }
     
     return result :: any

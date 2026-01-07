@@ -22,7 +22,7 @@ local function initialize(
     object: any, 
     environment: Environment,
     data: { [any]: any }, 
-    upsert: <K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: Type<V>?, constructorContext: string? }) -> ()
+    upsert: <K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: Type<V>?, constructorContext: string?, set: any?  }) -> ()
 )
     local interface = environment.Interface
     local properties, closures = interface.properties, interface.closures
@@ -88,6 +88,7 @@ local function initialize(
                     environment = environment,
                     type = propertyTypes[key],
                     constructorContext = if environment.Context then environment.Context.Constructor else nil,
+                    set = if isProp then value.set else nil,
                 })
             end
         end

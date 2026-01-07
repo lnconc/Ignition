@@ -3,12 +3,13 @@
 
 export type PropertyExposure = "shared" | "client" | "server"
 
-export type FinalProperty<V, T, D> = {
+export type FinalProperty<V, T, D, H> = {
     type: T,
     value: V,
     dummy: D,
     flags: { Symbol<string> } | { [Symbol<string>]: boolean },
-    _signature: string,
+    get: H?,
+    set: (<P>(value: P, this: V) -> P)?,
 }
 
 export type Type<V> = {
@@ -113,7 +114,7 @@ export type function GetClassObject(interface: type, accessLevel: type): type
         string = types.string,
         thread = types.thread,
         buffer = types.buffer,
-        ["nil"] = types.never,
+        ["nil"] = types.any,
         -- "table" is a special case we handle below
     }
 
@@ -138,7 +139,7 @@ export type function GetClassObject(interface: type, accessLevel: type): type
         if t:is("unknown") then return "unknown" end
         if t:is("buffer") then return "buffer" end
         if t:is("thread") then return "thread" end
-        if t:is("nil") then return "never" end
+        if t:is("nil") then return "any" end
         return nil
     end
 
@@ -224,6 +225,27 @@ export type function GetClassObject(interface: type, accessLevel: type): type
                     prototype:setproperty(types.singleton(key), finalDummy)
                 else
                     local resolvedType: type? = PRIMITIVES[typeLiteral] or nil
+                    local getter = asTable:readproperty(types.singleton("get"))
+                    if getter and not getter:is("nil") then
+                        local funcType: type? = nil
+                        if getter:is("function") then
+                            funcType = getter
+                        elseif getter:is("union") then
+                            for _, comp in getter:components() do
+                                if comp:is("function") then
+                                    funcType = comp
+                                    break
+                                end
+                            end
+                        end
+                        
+                        if funcType then
+                            local returns = funcType:returns()
+                            if returns and returns.head and #returns.head > 0 then
+                                resolvedType = returns.head[1]
+                            end
+                        end
+                    end
                     if typeLiteral == "table" then
                         local t = types.newtable({})
                         t:setindexer(types.any, types.any)
@@ -473,17 +495,19 @@ export type ClassLibrary = {
     reactive: <I>(target: I) -> I,
     
     -- member definitions
-    property: <V, T>(options: {
+    property: <V, T, H>(options: {
         type: T,
-        value: V,
-        flags: { Symbol<string> } | { [Symbol<string>]: boolean },
+        value: V?,
+        flags: { Symbol<string> } | { [Symbol<string>]: boolean }?,
         exposure: PropertyExposure?,
-    }) -> FinalProperty<V, T, nil>?,
+        get: H?,
+        set: (<P>(value: P, this: V) -> P)?,
+    }) -> FinalProperty<V, T, nil, H>?,
     func: <D>(options: { 
         exposure: PropertyExposure?,
         flags: { Symbol<string> }?, 
-        dummy: D 
-    }) -> FinalProperty<nil, "function", D>,
+        dummy: D
+    }) -> FinalProperty<nil, "function", D, nil>,
     nullable: (type: string | Union<string>) -> Nullable<string | Union<string>>,
     union: (...string) -> Union<string>,
     

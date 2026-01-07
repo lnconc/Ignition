@@ -134,6 +134,37 @@ public = {
 }
 ```
 
+## Transformers (Accessors)
+Sometimes you want a property to look like a simple variable on the outside, but handle complex logic on the inside. Ignition allows you to define `get` and `set` transformers.
+* **`get`:** Intercepts the property access and returns a *"presented"* value.
+* **`set`:** Intercepts an assignment, transforms the input, and returns what should actually be stored.
+
+!!! info "Constructor Immunity"
+    Transformers are ignored during the `constructor`. This allows you to initialize the raw internal value (like a `Stack`, `table`, or other complex structures) before the transformers start *"filtering"* the values for the rest of the game.
+
+**Example: The Virtual Camera Subject**
+```luau
+public = {
+    -- Internally this is a Stack, but externally it looks like a single Instance
+    CameraSubject = property({
+        value = Stack.new(), -- Internal value
+        
+        -- The user sees the top of the stack
+        get = function(stack)
+            return stack:last()
+        end,
+        
+        -- Setting the property actually pushes to the stack
+        set = function(newSubject, stack)
+            stack:push(newSubject)
+            return stack -- Return the internal storage to keep it in the ring
+        end
+    })
+}
+```
+!!! warning "Type Safety and Transformers"
+    If a `set` transformer is provided, Ignition bypasses standard runtime type-checking for that assignment. This allows you to cast values (e.g., passing a `string` that the transformer converts to a `Color3`). You should handle any necessary validation inside your `set` function.
+
 ## Static Members via `import`
 By providing `FLAGS.Static` to the `flags` field of the `property` helper, a **Static Property** beloning to the class, not object, is made.
 

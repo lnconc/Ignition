@@ -15,4 +15,4 @@ The full technical documentation, tutorials, and API reference for the Ignition 
 If you're using **Wally**, add this to your `wally.toml`:
 
 ```toml
-Ignition = "lnconc/ignition@2.1.0"
+Ignition = "lnconc/ignition@^2.1.0"

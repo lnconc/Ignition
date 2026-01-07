@@ -2,7 +2,7 @@
 	"class-func": {
 		"prefix": "func",
 		"body": [
-			"${1:fn} = func {",
+			"func {",
 			"\texposure = \"shared\",",
 			"\tflags = { },",
 			"\tdummy = (nil :: any) :: ${0:() -> ()},",
@@ -13,11 +13,13 @@
 	"class-prop": {
 		"prefix": "prop",
 		"body": [
-			"${1:prop} = property {",
+			"property {",
 			"\texposure = \"shared\",",
 			"\tflags = { ${0:FLAGS.Optional} },",
-			"\ttype = \"${3:any}\",",
-			"\tvalue = ${2:nil}",
+			"\ttype = \"${2:any}\" :: \"${2}\",",
+			"\tvalue = ${1:nil}",
+			"\tget = nil",
+			"\tset = nil",
 			"},"
 		],
 		"description": "Create a Class property template"

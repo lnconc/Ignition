@@ -24,11 +24,13 @@ local function delete(object: any)
         delete(super.object)
     end
     
-    if (object :: any).Destroy then
-        xpcall(function() (object :: any):Destroy() end, function(err) 
-            Log.DESTROYING_ERROR:warn(err)
-        end)
-    end
+    pcall(function()
+        if (object :: any).Destroy then
+            xpcall(function() (object :: any):Destroy() end, function(err) 
+                Log.DESTROYING_ERROR:warn(err)
+            end)
+        end
+    end)
     
     environment.Deleting = true
 

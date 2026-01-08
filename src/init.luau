@@ -81,10 +81,12 @@ local ExposedIgnition: Ignition = setmetatable({}, {
                         fromSolutions = item.Name:find(`{Configuration.SOLUTIONS_KEY}$`) ~= nil
                     end
                     if fromSolutions then
-                        for _, module in item:GetChildren() do
+                        local children = item:GetChildren()
+                        local total, count = 0, 0
+                        for _, module in children do
                             if module:IsA("ModuleScript") then
+                                total += 1
                                 task.spawn(function()
-                                    print(`Loading and linking {module:GetFullName()}`)
                                     local success, classOrErr = pcall(require, module)
                                     if not success then
                                         warn(`Failed to load {module:GetFullName()}\n\n[Linker Error]:\n{classOrErr}`)
@@ -95,10 +97,14 @@ local ExposedIgnition: Ignition = setmetatable({}, {
                                         classes[name] = classOrErr
                                     end
                                     dependencies[name] = true
-                                    print(`Loaded and linked {module:GetFullName()}`)
+                                    if not ClassConfiguration.PRODUCTION_MODE_ENABLED then
+                                        print(`Loaded and linked {module:GetFullName()}`)
+                                    end
+                                    count += 1
                                 end)
                             end
                         end
+                        print(`Loaded and linked {count} out of {total} classes.`)
                     end
                     loadSolutions(item, fromSolutions)
                 end

@@ -25,12 +25,13 @@ local function assertCallingScript(...: string?)
         Log.OUT_OF_SCOPE:throw(2, caller.Name)
     else
         local names = table.pack(...)
-        if names.n > 0 then
-            for _, name in ipairs(names) do
-                if name ~= caller.Name then
-                    Log.ILLEGAL_REGISTRY_CALL:throw(2)
+		if names.n > 0 then
+			for _, name in ipairs(names) do
+				if name == caller.Name then
+					return
                 end
-            end
+			end
+			Log.ILLEGAL_REGISTRY_CALL:throw(2)
         end
     end
 end
@@ -139,7 +140,7 @@ function Registry.HasObject(object: any): boolean
 end
 
 function Registry.LinkData(object: any, data: any)
-    assertCallingScript("delete")
+    assertCallingScript("delete", "encapsulate")
     ObjectDatas[object] = data
 end
 

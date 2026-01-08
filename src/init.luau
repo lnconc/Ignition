@@ -13,6 +13,7 @@ local Symbol = require("@self/Symbol")
 local Unyieldable = require("@self/Unyieldable")
 
 local loaded = false
+local classes = {}
 
 local Ignition = {
     extends = Class.extends,
@@ -48,6 +49,10 @@ local Ignition = {
     Class = Class,
 }
 
+function Ignition.GetClasses()
+    return classes
+end
+
 type IgnitionLinker = (_self: any, overrideDefinition: string?) -> _Ignition
 
 type _Ignition = typeof(Ignition)
@@ -80,12 +85,15 @@ local ExposedIgnition: Ignition = setmetatable({}, {
                             if module:IsA("ModuleScript") then
                                 task.spawn(function()
                                     print(`Loading and linking {module:GetFullName()}`)
-                                    local success, err = pcall(require, module)
+                                    local success, classOrErr = pcall(require, module)
                                     if not success then
-                                        warn(`Failed to load {module:GetFullName()}\n\n[Linker Error]:\n{err}`)
+                                        warn(`Failed to load {module:GetFullName()}\n\n[Linker Error]:\n{classOrErr}`)
                                         return
                                     end
                                     local name = module.Name:split(".")[1]
+                                    if module.Name:sub((#name)+2) ~= ClassConfiguration.HEADER_EXTENSION then
+                                        classes[name] = classOrErr
+                                    end
                                     dependencies[name] = true
                                     print(`Loaded and linked {module:GetFullName()}`)
                                 end)

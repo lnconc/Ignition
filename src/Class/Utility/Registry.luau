@@ -8,7 +8,7 @@ local Types = require("../Types")
 type Interface = Types.Interface
 type Yields = { [string]: { [thread]: boolean } }
 
-local ANCESTOR = script.Parent.Parent
+local LIBRARY_ANCESTOR, IGNITION_ANCESTOR = script.Parent.Parent, script.Parent.Parent.Parent
 local TIMEOUT_DURATION = 8
 
 local Registry = {}
@@ -21,7 +21,7 @@ local ObjectDatas: { [any]: any } = setmetatable({}, { __mode = "k" })
 -- ex. if you call SaveInterface without using the `class` module found in the private folder, this will error
 local function assertCallingScript(...: string?)
     local caller = getCaller(2)
-    if not caller:IsDescendantOf(ANCESTOR) and caller ~= ANCESTOR then
+    if not caller:IsDescendantOf(LIBRARY_ANCESTOR) and caller ~= IGNITION_ANCESTOR then
         Log.OUT_OF_SCOPE:throw(2, caller.Name)
     else
         local names = table.pack(...)

@@ -109,7 +109,7 @@ local function import(_interface: Interface?): any
                 end
             end
         end,
-        __index = function(key: string): any
+        __index = function(_, key: string): any
             if key == "__complete__" then
                 return function()
                     return setmetatable({}, {

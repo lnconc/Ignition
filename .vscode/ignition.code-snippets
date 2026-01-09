@@ -150,7 +150,7 @@
 			"\t$0",
 			"end)",
 			"",
-			"return ${1}:__complete__()"
+			"return ${1}(true)"
 		],
 		"description": "Create a Class implementation template"
 	},
@@ -174,7 +174,7 @@
 			"\t$0",
 			"end)",
 			"",
-			"return ${1}:__complete__()"
+			"return ${1}(true)"
 		],
 		"description": "Create a Class implementation with super()"
 	}

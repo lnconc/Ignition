@@ -168,8 +168,8 @@ public = {
 ## Static Members via `import`
 By providing `FLAGS.Static` to the `flags` field of the `property` helper, a **Static Property** beloning to the class, not object, is made.
 
-Adding to this, the `import` helper also provides access to the `static` side of your class via the `__complete__()` method. This is used when you need to initialize or modify static public properties from within your implementation file.
+Adding to this, the `import` helper also provides access to the `static` side of your class by calling said class and providing `true` (i.e. `MyClass(true)`). This is used when you need to initialize or modify static public properties from within your implementation file.
 ```luau
-local StaticMyClass = MyClass:__complete__()
+local StaticMyClass = MyClass(true)
 StaticMyClass.TotalObjectsCreated = 0 -- Writing to a public static field
 ```

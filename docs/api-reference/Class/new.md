@@ -11,7 +11,7 @@ new<I>(nameOrInterface: string | I) -> (...any) -> GetClassObject<I, "Public">
 
 | Name | Type | Description |
 | --- | --- | -- |
-| `nameOrInterface` | `string | I` | The target to instantiate. Can be a string of a class name, an `Interface` object, or the `StaticClassObject` returned by `__complete__()` from an imported `class`. |
+| `nameOrInterface` | `string | I` | The target to instantiate. Can be a string of a class name, an `Interface` object, or the `StaticClassObject` returned by calling the imported `class` and providing `true` as your argument. |
 
 ## Returns
 

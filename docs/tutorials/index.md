@@ -142,7 +142,7 @@ Ignition enforces a strict separation between *what* a class **is** and *what* a
         self.Name = name
     end)
 
-    return BaseRemote:__complete__() -- mark it as complete
+    return BaseRemote(true) -- mark it as complete
     ```
 
     !!! danger "Type Integrity Warning"

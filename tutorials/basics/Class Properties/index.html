@@ -1197,8 +1197,6 @@
       
         
       
-        
-      
     
     
     
@@ -2116,34 +2114,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api-reference/Class/Types/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Types
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2656,13 +2626,13 @@
 <span class="w">    </span><span class="c1">-- This property only exists on the Server</span>
 <span class="w">    </span><span class="nv">SecretToken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">property</span><span class="p">({</span>
 <span class="w">        </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;XYZ-123&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">-- For illustration only; realistically, you&#39;d have the `constructor` do this.</span>
-<span class="w">        </span><span class="nv">exposure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;server&quot;</span>
+<span class="w">        </span><span class="nv">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;server&quot;</span>
 <span class="w">    </span><span class="p">}),</span>
 
 <span class="w">    </span><span class="c1">-- This property exists everywhere</span>
 <span class="w">    </span><span class="nv">Score</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">property</span><span class="p">({</span>
 <span class="w">        </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span>
-<span class="w">        </span><span class="nv">exposure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;shared&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;shared&quot;</span><span class="p">,</span>
 <span class="w">        </span><span class="nv">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="w"> </span><span class="p">::</span><span class="w"> </span><span class="s2">&quot;number&quot;</span>
 <span class="w">    </span><span class="p">})</span>
 <span class="p">}</span>

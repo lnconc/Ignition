@@ -1065,8 +1065,6 @@
       
         
       
-        
-      
     
     
     
@@ -1984,34 +1982,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../api-reference/Class/Types/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Types
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2670,7 +2640,7 @@ Ignition is designed for large-scale, high-integrity systems where "moving fast 
 <span class="kr">return</span><span class="w"> </span><span class="nf">abstract</span><span class="w"> </span><span class="p">(</span><span class="nf">class</span><span class="w"> </span><span class="s2">&quot;BaseRemote&quot;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nv">public</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="nv">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">property</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nv">exposure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;shared&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nv">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;shared&quot;</span><span class="p">,</span>
 <span class="w">            </span><span class="nv">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">FLAGS</span><span class="p">.</span><span class="nv">Readonly</span><span class="w"> </span><span class="p">},</span>
 <span class="w">            </span><span class="nv">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
 <span class="w">            </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span>
@@ -2678,7 +2648,7 @@ Ignition is designed for large-scale, high-integrity systems where "moving fast 
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="nv">protected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="nv">Send</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">func</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nv">exposure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;shared&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nv">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;shared&quot;</span><span class="p">,</span>
 <span class="w">            </span><span class="nv">dummy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kc">nil</span><span class="w"> </span><span class="p">::</span><span class="w"> </span><span class="nc">any</span><span class="p">)</span><span class="w"> </span><span class="p">::</span><span class="w"> </span><span class="p">(</span><span class="nc">self</span><span class="p">:</span><span class="w"> </span><span class="nc">any</span><span class="p">,</span><span class="w"> </span><span class="nc">options</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                </span><span class="nc">targets</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nc">Player</span><span class="w"> </span><span class="p">},</span>
 <span class="w">                </span><span class="nc">unreliable</span><span class="p">:</span><span class="w"> </span><span class="nc">boolean</span><span class="p">,</span>

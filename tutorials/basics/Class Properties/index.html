@@ -2790,8 +2790,8 @@ A <code>PLACEHOLDER</code> property is added to the object's data field, but it 
 </div>
 <h2 id="static-members-via-import">Static Members via <code>import</code><a class="headerlink" href="#static-members-via-import" title="Permanent link">&para;</a></h2>
 <p>By providing <code>FLAGS.Static</code> to the <code>flags</code> field of the <code>property</code> helper, a <strong>Static Property</strong> beloning to the class, not object, is made.</p>
-<p>Adding to this, the <code>import</code> helper also provides access to the <code>static</code> side of your class via the <code>__complete__()</code> method. This is used when you need to initialize or modify static public properties from within your implementation file.
-<div class="highlight"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">StaticMyClass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">MyClass</span><span class="p">:</span><span class="nc">__complete__</span><span class="p">()</span>
+<p>Adding to this, the <code>import</code> helper also provides access to the <code>static</code> side of your class by calling said class and providing <code>true</code> (i.e. <code>MyClass(true)</code>). This is used when you need to initialize or modify static public properties from within your implementation file.
+<div class="highlight"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">StaticMyClass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">MyClass</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
 <span class="nv">StaticMyClass</span><span class="p">.</span><span class="nv">TotalObjectsCreated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="c1">-- Writing to a public static field</span>
 </code></pre></div></p>
 

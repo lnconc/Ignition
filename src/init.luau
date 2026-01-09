@@ -3,9 +3,7 @@
 
 local Class = require("@self/Class")
 local Configuration = require("@self/Configuration")
-local Observe = require("@self/State/Observe")
-local Property = require("@self/State/Property")
-local Value = require("@self/State/Value")
+local State = require("@self/State")
 local ClassConfiguration = require("@self/Class/Utility/Configuration")
 local Registry = require("@self/Class/Utility/Registry")
 local Log = require("@self/Log")
@@ -36,13 +34,15 @@ local Ignition = {
     delete = Class.delete,
     friend = Class.friend,
     mutual = Class.mutual,
+    unwrap = Class.unwrap,
     PLACEHOLDER = Class.PLACEHOLDER,
     FLAGS = Class.FLAGS,
     METADATA = Class.METADATA,
 
-    Value = Value,
-    Property = Property,
-    Observe = Observe,
+    Value = State.Value,
+    Property = State.Property,
+    Observe = State.Observe,
+    peek = State.peek,
 
     Symbol = Symbol,
     Unyieldable = Unyieldable,
@@ -104,7 +104,7 @@ local ExposedIgnition: Ignition = setmetatable({}, {
                                 end)
                             end
                         end
-                        print(`Loaded and linked {count} out of {total} classes.`)
+                        print(`Loaded {count} out of {total} objects from {item.Name}.`)
                     end
                     loadSolutions(item, fromSolutions)
                 end

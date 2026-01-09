@@ -3,14 +3,10 @@
 
 local getCaller = require("../../Internal/getCaller")
 local Log = require("../../Log")
-local Types = require("../Types")
 local Registry = require("../Utility/Registry")
 
-type Interface = Types.Interface
-type PropertiesFields = Types.PropertiesFields
-
-local function extends<I>(targetOrSuperInterface: string | I): (...any) -> ...any
-    local superInterface: Interface = targetOrSuperInterface :: I
+local function extends<I>(targetOrSuperInterface: string | I): (fields: any) -> any
+    local superInterface: any = targetOrSuperInterface
     if type(superInterface) == "string" then
         superInterface = Registry.WaitForLink(targetOrSuperInterface)
     end
@@ -19,21 +15,21 @@ local function extends<I>(targetOrSuperInterface: string | I): (...any) -> ...an
         Log.THREAD_CONTEXT_REQUIRED:throw(2, "extends()")
     end
     
-    local interface: Interface = env.interface
+    local interface: any = env.interface
     if not interface then
         Log.CLASS_INTERFACE_REQUIRED:throw(2, "extends()")
     end
     
     if interface.superclass then
         Log.ALREADY_INHERITS:throw(2, interface.name, interface.superclass.name)
-    elseif (superInterface :: Interface).flags.ClassFinalized then
+    elseif superInterface.flags.ClassFinalized then
         Log.INHERIT_FINALIZED:throw(2, superInterface.name)
-    elseif (superInterface :: Interface).name == interface.name then
+    elseif superInterface.name == interface.name then
         Log.SELF_INHERITANCE:throw(2, interface.name)
     end
     
     interface.superclass = superInterface
-    return function(fields: PropertiesFields): PropertiesFields
+    return function(fields: any): any
         return fields
     end
 end

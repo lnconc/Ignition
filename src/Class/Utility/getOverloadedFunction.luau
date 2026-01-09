@@ -3,11 +3,6 @@
 
 local Log = require("../../Log")
 local Configuration = require("./Configuration")
-local Types = require("../Types")
-
-type OverloadEntry = Types.OverloadEntry
-type OverloadRecord = Types.OverloadRecord
-type AnyFunction = Types.AnyFunction
 
 local function matchSignature(arg: any, expected: any): boolean
     if expected == nil or expected == "any" then return true end
@@ -55,9 +50,9 @@ local function getSignature(args: { any }, count: number): string
     return table.concat(sig, ",")
 end
 
-local function getOverloadedFunction(name: string, record: OverloadRecord): AnyFunction
+local function getOverloadedFunction(name: string, record: any): any
     local exactMatches = {}
-    local complexMatches: { OverloadEntry } = {}
+    local complexMatches: { any } = {}
     local fallback = record.fallback
 
     for _, entry in ipairs(record.overloads) do

@@ -25,7 +25,7 @@ local Log = require("./Log")
 local Configuration = require("@self/Utility/Configuration")
 local Types = require("@self/Types")
 
-type ClassLibrary = Types.ClassLibrary
+type Class = Types.Class
 
 local Class = {
     extends = extends,
@@ -52,7 +52,11 @@ local Class = {
     FLAGS = table.freeze(Configuration.PROPERTY_FLAGS),
     PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED,
     METADATA = Configuration.METADATA,
-} :: ClassLibrary
+}
+
+function Class.unwrap<I>(target: I): I
+    return target
+end
 
 function Class.from(...: string): ...any
     local retrieved = table.pack(...)
@@ -67,4 +71,4 @@ function Class.from(...: string): ...any
     return table.unpack(retrieved)
 end
 
-return table.freeze(Class)
+return table.freeze(Class) :: Class

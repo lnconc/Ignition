@@ -3,9 +3,7 @@
 local getCaller = require("../../Internal/getCaller")
 local Log = require("../../Log")
 local Configuration = require("../Utility/Configuration")
-local Types = require("../Types")
 
-type Environment = Types.Environment
 
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 
@@ -44,7 +42,7 @@ local anon = setmetatable({
         if not env then
             Log.THREAD_CONTEXT_REQUIRED:throw(2, "anon()")
         end
-        local environment: Environment = env.environment
+        local environment: any = env.environment
         if not environment then
             Log.CLASS_ENVIRONMENT_REQUIRED:throw(2, "anon()")
         end

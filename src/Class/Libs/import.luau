@@ -3,19 +3,13 @@
 
 local getCaller = require("../../Internal/getCaller")
 local Log = require("../../Log")
-local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 local Registry = require("../Utility/Registry")
 
-type AnyFunction = Types.AnyFunction
-type Expects = Types.Expects
-type OverloadRecord = Types.OverloadRecord
-type Interface = Types.Interface
-
 local VIRTUAL_FLAG = Configuration.PROPERTY_FLAGS.Virtual
 
-local function import(_interface: Interface?): any
-    local interface: Interface = _interface :: Interface
+local function import(_interface: any?): any
+    local interface: any = _interface
     if not _interface then
         local callerScript = getCaller(2)
         interface = Registry.WaitForInterface(callerScript.Name:split(".")[1])
@@ -34,7 +28,7 @@ local function import(_interface: Interface?): any
             local isVirtual = interface.virtuals[key]
             if isVirtual == nil then
                 local flags = if type(found) == "table" then found.flags else nil
-                isVirtual = flags and flags[VIRTUAL_FLAG] ~= nil
+                isVirtual = flags and (flags :: any)[VIRTUAL_FLAG] ~= nil
                 interface.virtuals[key] = isVirtual
             end
 
@@ -46,15 +40,37 @@ local function import(_interface: Interface?): any
     end
 
     local imported = setmetatable({}, {
-        __call = function(_, targetOrSignature: AnyFunction | Expects)
-            if type(targetOrSignature) == "function" then
+        __call = function(_, targetOrSignatureOrCompleted: any)
+            if type(targetOrSignatureOrCompleted) == "boolean" and targetOrSignatureOrCompleted == true then
+                return setmetatable({}, {
+                    __index = function(_, k: string)
+                        local val = interface.staticproperties.public[k]
+                        if val == nil then
+                            Log.MISSING_STATIC_INDEX:throw(2, k, interface.name)
+                        end
+                        return val
+                    end,
+                    __newindex = function(_, k: string, v: any)
+                        local val = interface.staticproperties.public[k]
+                        if val == nil then
+                            Log.MISSING_STATIC_WRITE:throw(2, k, interface.name)
+                        end
+                        interface.staticproperties.public[k] = if v == nil then Configuration.PLACEHOLDER else v
+                    end,
+                    __metatable = {
+                        interface = interface,
+                        fromImport = true,
+                    },
+                    __tostring = function() return `StaticClass<{interface.name}>` end
+                }) :: any
+            elseif type(targetOrSignatureOrCompleted) == "function" then
                 if interface.constructor.defined then
                     Log.CONSTRUCTOR_EXISTS:throw(2, interface.name)
                 end
-                interface.constructor.callback = targetOrSignature :: any
+                interface.constructor.callback = targetOrSignatureOrCompleted :: any
                 return nil :: any
-            elseif type(targetOrSignature) == "table" and #targetOrSignature > 0 then
-                return function(memberNameOrConstructor: string | AnyFunction)
+            elseif type(targetOrSignatureOrCompleted) == "table" and #targetOrSignatureOrCompleted > 0 then
+                return function(memberNameOrConstructor: any)
                     if type(memberNameOrConstructor) == "function" then
                         local current = interface.constructor.callback
                         if current then
@@ -65,14 +81,14 @@ local function import(_interface: Interface?): any
                             }
                             current = interface.constructor.callback
                         end
-                        table.insert((current :: OverloadRecord).overloads, {
+                        table.insert(current.overloads, {
                             callback = memberNameOrConstructor,
-                            expects = targetOrSignature,
+                            expects = targetOrSignatureOrCompleted,
                         })
                         return nil :: any
                     else
                         verifyImplementation(memberNameOrConstructor, true)
-                        return function(implementation: AnyFunction)
+                        return function(implementation: any)
                             local current = interface.closures[memberNameOrConstructor]
                             if not current or type(current) == "function" then
                                 interface.closures[memberNameOrConstructor] = {
@@ -82,9 +98,9 @@ local function import(_interface: Interface?): any
                                 }
                                 current = interface.closures[memberNameOrConstructor]
                             end
-                            table.insert((current :: OverloadRecord).overloads, {
+                            table.insert(current.overloads, {
                                 callback = implementation,
-                                expects = targetOrSignature :: Expects
+                                expects = targetOrSignatureOrCompleted
                             })
                         end
                     end
@@ -93,50 +109,24 @@ local function import(_interface: Interface?): any
             Log.INVALID_IMPORT_CALL:throw(2)
             return nil
         end,
-        __newindex = function(_, key, value: AnyFunction | any)
+        __newindex = function(_, key, value: any)
             local isFn = type(value) == "function"
             local found = verifyImplementation(key, isFn)
 
             if isFn and found then
                 local current = interface.closures[key]
                 if type(current) == "table" and current.isOverloaded then
-                    if current.fallback then
+                    if (current :: any).fallback then
                         Log.FALLBACK_EXISTS:throw(2, key, interface.name)
                     end
-                    current.fallback = value
+                    (current :: any).fallback = value
                 else
                     interface.closures[key] = value
                 end
             end
         end,
-        __index = function(_, key: string): any
-            if key == "__complete__" then
-                return function()
-                    return setmetatable({}, {
-                        __index = function(_, k: string)
-                            local val = interface.staticproperties.public[k]
-                            if val == nil then
-                                Log.MISSING_STATIC_INDEX:throw(2, k, interface.name)
-                            end
-                            return val
-                        end,
-                        __newindex = function(_, k: string, v: any)
-                            local val = interface.staticproperties.public[k]
-                            if val == nil then
-                                Log.MISSING_STATIC_WRITE:throw(2, k, interface.name)
-                            end
-                            interface.staticproperties.public[k] = if v == nil then Configuration.PLACEHOLDER else v
-                        end,
-                        __metatable = {
-                            interface = interface,
-                            fromImport = true,
-                        },
-                        __tostring = function() return `StaticClass<{interface.name}>` end
-                    })
-                end
-            end
+        __index = function(_)
             Log.WRITE_ONLY_IMPL:throw(2, interface.name)
-            return nil
         end
     })
 

@@ -5,10 +5,6 @@ local getCaller = require("../../Internal/getCaller")
 local Log = require("../../Log")
 local Configuration = require("../Utility/Configuration")
 local bloodline = require("../Utility/bloodline")
-local Types = require("../Types")
-
-type Interface = Types.Interface
-type Environment = Types.Environment
 
 local DEVELOPMENT_MODE_ENABLED = not Configuration.PRODUCTION_MODE_ENABLED
 
@@ -19,7 +15,7 @@ local function super(...: any)
         Log.THREAD_CONTEXT_REQUIRED:throw(2, "super()")
     end
     
-    local environment: Environment = callEnv.environment
+    local environment = callEnv.environment
     if not environment then
         Log.CLASS_ENVIRONMENT_REQUIRED:throw(2, "super()")
     end
@@ -33,7 +29,7 @@ local function super(...: any)
         Log.MISSING_SUPER:throw(2, environment.Interface.name)
     end
     
-    local superObject, superEnvironment = (superClassInterface :: Interface):instantiate(true, false, ...)
+    local superObject, superEnvironment = superClassInterface:instantiate(true, false, ...)
     environment.SuperClass = { 
         object = superObject, 
         environment = superEnvironment 

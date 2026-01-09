@@ -5,26 +5,15 @@ local env = require("../../Internal/env")
 local getCaller = require("../../Internal/getCaller")
 local Log = require("../../Log")
 local Symbol = require("../../Symbol")
-local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 local Registry = require("../Utility/Registry")
 local encapsulate = require("../Utility/encapsulate")
 local getOverloadedFunction = require("../Utility/getOverloadedFunction")
 local is_property = require("../Utility/is_property")
 
-type Environment = Types.Environment
-type Interface = Types.Interface
-type GetClassObject<P, A> = Types.GetClassObject<P, A>
-type PropertiesFields = Types.PropertiesFields
-type AnyFunction = Types.AnyFunction
-type OverloadRecord = Types.OverloadRecord
-type FinalProperty = Types.FinalProperty<any, "any", any>
-type OverloadFunction = Types.OverloadFunction
-type Symbol<T> = Types.Symbol<T>
-
 local find = table.find
-local match = string.match
 local toString = tostring
+local match = string.match
 
 local PLACEHOLDER = Configuration.PLACEHOLDER
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
@@ -32,10 +21,10 @@ if not PRODUCTION_MODE_ENABLED then
     Log.RAISE_DEV_MODE:warn()
 end
 
-local function buildClassObject(name: string, interface: Interface): (any, Environment)
+local function buildClassObject(name: string, interface: any): (any, any)
     local id = Symbol(`{name}({string.format("%08X", math.random(0, 0x7FFFFFFF))})`)
     
-    local environment: Environment = {
+    local environment = {
         Id = id,
         Interface = interface,
         SuperClass = { object = nil, environment = nil },
@@ -54,13 +43,13 @@ local function buildClassObject(name: string, interface: Interface): (any, Envir
     }
     
     for _, field in pairs(interface.properties) do
-        for key, property in pairs(field :: { [string]: any }) do
+        for key, property in pairs(field) do
             local isprop = is_property(property)
             if isprop then
-                environment.PropertyTypes[key] = (property :: FinalProperty).type
-                local flags = (property :: FinalProperty).flags
+                environment.PropertyTypes[key] = property.type
+                local flags = property.flags
                 if flags then
-                    environment.PropertyFlags[key] = flags :: { [Symbol<string>]: boolean }
+                    environment.PropertyFlags[key] = flags
                 end
             else
                 environment.PropertyTypes[key] = typeof(property)
@@ -79,7 +68,7 @@ local function buildClassObject(name: string, interface: Interface): (any, Envir
     return object, environment
 end
 
-local function createInterface(name: string): Interface
+local function createInterface(name: string): any
     local interface = setmetatable({
         name = name,
         flags = {
@@ -89,11 +78,11 @@ local function createInterface(name: string): Interface
             InheritanceLinked = false,
         },
         constructor = { 
-            callback = nil :: OverloadFunction?, 
+            callback = nil,
             defined = false 
         },
-        superclass = nil :: Interface?,
-        closures = {} :: { [string]: OverloadFunction? },
+        superclass = nil,
+        closures = {},
         staticproperties = { public = {}, protected = {}, private = {} },
         properties = { public = {}, protected = {}, private = {} },
         virtuals = {},
@@ -105,8 +94,8 @@ local function createInterface(name: string): Interface
             local object, environment = buildClassObject(name, self)
             Registry.SaveEnvironment(object, environment)
             if fromInit then return object end
-            local constructorData: OverloadRecord = self.constructor.callback
-            local fn: OverloadFunction = if type(constructorData) == "table" and constructorData.isOverloaded 
+            local constructorData = self.constructor.callback
+            local fn = if type(constructorData) == "table" and constructorData.isOverloaded 
                 then getOverloadedFunction(`Constructor<{tostring(object)}>`, constructorData) 
                 else constructorData
             if fn then
@@ -119,7 +108,7 @@ local function createInterface(name: string): Interface
                     env.set(wrapper :: any, { environment = environment })
                 else
                     env.set(wrapper :: any, { environment = environment, current_context = build_context })
-                    local family = environment.Context.Family[name] or {}
+                    local family: { [string]: boolean } = environment.Context.Family[name] or {}
                     family[build_context] = true
                     environment.Context.Family[name] = family
                     
@@ -133,17 +122,17 @@ local function createInterface(name: string): Interface
                 environment.Master = object
                 local current = environment
                 while current.SuperClass and current.SuperClass.environment do
-                    current.SuperClass.environment.Master = object
+                    (current.SuperClass.environment :: any).Master = object
                     current = current.SuperClass.environment
                 end
             end
             return object, environment
         end
     }, { __metatable = "This metatable is locked!" })
-    return interface :: Interface
+    return interface
 end
 
-local function createClassInterface(name: string): <I>(fields: PropertiesFields & I) -> I
+local function createClassInterface(name: string): <I>(fields: I) -> I
     local script, fn = getCaller(1)
     local headerExt = Configuration.HEADER_EXTENSION
     if not match(script.Name, `{headerExt}$`) then
@@ -154,9 +143,9 @@ local function createClassInterface(name: string): <I>(fields: PropertiesFields 
         Log.CLASS_EXISTS:throw(2, name)
     end
     
-    local interface: Interface = createInterface(name)
+    local interface = createInterface(name)
     env.set(fn, { interface = interface })
-    return function<I>(fields: PropertiesFields & I): I
+    return function<I>(fields: I): I
         local propertyFlags = Configuration.PROPERTY_FLAGS
         local function handleVirtuals(specifier: string, key: string)
             local super = interface.superclass
@@ -176,12 +165,12 @@ local function createClassInterface(name: string): <I>(fields: PropertiesFields 
             end
         end
 
-        local function normalizeProperty(property: FinalProperty): FinalProperty
+        local function normalizeProperty(property: any): any
             if is_property(property) then
                 local flags = property.flags
                 if flags then
-                    local map: { [Symbol<string>]: boolean } = {}
-                    for _, value in ipairs(flags :: { Symbol<string> }) do
+                    local map: { [any]: boolean } = {}
+                    for _, value in ipairs(flags :: { any }) do
                         map[value] = true
                     end
                     property.flags = map
@@ -190,7 +179,7 @@ local function createClassInterface(name: string): <I>(fields: PropertiesFields 
             return property
         end
         
-        for k, v in pairs(fields) do
+        for k, v in pairs(fields :: { [string]: any }) do
             local is_specifier = (k == 'public' or k == 'private' or k == 'protected') 
             local is_field_group = is_specifier and type(v) == "table" and not is_property(v)
             if is_field_group then
@@ -202,7 +191,7 @@ local function createClassInterface(name: string): <I>(fields: PropertiesFields 
                 end
             else
                 handleVirtuals("public", k)
-                interface.properties.public[k] = normalizeProperty(v :: FinalProperty)
+                interface.properties.public[k] = normalizeProperty(v)
             end
         end
         

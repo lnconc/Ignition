@@ -1,12 +1,9 @@
 --!strict
 -- Class/Libs/nullable.lua
 
-local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 
-type Nullable<T> = Types.Nullable<T>
-
-local function nullable<T>(type: T): Nullable<T>
+local function nullable<T>(type: T): any
     return setmetatable({ type = type }, { __metatable = Configuration.NULLABLE_SIGNATURE })
 end
 

@@ -5,20 +5,13 @@
 local Log = require("../../Log")
 local Configuration = require("./Configuration")
 local Value = require("../../State/Value")
-local Types = require("../Types")
 local StackSpider = require("./StackSpider")
 local initialize = require("./initialize")
-local ValueTypes = require("../../State/Types")
 local peek = require("../../State/peek")
 local free = require("../Libs/free")
 local Registry = require("./Registry")
 local Unyieldable = require("../../Unyieldable")
 local is_property = require("./is_property")
-local xtypeof = require("./xtypeof")
-
-type Symbol<T> = Types.Symbol<T>
-type Environment = Types.Environment
-type Type<V> = Types.Type<V>
 
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 local PLACEHOLDER = Configuration.PLACEHOLDER
@@ -29,26 +22,51 @@ local OPERATORS = {
     "__call", "__tostring", "__iter"
 }
 
-local match = string.match
 local WithinScope = StackSpider.WithinScope
 local WithinFunction = StackSpider.WithinFunction
 
-local function assessTypeMatching<K, V>(k: K, v: V, t: Type<V>)
-    local vt = xtypeof(v)
-    if vt == "symbol" and v == PLACEHOLDER then return end
-    if t == "table" and type(t.match) == "function" then
-        local yielded, okay = Unyieldable(t.match, v)
-        if yielded then
-            Log.THREAD_YIELDED:throw(2, "match()")
-        elseif okay == false then
-            Log.FAILED_TYPE_CHECK:throw(2, k, t.expects or "unknown", vt)
+local function assessTypeMatching<K, V>(k: K, v: V, t: any)
+    local vt = typeof(v)
+    if type(t) == "table" then
+        if type(t.match) == "function" then
+            local yielded, okay = Unyieldable(t.match :: any, v)
+            if yielded then
+                Log.THREAD_YIELDED:throw(2, "match()")
+            elseif okay == false then
+                Log.FAILED_TYPE_CHECK:throw(2, k, t.expects or "unknown", vt)
+            end
+        else
+            local matchFound = false
+            for _, allowedType in ipairs(t) do
+                local success = false
+                if type(allowedType) == "string" then
+                    if (vt == "Instance" and (v :: any):IsA(allowedType)) or vt == allowedType then
+                        success = true
+                    end
+                end
+                
+                if success then
+                    matchFound = true
+                    break
+                end
+            end
+            if not matchFound then
+                local expected = table.concat(t, " | ")
+                Log.FAILED_TYPE_CHECK:throw(2, k, expected, vt)
+            end
         end
-    elseif t == "string" and vt ~= t then
-        Log.FAILED_TYPE_CHECK:throw(2, k, t, vt)
+    elseif type(t) == "string" then
+        if vt == "Instance" then
+            if not (v :: any):IsA(t) then
+                Log.FAILED_TYPE_CHECK:throw(2, k, t, (v :: any).ClassName)
+            end
+        elseif vt ~= t then
+            Log.FAILED_TYPE_CHECK:throw(2, k, t, vt)
+        end
     end
 end
 
-local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: Type<V>?, constructorContext: string?, set: any? })
+local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [any]: boolean }, reactive: boolean, environment: any, type: any?, constructorContext: string?, set: any? })
     local cur = ring[key]
     local reactive, environment, flags, type_, constructorContext, set = options.reactive, options.environment, options.flags, options.type, options.constructorContext, options.set
     if (reactive and cur and cur._DANGEROUS_value == value) or cur == value then 
@@ -56,13 +74,15 @@ local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Sy
     end
     local hasSetAccessor = set ~= nil
     if not PRODUCTION_MODE_ENABLED then
+        local null = value == nil or value == PLACEHOLDER
         if not hasSetAccessor and type_ ~= nil and type_ ~= "any" then
+            if null then return end -- ignore type matching for now since we have our isOptional check down below
             assessTypeMatching(key, value, type_)
         end
         local fromInit = (flags :: { FromInit: boolean }).FromInit
         local isOptional = flags[PROPERTY_FLAGS.Optional]
         local isReadonly = flags[PROPERTY_FLAGS.Readonly]
-        if not isOptional and value == nil then
+        if not isOptional and null then
             if not (isReadonly and fromInit) then
                 Log.REQUIRED_SET_NIL:throw(2, key)
             end
@@ -82,20 +102,20 @@ local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [Sy
     end
     if reactive then
         if not cur then
-            cur = (Value.new(value, free) :: any) :: ValueTypes.InternalValue<any>
-            if flags[PROPERTY_FLAGS.Constant] or (type(key) == "string" and match(key, "^[A-Z]+$") ~= nil) then
+            cur = Value.new(value, free)
+            if flags[PROPERTY_FLAGS.Constant] then
                 cur._CONSTANT_locked = true
             end
             ring[key] = cur
         else
-            (cur :: ValueTypes.InternalValue<any>):set(value)
+            (cur :: any):set(value)
         end
     else
         ring[key] = if value == nil then PLACEHOLDER else value
     end
 end
 
-local function encapsulate(object: any, metatable: any, environment: Environment)
+local function encapsulate(object: any, metatable: any, environment: any)
     local interface = environment.Interface
     local staticproperties = interface.staticproperties
 
@@ -126,10 +146,10 @@ local function encapsulate(object: any, metatable: any, environment: Environment
                 hasFlagsMap[key] = false    
             continue end
             if not PRODUCTION_MODE_ENABLED then
-                specifierMap[key] = { specifier = specifier, static = flags[PROPERTY_FLAGS.Static] ~= nil }
+                specifierMap[key] = { specifier = specifier, static = (flags :: any)[PROPERTY_FLAGS.Static] ~= nil }
             end
             hasFlagsMap[key] = not next(flags)
-            reactiveMap[key] = flags[PROPERTY_FLAGS.Reactive] ~= nil or interface.flags.AllowReactivity
+            reactiveMap[key] = (flags :: any)[PROPERTY_FLAGS.Reactive] ~= nil or interface.flags.AllowReactivity
         end
     end
 
@@ -215,7 +235,7 @@ local function encapsulate(object: any, metatable: any, environment: Environment
             reactive = reactive,
             environment = environment,
             type = environment.PropertyTypes[key],
-            constructorContext = if environment.Context then environment.Context.Constructor else nil,
+            constructorContext = if environment.Context then (environment.Context :: any).Constructor else nil,
             set = if accessor then accessor.set else nil,
         }))
     end

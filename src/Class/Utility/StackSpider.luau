@@ -3,9 +3,6 @@
 -- Class/Utility/StackSpider.lua
 
 local Configuration = require("./Configuration")
-local Types = require("../Types")
-
-type Environment = Types.Environment
 
 local MAX_DEPTH = Configuration.MAX_STACK_DEPTH
 local IGNORED_LUA_CLOSURES = {
@@ -76,7 +73,7 @@ local function getEffectiveCaller(currentLevel: number): (any)
 end
 
 local StackSpider = {}
-function StackSpider.WithinScope<P>(environment: Environment, _defaultLevel: number?): (boolean, boolean)
+function StackSpider.WithinScope<P>(environment: any, _defaultLevel: number?): (boolean, boolean)
     local baseLevel = _defaultLevel or 3
     
     local effectiveMethod = getEffectiveCaller(baseLevel)
@@ -121,7 +118,7 @@ function StackSpider.WithinScope<P>(environment: Environment, _defaultLevel: num
     return included, protected
 end
 
-function StackSpider.WithinFunction<P>(environment: Environment, targetFunction: string, _defaultLevel: number?): boolean
+function StackSpider.WithinFunction<P>(environment: any, targetFunction: string, _defaultLevel: number?): boolean
     local baseLevel = _defaultLevel or 4
     local effectiveMethod = getEffectiveCaller(baseLevel)
     if not effectiveMethod then return false end
@@ -155,8 +152,8 @@ StackSpider.__accessCache = accessCache
 StackSpider.__resolutionCache = resolutionCache
 
 type StackSpider = {
-    WithinFunction: <P>(environment: Environment, targetFunction: string, _defaultLevel: number?) -> boolean,
-    WithinScope: <P>(environment: Environment, _defaultLevel: number?) -> (boolean, boolean)
+    WithinFunction: <P>(environment: any, targetFunction: string, _defaultLevel: number?) -> boolean,
+    WithinScope: <P>(environment: any, _defaultLevel: number?) -> (boolean, boolean)
 }
 
 return StackSpider :: StackSpider

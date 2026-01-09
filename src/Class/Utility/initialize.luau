@@ -5,24 +5,19 @@ local Configuration = require("./Configuration")
 local env = require("../../Internal/env")
 local Log = require("../../Log")
 local Property = require("../../State/Property")
-local Types = require("../Types")
 local getOverloadedFunction = require("./getOverloadedFunction")
 local is_property = require("./is_property")
-
-type Environment = Types.Environment
-type PropertyField = Types.PropertyField
-type GetClassObject<P, A> = Types.GetClassObject<P, A>
-type Symbol<T> = Types.Symbol<T>
-type Type<V> = Types.Type<V>
 
 local PROPERTY_FLAGS = Configuration.PROPERTY_FLAGS
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 
+local match = string.match
+
 local function initialize(
     object: any, 
-    environment: Environment,
+    environment: any,
     data: { [any]: any }, 
-    upsert: <K, V>(ring: any, key: K, value: V, options: { flags: { [Symbol<string>]: boolean }, reactive: boolean, environment: Environment, type: Type<V>?, constructorContext: string?, set: any?  }) -> ()
+    upsert: any
 )
     local interface = environment.Interface
     local properties, closures = interface.properties, interface.closures
@@ -31,20 +26,20 @@ local function initialize(
 
     local iterationSource = if PRODUCTION_MODE_ENABLED then interface.properties else data
     for specifier, fieldOrRing in iterationSource do
-        local propertyRing: PropertyField = if PRODUCTION_MODE_ENABLED then fieldOrRing else properties[specifier]
+        local propertyRing: any = if PRODUCTION_MODE_ENABLED then fieldOrRing else properties[specifier]
         local destinationField: { [any]: any } = if PRODUCTION_MODE_ENABLED then data else fieldOrRing
         if not propertyRing then continue end
         if fieldOrRing == Configuration.METADATA then continue end
         for key, templateOrValue in pairs(propertyRing :: { [any]: any }) do
             if templateOrValue == Configuration.METADATA then continue end
             local flags = propertyFlags[key]
-            local is_static = flags and flags[PROPERTY_FLAGS.Static]
+            local is_static = flags and (flags :: any)[PROPERTY_FLAGS.Static]
             local isProp = is_property(templateOrValue)
             -- reactive props
-            if isProp and type(templateOrValue.effect) == "function" and reactiveStatesBatch then
+            if isProp and type((templateOrValue :: any).effect) == "function" and reactiveStatesBatch then
                 reactiveStatesBatch[templateOrValue] = { field = destinationField, key = key }
             -- functions
-            elseif (isProp and templateOrValue.type == "function") or (not isProp and type(templateOrValue) == "function") then
+            elseif (isProp and (templateOrValue :: any).type == "function") or (not isProp and type(templateOrValue) == "function") then
                 if is_static and destinationField[key] ~= nil then continue end
                 local closureData = closures[key]
                 local fn = if type(closureData) == "table" and closureData.isOverloaded 
@@ -67,28 +62,31 @@ local function initialize(
                     local id = tostring(wrapper)
                     environment.Context.Includes[id] = true
                     local family = environment.Context.Family[interface.name] or {}
-                    family[id] = true
+                    (family :: any)[id] = true
                     environment.Context.Family[interface.name] = family
                     table.insert(environment.Closures, wrapper)
                 end
                 destinationField[key] = wrapper
             -- standard props
             else
-                local value = if isProp then templateOrValue.value else templateOrValue
+                local value = if isProp then (templateOrValue :: any).value else templateOrValue
                 local source = if is_static then interface.staticproperties[specifier] else destinationField
                 local tempFlags = { FromInit = true }
                 if flags then
                     for flag in flags do
                         tempFlags[flag] = true
                     end
+                    if type(key) == "string" and match(key, "^[A-Z]+$") then
+                        tempFlags[PROPERTY_FLAGS.Constant] = true
+                    end
                 end
                 upsert(source, key, value, {
                     flags = tempFlags,
-                    reactive = interface.flags.AllowReactivity or (flags and flags[PROPERTY_FLAGS.Reactive]) or false,
+                    reactive = interface.flags.AllowReactivity or (flags and (flags :: any)[PROPERTY_FLAGS.Reactive]) or false,
                     environment = environment,
                     type = propertyTypes[key],
-                    constructorContext = if environment.Context then environment.Context.Constructor else nil,
-                    set = if isProp then value.set else nil,
+                    constructorContext = if environment.Context then (environment.Context :: any).Constructor else nil,
+                    set = if isProp then (templateOrValue :: any).set else nil,
                 })
             end
         end

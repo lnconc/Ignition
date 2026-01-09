@@ -5,15 +5,12 @@ local getCaller = require("../../Internal/getCaller")
 local Log = require("../../Log")
 local Types = require("../Types")
 
-type Interface = Types.Interface
-type Yields = { [string]: { [thread]: boolean } }
-
 local LIBRARY_ANCESTOR, IGNITION_ANCESTOR = script.Parent.Parent, script.Parent.Parent.Parent
 local TIMEOUT_DURATION = 8
 
 local Registry = {}
-local InterfaceYields: Yields, LinkYields: Yields = {}, {}
-local Interfaces: { [string]: Interface } = setmetatable({}, { __mode = "v" })
+local InterfaceYields: any, LinkYields: any = {}, {}
+local Interfaces: { [string]: any } = setmetatable({}, { __mode = "v" })
 local ObjectEnvironments: { [any]: Types.Environment } = setmetatable({}, { __mode = "k" })
 local ObjectDatas: { [any]: any } = setmetatable({}, { __mode = "k" })
 
@@ -36,7 +33,7 @@ local function assertCallingScript(...: string?)
     end
 end
 
-function Registry.WaitForInterface(name: string): Interface
+function Registry.WaitForInterface(name: string): any
     assertCallingScript()
     if not Interfaces[name] then
         local thread = coroutine.running()
@@ -62,7 +59,7 @@ function Registry.WaitForInterface(name: string): Interface
     return Interfaces[name]
 end
 
-function Registry.SaveInterface(interface: Interface, name: string)
+function Registry.SaveInterface(interface: any, name: string)
     assertCallingScript("class")
     if Registry.InterfaceExists(name) then
         Log.CLASS_EXISTS:throw(2, name)
@@ -76,7 +73,7 @@ function Registry.SaveInterface(interface: Interface, name: string)
     InterfaceYields[name] = nil
 end
 
-function Registry.WaitForLink(name: string): Interface
+function Registry.WaitForLink(name: string): any
     assertCallingScript()
     local interface = Interfaces[name]
     if not interface then
@@ -92,7 +89,7 @@ function Registry.WaitForLink(name: string): Interface
     return coroutine.yield()
 end
 
-function Registry.SignalLink(name: string, interface: Interface)
+function Registry.SignalLink(name: string, interface: any)
     assertCallingScript("class")
     if LinkYields[name] then
         for t in pairs(LinkYields[name]) do
@@ -102,7 +99,7 @@ function Registry.SignalLink(name: string, interface: Interface)
     end
 end
 
-function Registry.GetInterface(name: string): Interface
+function Registry.GetInterface(name: string): any
     assertCallingScript()
     return assert(Interfaces[name], `class {name} does not exist`)
 end

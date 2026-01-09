@@ -1,12 +1,9 @@
 --!strict
 -- Class/Libs/union.lua
 
-local Types = require("../Types")
 local Configuration = require("../Utility/Configuration")
 
-type Union<T> = Types.Union<T>
-
-local function union<T>(...: T): Union<T>
+local function union<T>(...: T): any
     local t = table.pack(...)
     for i = 1, t.n do
         local u = t[i]

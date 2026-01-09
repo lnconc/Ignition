@@ -6,7 +6,7 @@ local Configuration = require("../Utility/Configuration")
 local IS_SERVER = game:GetService("RunService"):IsServer()
 
 local function func(options: any): any?
-    local exposure = options.from
+    local from = options.from
     if (exposure and exposure ~= "shared") and
         ((IS_SERVER and exposure ~= "server") or (not IS_SERVER and exposure ~= "client"))
     then

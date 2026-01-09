@@ -9,7 +9,7 @@ Before a function can be used, it must be declared in the header. The `func` hel
 -- BaseRemote.definition.luau
 protected = {
     Send = func {
-        exposure = "shared",
+        from = "shared",
         dummy = (nil :: any) :: (self: any, data: any) -> ()
     }
 }

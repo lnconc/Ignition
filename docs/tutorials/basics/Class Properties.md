@@ -33,13 +33,13 @@ public = {
     -- This property only exists on the Server
     SecretToken = property({
         value = "XYZ-123", -- For illustration only; realistically, you'd have the `constructor` do this.
-        exposure = "server"
+        from = "server"
     }),
 
     -- This property exists everywhere
     Score = property({
         value = 0,
-        exposure = "shared",
+        from = "shared",
         type = "number" :: "number"
     })
 }

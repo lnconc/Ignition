@@ -8,7 +8,7 @@ property<V, T, P>(options: {
     type: T,
     value: V,
     flags: { Symbol },
-    exposure: PropertyExposure?
+    from: PropertyExposure?
     get: P,
     set: <P>(value: P, this: V) -> P,
 }) -> FinalProperty<V, T>?
@@ -30,4 +30,4 @@ property<V, T, P>(options: {
 
 | Name | Type |
 | --- | --- |
-| `options` | `{ exposure: "shared" | "server" | "client", flags: { Symbol }, type: string, value: any, get: (this: any) -> any, set: (value: any, this: any) -> () }` |
+| `options` | `{ from: "shared" | "server" | "client", flags: { Symbol }, type: string, value: any, get: (this: any) -> any, set: (value: any, this: any) -> () }` |

@@ -100,7 +100,7 @@ Ignition enforces a strict separation between *what* a class **is** and *what* a
     return abstract (class "BaseRemote" {
         public = {
             Name = property {
-                exposure = "shared",
+                from = "shared",
                 flags = { FLAGS.Readonly },
                 type = "string",
                 value = nil
@@ -108,7 +108,7 @@ Ignition enforces a strict separation between *what* a class **is** and *what* a
         },
         protected = {
             Send = func {
-                exposure = "shared",
+                from = "shared",
                 dummy = (nil :: any) :: (self: any, options: {
                     targets: { Player },
                     unreliable: boolean,

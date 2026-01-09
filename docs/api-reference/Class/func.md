@@ -5,7 +5,7 @@ title: "func"
 Defines a method signature within a class header. It allows for explicit visibility flagging and network-based exposure filtering.
 ```luau
 func<D>(options: { 
-    exposure: PropertyExposure?, 
+    from: PropertyExposure?, 
     flags: { Symbol },
     dummy: D 
 }) -> FinalProperty<D>?
@@ -27,4 +27,4 @@ func<D>(options: {
 
 | Name | Type |
 | --- | --- |
-| `options` | `{ exposure: "shared" | "server" | "client", flags: { Symbol }, dummy: (...any) -> (...any) }` |
+| `options` | `{ from: "shared" | "server" | "client", flags: { Symbol }, dummy: (...any) -> (...any) }` |

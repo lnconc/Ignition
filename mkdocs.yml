@@ -100,7 +100,6 @@ nav:
         - friend: api-reference/Class/friend.md
         - mutual: api-reference/Class/mutual.md
       - Constants: api-reference/Class/Constants.md
-      - Types: api-reference/Class/Types.md
     - State API:
       - Value: api-reference/State/Value.md
       - Property: api-reference/State/Property.md

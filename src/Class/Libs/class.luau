@@ -29,7 +29,7 @@ local function buildClassObject(name: string, interface: any): (any, any)
         Interface = interface,
         SuperClass = { object = nil, environment = nil },
         Master = nil,
-        Context = if PRODUCTION_MODE_ENABLED then nil :: any else {
+        Context = if PRODUCTION_MODE_ENABLED then { Constructor = "" } else {
             Includes = {},
             Refs = setmetatable({} :: { [typeof(function() end)]: any }, { __mode = "k" }),
             Friends = {},
@@ -112,10 +112,10 @@ local function createInterface(name: string): any
                     family[build_context] = true
                     environment.Context.Family[name] = family
                     
-                    environment.Context.Constructor = build_context
                     environment.Context.Includes[build_context] = true
                     table.insert(environment.Closures, wrapper)
                 end
+                environment.Context.Constructor = build_context
                 wrapper(object, ...)
             end
             if not fromDerivedClass then

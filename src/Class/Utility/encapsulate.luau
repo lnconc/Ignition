@@ -189,7 +189,12 @@ local function encapsulate(object: any, metatable: any, environment: any)
         local out = ring[key]
         if reactive and out then out:evaluate() end
         out = if out == PLACEHOLDER then nil else out
-        if accessor and accessor.get then out = (accessor.get :: any)(out) end
+        if accessor and accessor.get then
+            local constructorContext = environment.Context.Constructor
+            local isInsideConstructor = constructorContext ~= nil and WithinFunction(environment, constructorContext)
+            if isInsideConstructor then return out end
+            out = (accessor.get :: any)(out)
+        end
         return out
     end
 

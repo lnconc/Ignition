@@ -267,6 +267,7 @@ export type function GetClassObject(interface: type, access_level: type): type
                 end
                 if is_reactive then
                     local valueType = types.newtable({})
+                    valueType:setproperty(types.singleton("_DANGEROUS_value"), resolvedType)
                     valueType:setproperty(types.singleton("set"), types.newfunction({head = {types.any, resolvedType}}, {}))
                     resolvedType = valueType
                 end

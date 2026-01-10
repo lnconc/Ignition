@@ -4,6 +4,7 @@
 export type Value<T> = {
     set: (self: Value<T>, newValue: T) -> (),
     Destroy: (self: Value<T>) -> (),
+    _DANGEROUS_value: T,
 }
 
 export type Property<T> = {

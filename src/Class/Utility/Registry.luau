@@ -3,7 +3,6 @@
 
 local getCaller = require("../../Internal/getCaller")
 local Log = require("../../Log")
-local Types = require("../Types")
 
 local LIBRARY_ANCESTOR, IGNITION_ANCESTOR = script.Parent.Parent, script.Parent.Parent.Parent
 local TIMEOUT_DURATION = 8
@@ -11,7 +10,7 @@ local TIMEOUT_DURATION = 8
 local Registry = {}
 local InterfaceYields: any, LinkYields: any = {}, {}
 local Interfaces: { [string]: any } = setmetatable({}, { __mode = "v" })
-local ObjectEnvironments: { [any]: Types.Environment } = setmetatable({}, { __mode = "k" })
+local ObjectEnvironments: { [any]: any } = setmetatable({}, { __mode = "k" })
 local ObjectDatas: { [any]: any } = setmetatable({}, { __mode = "k" })
 
 -- restrict access only within the Class folder; not necessarily an anti-cheat, just to prevent misuse
@@ -109,12 +108,12 @@ function Registry.InterfaceExists(name: string): boolean
     return Interfaces[name] ~= nil
 end
 
-function Registry.SaveEnvironment(object: any, environment: Types.Environment)
+function Registry.SaveEnvironment(object: any, environment: any)
     assertCallingScript("class")
     ObjectEnvironments[object] = environment
 end
 
-function Registry.GetEnvironment(object: any): Types.Environment
+function Registry.GetEnvironment(object: any): any
     assertCallingScript("delete", "friend")
     local env = ObjectEnvironments[object]
     if not env then

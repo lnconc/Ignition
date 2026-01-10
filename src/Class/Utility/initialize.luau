@@ -33,10 +33,10 @@ local function initialize(
         for key, templateOrValue in pairs(propertyRing :: { [any]: any }) do
             if templateOrValue == Configuration.METADATA then continue end
             local flags = propertyFlags[key]
-            local is_static = flags and (flags :: any)[PROPERTY_FLAGS.Static]
+            local is_static, is_reactive = flags and (flags :: any)[PROPERTY_FLAGS.Static], flags and (flags :: any)[PROPERTY_FLAGS.Reactive]
             local isProp = is_property(templateOrValue)
             -- reactive props
-            if isProp and type((templateOrValue :: any).effect) == "function" and reactiveStatesBatch then
+            if isProp and is_reactive and type((templateOrValue :: any).effect) == "function" and reactiveStatesBatch then
                 reactiveStatesBatch[templateOrValue] = { field = destinationField, key = key }
             -- functions
             elseif (isProp and (templateOrValue :: any).type == "function") or (not isProp and type(templateOrValue) == "function") then
@@ -82,7 +82,7 @@ local function initialize(
                 end
                 upsert(source, key, value, {
                     flags = tempFlags,
-                    reactive = interface.flags.AllowReactivity or (flags and (flags :: any)[PROPERTY_FLAGS.Reactive]) or false,
+                    reactive = interface.flags.AllowReactivity or is_reactive,
                     environment = environment,
                     type = propertyTypes[key],
                     constructorContext = if environment.Context then (environment.Context :: any).Constructor else nil,

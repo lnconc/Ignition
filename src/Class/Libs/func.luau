@@ -7,8 +7,8 @@ local IS_SERVER = game:GetService("RunService"):IsServer()
 
 local function func(options: any): any?
     local from = options.from
-    if (exposure and exposure ~= "shared") and
-        ((IS_SERVER and exposure ~= "server") or (not IS_SERVER and exposure ~= "client"))
+    if (from and from ~= "shared") and
+        ((IS_SERVER and from ~= "server") or (not IS_SERVER and from ~= "client"))
     then
         return nil
     end

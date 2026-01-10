@@ -7,8 +7,8 @@ local IS_SERVER = game:GetService("RunService"):IsServer()
 
 local function property(options: any): any?
     local from = options.from
-    if (exposure and exposure ~= "shared") and
-        ((IS_SERVER and exposure ~= "server") or (not IS_SERVER and exposure ~= "client"))
+    if (from and from ~= "shared") and
+        ((IS_SERVER and from ~= "server") or (not IS_SERVER and from ~= "client"))
     then
         return nil
     end
@@ -27,6 +27,8 @@ local function property(options: any): any?
         dummy = nil,
         get = options.get,
         set = options.set,
+        effect = options.effect,
+        dependencies = options.dependencies
     }, { __metatable = Configuration.PROPERTY_SIGNATURE})
     
     return result

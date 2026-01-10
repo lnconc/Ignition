@@ -473,6 +473,8 @@ export type Class = {
         from: Exposure?,
         get: H?,
         set: ((value: A, this: Q) -> R)?,
+        effect: (<T, U>(effect: <T0, U0...>(use: <T1>(value: T1) -> T1, U0...) -> T0, data: U) -> any)?,
+        dependencies: { [any]: any }?,
         [string]: any,
     } & any) -> setmetatable<{
         type: InferPropertyType<{ type: T, value: V }>,
@@ -481,6 +483,8 @@ export type Class = {
         from: Exposure,
         get: H?,
         set: ((value: A, this: Q) -> R)?,
+        effect: (<T, U>(effect: <T0, U0...>(use: <T1>(value: T1) -> T1, U0...) -> T0, data: U) -> any)?,
+        dependencies: { [any]: any }?,
     }, { read __metatable: "$property" }>?,
     func: <D, F>(options: {
         flags: {F}?,

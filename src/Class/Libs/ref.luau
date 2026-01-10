@@ -4,9 +4,6 @@
 local getCaller = require("../../Internal/getCaller")
 local Log = require("../../Log")
 local Configuration = require("../Utility/Configuration")
-local Types = require("../Types")
-
-type Environment = Types.Environment
 
 local PRODUCTION_MODE_ENABLED = Configuration.PRODUCTION_MODE_ENABLED
 
@@ -16,7 +13,7 @@ local function ref<F>(callback: F): F -- made to bypass hitting cclosures when u
     if not env then
         Log.THREAD_CONTEXT_REQUIRED:throw(2, "ref()")
     end
-    local environment: Environment = env.environment
+    local environment = env.environment
     if not environment then
         Log.CLASS_ENVIRONMENT_REQUIRED:throw(2, "ref()")
     end

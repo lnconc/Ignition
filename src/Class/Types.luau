@@ -235,7 +235,7 @@ export type function GetClassObject(interface: type, access_level: type): type
                 prototype:setproperty(key, finalDummy)
             elseif value then
                 local resolvedType: type = if literal then PRIMITIVES[literal] else type
-                local getter = member:readproperty(types.singleton("get"))
+                local getter, fromGetter = member:readproperty(types.singleton("get")), false
                 if getter then
                     local funcType: type? = nil
                     if getter:is("function") then
@@ -252,7 +252,7 @@ export type function GetClassObject(interface: type, access_level: type): type
                     if funcType then
                         local returns = funcType:returns()
                         if returns and returns.head and #returns.head > 0 then
-                            resolvedType = returns.head[1]
+                            resolvedType, fromGetter = returns.head[1], true
                         end
                     end
                 end
@@ -266,10 +266,15 @@ export type function GetClassObject(interface: type, access_level: type): type
                     end
                 end
                 if is_reactive then
+                    local rawType = resolvedType
                     local valueType = types.newtable({})
-                    valueType:setproperty(types.singleton("_DANGEROUS_value"), resolvedType)
-                    valueType:setproperty(types.singleton("set"), types.newfunction({head = {types.any, resolvedType}}, {}))
-                    resolvedType = valueType
+                    valueType:setproperty(types.singleton("_DANGEROUS_value"), rawType)
+                    valueType:setproperty(types.singleton("set"), types.newfunction({head = {types.any, rawType}}, {}))
+                    if fromGetter and rawType:is("class") then
+                        resolvedType = types.unionof(rawType, valueType, types.any)
+                    else
+                        resolvedType = valueType
+                    end
                 end
                 append(key, resolvedType)
             else

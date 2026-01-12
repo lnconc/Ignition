@@ -21,7 +21,7 @@ local function dumpsize(object: any?): string
             return "-1"
         end
         
-        local ctx = environment.Context
+        local ctx: any = environment.Context
         local familySize = 0
         for _, inclusionMap in pairs(ctx.Family) do
             familySize += count(inclusionMap)
@@ -29,7 +29,7 @@ local function dumpsize(object: any?): string
         return `internal (includes): {count(ctx.Includes)}, internal (refs): {count(ctx.Refs)}, family: {familySize}, closures: {count(environment.Closures)}`
     end
 
-    return `stackspider (access): {count(StackSpider.__accessCache)}, stackspider (resolution): {count(StackSpider.__resolutionCache)}, env: {count(env.__environments)}, anon: {count(anon.__cache)}`
+    return `stackspider (within): {count(StackSpider.__withinCache)}, stackspider (access): {count(StackSpider.__accessCache)}, stackspider (resolution): {count(StackSpider.__resolutionCache)}, env: {count(env.__environments)}, anon: {count(anon.__cache)}`
 end
 
 return dumpsize

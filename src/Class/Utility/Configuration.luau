@@ -3,7 +3,7 @@
 
 local Symbol = require("../../Symbol")
 local function symbol<T>(id: T): Symbol.Symbol<T>
-    return Symbol(`class_symbol<{id}>`)
+    return Symbol(id)
 end
 
 local FORCE_PRODUCTION_MODE = false

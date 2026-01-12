@@ -23,9 +23,11 @@ local function ref<F>(callback: F): F -- made to bypass hitting cclosures when u
     environment.Context.Refs[wrapped] = true
     -- ensure this is also added to our superclass (if we have)
     local current = environment.SuperClass.environment
-    while current do
-        current.Context.Refs[wrapped] = true
-        current = current.SuperClass.environment
+    if current then
+        while current do
+            current.Context.Refs[wrapped] = true
+            current = current.SuperClass.environment
+        end
     end
     return wrapped
 end

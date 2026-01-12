@@ -82,10 +82,8 @@ local ExposedIgnition: Ignition = setmetatable({}, {
                     end
                     if fromSolutions then
                         local children = item:GetChildren()
-                        local total, count = 0, 0
                         for _, module in children do
                             if module:IsA("ModuleScript") then
-                                total += 1
                                 task.spawn(function()
                                     local success, classOrErr = pcall(require, module)
                                     if not success then
@@ -97,14 +95,9 @@ local ExposedIgnition: Ignition = setmetatable({}, {
                                         classes[name] = classOrErr
                                     end
                                     dependencies[name] = true
-                                    if not ClassConfiguration.PRODUCTION_MODE_ENABLED then
-                                        print(`Loaded and linked {module:GetFullName()}`)
-                                    end
-                                    count += 1
                                 end)
                             end
                         end
-                        print(`Loaded {count} out of {total} objects from {item.Name}.`)
                     end
                     loadSolutions(item, fromSolutions)
                 end

@@ -7,7 +7,6 @@ local Configuration = require("./Configuration")
 local Value = require("../../State/Value")
 local StackSpider = require("./StackSpider")
 local initialize = require("./initialize")
-local peek = require("../../State/peek")
 local free = require("../Libs/free")
 local Registry = require("./Registry")
 local Unyieldable = require("../../Unyieldable")
@@ -22,8 +21,8 @@ local OPERATORS = {
     "__call", "__tostring", "__iter"
 }
 
-local WithinScope = StackSpider.WithinScope
-local WithinFunction = StackSpider.WithinFunction
+local WithinScope = StackSpider.WithinScope :: any
+local WithinFunction = StackSpider.WithinFunction :: any
 
 local function assessTypeMatching<K, V>(k: K, v: V, t: any)
     local vt = typeof(v)
@@ -82,7 +81,7 @@ local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [an
         local fromInit = (flags :: { FromInit: boolean }).FromInit
         local isOptional = flags[PROPERTY_FLAGS.Optional]
         local isReadonly = flags[PROPERTY_FLAGS.Readonly]
-        if not isOptional and null then
+        if not fromInit and not isOptional and null then
             if not (isReadonly and fromInit) then
                 Log.REQUIRED_SET_NIL:throw(2, key)
             end
@@ -94,8 +93,8 @@ local function upsert<K, V>(ring: any, key: K, value: V, options: { flags: { [an
     end
     if hasSetAccessor then
         local isInsideConstructor = constructorContext ~= nil and WithinFunction(environment, constructorContext)
-        if not isInsideConstructor then
-            local _raw = peek(cur)
+        if not isInsideConstructor and cur ~= nil then
+            local _raw = cur._DANGEROUS_value
             local raw = if _raw == PLACEHOLDER then nil else _raw
             value = (set :: any)(value, raw)
         end
@@ -145,9 +144,7 @@ local function encapsulate(object: any, metatable: any, environment: any)
                 reactiveMap[key] = false
                 hasFlagsMap[key] = false    
             continue end
-            if not PRODUCTION_MODE_ENABLED then
-                specifierMap[key] = { specifier = specifier, static = (flags :: any)[PROPERTY_FLAGS.Static] ~= nil }
-            end
+            specifierMap[key] = { specifier = specifier, static = (flags :: any)[PROPERTY_FLAGS.Static] ~= nil }
             hasFlagsMap[key] = not next(flags)
             reactiveMap[key] = (flags :: any)[PROPERTY_FLAGS.Reactive] ~= nil or interface.flags.AllowReactivity
         end
@@ -163,10 +160,14 @@ local function encapsulate(object: any, metatable: any, environment: any)
             local out = data[key]
             if reactiveMap[key] and out then out:evaluate() end
             out = if out == PLACEHOLDER then nil else out
-            if accessor and accessor.get then return (accessor.get :: any)(out) end
+            if accessor and accessor.get then
+                local constructorContext = environment.Context.Constructor
+                local isInsideConstructor = constructorContext ~= nil and WithinFunction(environment, constructorContext)
+                if isInsideConstructor then return out end
+                out = (accessor.get :: any)(out)
+            end
             return out
         end
-
         local info = specifierMap[key]
         if not info then
             local super = environment.SuperClass
@@ -222,7 +223,7 @@ local function encapsulate(object: any, metatable: any, environment: any)
             Log.MISSING_PROP_WRITE:throw(2, key)
         end
         local static, specifier, reactive = info.static, info.specifier, reactiveMap[key]
-        if specifier == "public" and not static and not hasFlagsMap[key] then
+        if specifier == "public" and not static and not hasFlagsMap[key] and not reactive then
             (data.public :: any)[key] = if value == nil then PLACEHOLDER else value
             return
         elseif specifier ~= "public" then

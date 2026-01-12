@@ -14,11 +14,11 @@ local function property(options: any): any?
     end
     local inferredType = options.type
     if not inferredType then
-        if options.value == nil or (options.value ~= nil and type(options.value) == "userdata" and (getmetatable(options.value) :: any) == Configuration.PROPERTY_SIGNATURE) then
+        if options.value == nil or (type(options.value) == "userdata" and getmetatable(options.value) :: any) == "placeholder" then
             inferredType = "any"
-            return
+        else
+            inferredType = typeof(options.value)
         end
-        inferredType = typeof(options.value)
     end
     local result = setmetatable({ 
         value = options.value,
@@ -30,7 +30,6 @@ local function property(options: any): any?
         effect = options.effect,
         dependencies = options.dependencies
     }, { __metatable = Configuration.PROPERTY_SIGNATURE})
-    
     return result
 end
 

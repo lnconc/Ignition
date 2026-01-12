@@ -45,8 +45,8 @@ local ErrorMessages =  {
     -- Access Control (Visibility)
     PRIVATE_ACCESS = "Attempt to access private property '%s'",
     PROTECTED_ACCESS = "Attempt to access protected property '%s'",
-    PRIVATE_WRITE = "Attempt to write private property '%s' %s",
-    PROTECTED_WRITE = "Attempt to write protected property '%s' %s",
+    PRIVATE_WRITE = "Attempt to write private property '%s'",
+    PROTECTED_WRITE = "Attempt to write protected property '%s'",
     READONLY_SET = "Cannot set readonly property '%s'",
     REQUIRED_SET_NIL = "Property '%s' cannot be optional",
     OPERATOR_VIOLATION = "Operator %s %s access violation",

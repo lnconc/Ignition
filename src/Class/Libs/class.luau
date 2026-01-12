@@ -52,7 +52,9 @@ local function buildClassObject(name: string, interface: any): (any, any)
                     environment.PropertyFlags[key] = flags
                 end
             else
-                environment.PropertyTypes[key] = typeof(property)
+                local type = typeof(property)
+                if type == "userdata" and getmetatable(property) == "placeholder" or type == "nil" then type = "any" end
+                environment.PropertyTypes[key] = type
             end
         end
     end

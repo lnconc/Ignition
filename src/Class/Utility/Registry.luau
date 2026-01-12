@@ -131,7 +131,7 @@ function Registry.HasInterface(interface: any): boolean
 end
 
 function Registry.HasObject(object: any): boolean
-    assertCallingScript("friend", "xtypeof")
+    assertCallingScript("friend")
     return ObjectEnvironments[object] ~= nil
 end
 

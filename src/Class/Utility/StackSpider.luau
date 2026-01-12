@@ -12,18 +12,16 @@ local IGNORED_LUA_CLOSURES = {
     ['__newindex'] = true,
 }
 
+local withinCache: setmetatable<{[typeof(function() end)]: boolean}, { __mode: string }> = setmetatable({}, { __mode = "k" })
 local accessCache: setmetatable<{[typeof(function() end)]: {
     included: boolean,
     protected: boolean,
     traversed: { [typeof(function() end)]: boolean },
-    within: boolean,
-    [string]: any,
 }}, { __mode: string }> = setmetatable({}, { __mode = "k" })
-local resolutionCache: setmetatable<{[string?]: { m: any, s: string, [string]: any }}, { __mode: string }> = setmetatable({}, { __mode = "k" })
+local resolutionCache: setmetatable<{[string?]: typeof(function() end)}, { __mode: string }> = setmetatable({}, { __mode = "k" })
 
 local debugInfo = debug.info
 local toString = tostring
-local tableClone = table.clone
 
 local function any_traversed_in_refs(traversed: { [typeof(function() end)]: boolean }, refs: { [typeof(function() end)]: boolean }): boolean
     for id in pairs(traversed) do
@@ -32,30 +30,21 @@ local function any_traversed_in_refs(traversed: { [typeof(function() end)]: bool
     return false
 end
 
-local function upsertCache(key: typeof(function() end), tbl: { [string]: any })
-    local cache = accessCache[key]
-    if cache then
-        for k, v in next, tbl do
-            cache[k] = v  
-        end
-    else
-        accessCache[key] = tableClone(tbl)
-    end
-end
-
 local function getMethodContext(level: number): (any, any, any)
     local f, n = debugInfo(level + 1, 'fn')
     return f, toString(f), n
 end
 
 local function getEffectiveCaller(currentLevel: number): (any)
-    local startLevel = currentLevel + 2
+    local startLevel = currentLevel + 1
     local raw = getMethodContext(startLevel)
-    if not raw then return nil, nil end
+    if not raw then
+        return nil, nil
+    end
     
     local cached = resolutionCache[raw]
-    if cached then 
-        return cached.m 
+    if cached then
+        return cached
     end
 
     local method = raw
@@ -68,7 +57,7 @@ local function getEffectiveCaller(currentLevel: number): (any)
         end
     end
 
-    resolutionCache[raw] = { m = method }
+    resolutionCache[raw] = method
     return method
 end
 
@@ -77,7 +66,9 @@ function StackSpider.WithinScope<P>(environment: any, _defaultLevel: number?): (
     local baseLevel = _defaultLevel or 3
     
     local effectiveMethod = getEffectiveCaller(baseLevel)
-    if not effectiveMethod then return false, false end
+    if not effectiveMethod then
+        return false, false
+    end
     local cached = accessCache[effectiveMethod]
     if cached then
         if not cached.included and cached.traversed and any_traversed_in_refs(cached.traversed, environment.Context.Refs) then
@@ -95,9 +86,13 @@ function StackSpider.WithinScope<P>(environment: any, _defaultLevel: number?): (
         if not method then break end
         if not IGNORED_LUA_CLOSURES[name] then
             traversed[method] = true
-            
             -- private
-            if context.Includes[id] or context.Refs[method] or context.Friends[id] then
+            if context.Refs[method] then
+                included = true
+                break
+            end
+
+            if context.Includes[id] or context.Friends[id] then
                 included = true
                 break
             end
@@ -110,22 +105,22 @@ function StackSpider.WithinScope<P>(environment: any, _defaultLevel: number?): (
         end
     end
 
-    upsertCache(effectiveMethod, { 
+    accessCache[effectiveMethod] = { 
         included = included, 
         protected = protected, 
         traversed = traversed 
-    })
+    }
     return included, protected
 end
 
 function StackSpider.WithinFunction<P>(environment: any, targetFunction: string, _defaultLevel: number?): boolean
-    local baseLevel = _defaultLevel or 4
+    local baseLevel = _defaultLevel or 3
     local effectiveMethod = getEffectiveCaller(baseLevel)
     if not effectiveMethod then return false end
     
-    local cached = accessCache[effectiveMethod]
+    local cached = withinCache[effectiveMethod]
     if cached then
-        return cached.within
+        return cached
     end
 
     local includes = environment.Context.Includes
@@ -140,14 +135,16 @@ function StackSpider.WithinFunction<P>(environment: any, targetFunction: string,
         end
     end
 
-    upsertCache(effectiveMethod, { within = within })
+    withinCache[effectiveMethod] = true
     return within
 end
 
 function StackSpider.delete(closure: any)
     accessCache[closure] = nil
+    withinCache[closure] = nil
 end
 
+StackSpider.__withinCache = withinCache
 StackSpider.__accessCache = accessCache
 StackSpider.__resolutionCache = resolutionCache
 

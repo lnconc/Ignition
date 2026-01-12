@@ -4,7 +4,7 @@
 local Configuration = require("./Configuration")
 
 local function is_property(property: any)
-    return type(property) == "table" and property._signature == Configuration.PROPERTY_SIGNATURE
+    return type(property) == "table" and getmetatable(property) == Configuration.PROPERTY_SIGNATURE
 end
 
 return is_property
